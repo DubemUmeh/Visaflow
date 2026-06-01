@@ -1,0 +1,19 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+allowBuilds:
+  '@nestjs/core': true
+  '@scarf/scarf': true
+  cpu-features: true
+  esbuild: true
+  msgpackr-extract: true
+  protobufjs: true
+  sharp: true
+  ssh2: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@tanstack/query-core@5.100.14'
+  - '@tanstack/query-devtools@5.100.14'
+  - '@tanstack/react-query-devtools@5.100.14'
+  - '@tanstack/react-query@5.100.14'
+  - react-hook-form@7.76.1

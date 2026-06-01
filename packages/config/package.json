@@ -1,0 +1,41 @@
+{
+  "name": "@visaflow/config",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./eslint": "./eslint.config.js",
+    "./typescript": "./tsconfig.base.json",
+    "./tailwind": "./tailwind.config.ts",
+    "./tailwind.config": "./tailwind.config.ts"
+  },
+  "files": [
+    "src",
+    "eslint.config.js",
+    "tsconfig.base.json",
+    "tailwind.config.ts"
+  ],
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "@visaflow/eslint-config": "workspace:*",
+    "@visaflow/typescript-config": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.7"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "tailwindcss-animate": "1.0.7"
+  }
+}

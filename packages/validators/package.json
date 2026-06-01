@@ -1,0 +1,46 @@
+{
+  "name": "@visaflow/validators",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.d.js"
+    },
+    "./auth": {
+      "types": "./dist/schemas/auth.d.ts",
+      "default": "./dist/schemas/auth.js"
+    },
+    "./application": {
+      "types": "./dist/schemas/application.d.ts",
+      "default": "./dist/schemas/application.js"
+    },
+    "./payment": {
+      "types": "./dist/schemas/payment.d.ts",
+      "default": "./dist/schemas/payment.js"
+    },
+    "./user": {
+      "types": "./dist/schemas/user.d.ts",
+      "default": "./dist/schemas/user.js"
+    }
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "@types/node": "^25.9.1",
+    "@visaflow/eslint-config": "workspace:*",
+    "@visaflow/typescript-config": "workspace:*",
+    "vitest": "^4.1.7"
+  }
+}

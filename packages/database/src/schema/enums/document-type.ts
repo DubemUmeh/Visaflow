@@ -1,0 +1,20 @@
+import { pgEnum } from "drizzle-orm/pg-core";
+
+export const documentTypeEnum = pgEnum("DocumentType", [
+  "PASSPORT_PHOTO",
+  "PASSPORT_COPY",
+  "BANK_STATEMENT",
+  "INVITATION_LETTER",
+  "TRAVEL_ITINERARY",
+  "HOTEL_BOOKING",
+  "FLIGHT_ITINERARY",
+  "EMPLOYMENT_LETTER",
+  "FINANCIAL_PROOF",
+  "BIRTH_CERTIFICATE",
+  "MARRIAGE_CERTIFICATE",
+  "TRAVEL_INSURANCE",
+  "YELLOW_FEVER_CERT",
+  "BUSINESS_REGISTRATION",
+  "VISA_FOR_DESTINATION",
+  "OTHER",
+]);

@@ -1,0 +1,263 @@
+/**
+ * Eligibility Rules Seed Data
+ * Defines visa-free access and visa requirements between country pairs.
+ * nat = nationality country code, dest = destination country code.
+ */
+
+export type EligibilityRuleSeed = {
+  nat: string;   // ISO alpha-2 nationality country
+  dest: string;  // ISO alpha-2 destination country
+  requiresVisa: boolean;
+  isVisaOnArrival: boolean;
+  isEVisa: boolean;
+  stayDays: number;
+  notes?: string;
+};
+
+export const eligibilityRulesData: EligibilityRuleSeed[] = [
+  // ─────────────── Intra-EU / Schengen (visa-free) ───────────────
+  { nat: 'GB', dest: 'FR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'FR', dest: 'GB', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'DE', dest: 'FR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'FR', dest: 'DE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'DE', dest: 'IT', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'IT', dest: 'DE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'ES', dest: 'FR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'FR', dest: 'ES', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'NL', dest: 'DE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'DE', dest: 'NL', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'PL', dest: 'DE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'DE', dest: 'PL', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'SE', dest: 'DE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'NO', dest: 'DE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'CH', dest: 'DE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+
+  // ─────────────── North America (visa-free corridors) ───────────────
+  { nat: 'US', dest: 'CA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'CA', dest: 'US', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'US', dest: 'MX', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'CA', dest: 'MX', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'GB', dest: 'CA', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 180, notes: 'eTA required online' },
+  { nat: 'DE', dest: 'CA', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 180, notes: 'eTA required online' },
+  { nat: 'FR', dest: 'CA', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 180, notes: 'eTA required online' },
+  { nat: 'AU', dest: 'CA', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 180, notes: 'eTA required online' },
+  { nat: 'NZ', dest: 'CA', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 180, notes: 'eTA required online' },
+  { nat: 'JP', dest: 'CA', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 180, notes: 'eTA required online' },
+
+  // ─────────────── US visa requirements ───────────────
+  { nat: 'IN', dest: 'US', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'CN', dest: 'US', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'PK', dest: 'US', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'NG', dest: 'US', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'GH', dest: 'US', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'KE', dest: 'US', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'BR', dest: 'US', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'MX', dest: 'US', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'JP', dest: 'US', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'KR', dest: 'US', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'GB', dest: 'US', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'DE', dest: 'US', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'FR', dest: 'US', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'AU', dest: 'US', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+
+  // ─────────────── UK visa requirements ───────────────
+  { nat: 'IN', dest: 'GB', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'PK', dest: 'GB', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'NG', dest: 'GB', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'GH', dest: 'GB', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'CN', dest: 'GB', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'US', dest: 'GB', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'CA', dest: 'GB', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'AU', dest: 'GB', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'NZ', dest: 'GB', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'ZA', dest: 'GB', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'KE', dest: 'GB', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'BR', dest: 'GB', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+
+  // ─────────────── UAE visa requirements / visa-free ───────────────
+  { nat: 'IN', dest: 'AE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'PK', dest: 'AE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'NG', dest: 'AE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'GH', dest: 'AE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'EG', dest: 'AE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'KE', dest: 'AE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'US', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90, notes: 'Visa-free for 90 days' },
+  { nat: 'GB', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'DE', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'FR', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'SA', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'AE', dest: 'SA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'CN', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30, notes: 'Visa-free since 2024' },
+  { nat: 'RU', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'AU', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+
+  // ─────────────── Australia / NZ ───────────────
+  { nat: 'AU', dest: 'NZ', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 365 },
+  { nat: 'NZ', dest: 'AU', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 365 },
+  { nat: 'US', dest: 'AU', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 90, notes: 'ETA required' },
+  { nat: 'GB', dest: 'AU', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 90, notes: 'ETA required' },
+  { nat: 'CA', dest: 'AU', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 90, notes: 'ETA required' },
+  { nat: 'IN', dest: 'AU', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'CN', dest: 'AU', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'US', dest: 'NZ', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 90, notes: 'NZeTA required' },
+  { nat: 'GB', dest: 'NZ', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 90, notes: 'NZeTA required' },
+  { nat: 'IN', dest: 'NZ', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+
+  // ─────────────── Japan ───────────────
+  { nat: 'US', dest: 'JP', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'GB', dest: 'JP', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'DE', dest: 'JP', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'FR', dest: 'JP', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'CA', dest: 'JP', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'AU', dest: 'JP', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'KR', dest: 'JP', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'IN', dest: 'JP', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'CN', dest: 'JP', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'NG', dest: 'JP', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'GH', dest: 'JP', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'JP', dest: 'US', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'JP', dest: 'GB', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'JP', dest: 'DE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'JP', dest: 'AU', requiresVisa: false, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+
+  // ─────────────── India inbound ───────────────
+  { nat: 'US', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'GB', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'DE', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'FR', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'AU', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'CA', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'JP', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'RU', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'NP', dest: 'IN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180, notes: 'Special treaty - passport not required for Nepali citizens' },
+  { nat: 'BT', dest: 'IN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 180 },
+  { nat: 'ZA', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'NG', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'GH', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'KE', dest: 'IN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+
+  // ─────────────── Singapore ───────────────
+  { nat: 'IN', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30, notes: 'Visa-free for Indian passport holders' },
+  { nat: 'US', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'GB', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'DE', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'AU', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'CN', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'PH', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'MY', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'ID', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'TH', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'VN', dest: 'SG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'NG', dest: 'SG', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'GH', dest: 'SG', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'PK', dest: 'SG', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+
+  // ─────────────── Kenya inbound ───────────────
+  { nat: 'US', dest: 'KE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'GB', dest: 'KE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'DE', dest: 'KE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'FR', dest: 'KE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'AU', dest: 'KE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'IN', dest: 'KE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'CN', dest: 'KE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'ZA', dest: 'KE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'TZ', dest: 'KE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'UG', dest: 'KE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'RW', dest: 'KE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'NG', dest: 'KE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'GH', dest: 'KE', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+
+  // ─────────────── Egypt inbound ───────────────
+  { nat: 'US', dest: 'EG', requiresVisa: true, isVisaOnArrival: true, isEVisa: true, stayDays: 30, notes: 'Visa on arrival or e-Visa available' },
+  { nat: 'GB', dest: 'EG', requiresVisa: true, isVisaOnArrival: true, isEVisa: true, stayDays: 30 },
+  { nat: 'DE', dest: 'EG', requiresVisa: true, isVisaOnArrival: true, isEVisa: true, stayDays: 30 },
+  { nat: 'FR', dest: 'EG', requiresVisa: true, isVisaOnArrival: true, isEVisa: true, stayDays: 30 },
+  { nat: 'AU', dest: 'EG', requiresVisa: true, isVisaOnArrival: true, isEVisa: true, stayDays: 30 },
+  { nat: 'CA', dest: 'EG', requiresVisa: true, isVisaOnArrival: true, isEVisa: true, stayDays: 30 },
+  { nat: 'IN', dest: 'EG', requiresVisa: true, isVisaOnArrival: true, isEVisa: true, stayDays: 30 },
+  { nat: 'RU', dest: 'EG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'JO', dest: 'EG', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+
+  // ─────────────── Turkey inbound ───────────────
+  { nat: 'US', dest: 'TR', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'GB', dest: 'TR', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'DE', dest: 'TR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'FR', dest: 'TR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'NL', dest: 'TR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'RU', dest: 'TR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 60 },
+  { nat: 'IN', dest: 'TR', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 30 },
+  { nat: 'CN', dest: 'TR', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 30 },
+  { nat: 'AU', dest: 'TR', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'CA', dest: 'TR', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'ZA', dest: 'TR', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 30 },
+  { nat: 'NG', dest: 'TR', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 30 },
+  { nat: 'GH', dest: 'TR', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 30 },
+
+  // ─────────────── South Africa ───────────────
+  { nat: 'US', dest: 'ZA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'GB', dest: 'ZA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'DE', dest: 'ZA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'AU', dest: 'ZA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'IN', dest: 'ZA', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'CN', dest: 'ZA', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'NG', dest: 'ZA', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'GH', dest: 'ZA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'KE', dest: 'ZA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'ZW', dest: 'ZA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'ZM', dest: 'ZA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+
+  // ─────────────── Brazil ───────────────
+  { nat: 'US', dest: 'BR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90, notes: 'Visa-free since 2023' },
+  { nat: 'GB', dest: 'BR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'DE', dest: 'BR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'FR', dest: 'BR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'AU', dest: 'BR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'CA', dest: 'BR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'IN', dest: 'BR', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'CN', dest: 'BR', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'NG', dest: 'BR', requiresVisa: true, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+  { nat: 'AR', dest: 'BR', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 90 },
+
+  // ─────────────── GCC bloc (Saudi + Qatar + Kuwait etc.) ───────────────
+  { nat: 'SA', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'SA', dest: 'QA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'SA', dest: 'BH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'SA', dest: 'KW', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'AE', dest: 'SA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'AE', dest: 'QA', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'AE', dest: 'BH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'QA', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'BH', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'KW', dest: 'AE', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+
+  // ─────────────── Vietnam inbound ───────────────
+  { nat: 'US', dest: 'VN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'GB', dest: 'VN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 45, notes: 'Visa-free for 45 days' },
+  { nat: 'DE', dest: 'VN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 45 },
+  { nat: 'FR', dest: 'VN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 45 },
+  { nat: 'AU', dest: 'VN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'CA', dest: 'VN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'IN', dest: 'VN', requiresVisa: true, isVisaOnArrival: false, isEVisa: true, stayDays: 90 },
+  { nat: 'KR', dest: 'VN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 45 },
+  { nat: 'JP', dest: 'VN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 45 },
+  { nat: 'TH', dest: 'VN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'MY', dest: 'VN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'SG', dest: 'VN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'PH', dest: 'VN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'ID', dest: 'VN', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+
+  // ─────────────── Thailand inbound ───────────────
+  { nat: 'US', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 60 },
+  { nat: 'GB', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 60 },
+  { nat: 'DE', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 60 },
+  { nat: 'FR', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 60 },
+  { nat: 'AU', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 60 },
+  { nat: 'CA', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 60 },
+  { nat: 'IN', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'CN', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'JP', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'KR', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'SG', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+  { nat: 'NG', dest: 'TH', requiresVisa: true, isVisaOnArrival: true, isEVisa: false, stayDays: 30 },
+  { nat: 'GH', dest: 'TH', requiresVisa: false, isVisaOnArrival: false, isEVisa: false, stayDays: 30 },
+];

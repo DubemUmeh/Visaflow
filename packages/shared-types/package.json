@@ -1,0 +1,27 @@
+{
+  "name": "@visaflow/shared-types",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "@types/node": "^25.9.1",
+    "@visaflow/eslint-config": "workspace:*",
+    "@visaflow/typescript-config": "workspace:*",
+    "vitest": "^4.1.7"
+  }
+}
