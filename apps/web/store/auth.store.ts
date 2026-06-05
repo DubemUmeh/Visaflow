@@ -114,9 +114,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
       setUser: (user, token, refreshToken) => {
         setAccessToken(token);
-        if (refreshToken) {
-          setRefreshToken(refreshToken);
-        }
+        if (refreshToken) setRefreshToken(refreshToken);
         set((s) => {
           s.user = user;
           s.accessToken = token;
@@ -135,6 +133,8 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         refreshToken: s.refreshToken,
         isAuthenticated: s.isAuthenticated,
       }),
+      // Restore tokens on the axios instance so the first API call after a
+      // page reload already has the Authorization header attached.
       onRehydrateStorage: () => (state) => {
         if (state?.accessToken) setAccessToken(state.accessToken);
         if (state?.refreshToken) setRefreshToken(state.refreshToken);

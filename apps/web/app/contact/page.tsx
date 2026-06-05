@@ -24,9 +24,9 @@ export default function ContactPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <ContentCard>
           <div className="space-y-4">
-            <input className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-400" placeholder="Your name" />
-            <input className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-400" placeholder="Email address" type="email" />
-            <textarea className="min-h-40 w-full resize-none rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-400" placeholder="How can we help?" />
+            <input className="w-full rounded-xl border border-border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-400" placeholder="Your name" />
+            <input className="w-full rounded-xl border border-border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-400" placeholder="Email address" type="email" />
+            <textarea className="min-h-40 w-full resize-none rounded-xl border border-border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-400" placeholder="How can we help?" />
             <Button variant="brand" onClick={submit} isLoading={loading} className="gap-2">
               <Send className="h-4 w-4" /> Send message
             </Button>

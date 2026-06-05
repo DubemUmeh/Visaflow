@@ -40,14 +40,14 @@ export default function ForgotPasswordPage() {
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-md"
     >
-      <div className="bg-white rounded-2xl shadow-elevated border border-gray-100 p-8">
+      <div className="bg-card rounded-2xl shadow-elevated border border-border/70 p-8">
         {sent ? (
           <div className="text-center">
-            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
+            <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-8 h-8 text-success" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h1>
-            <p className="text-gray-500 text-sm mb-6">
+            <h1 className="text-2xl font-bold text-foreground mb-2">Check your email</h1>
+            <p className="text-muted-foreground text-sm mb-6">
               We've sent password reset instructions to your email address.
             </p>
             <Link href="/login">
@@ -57,8 +57,8 @@ export default function ForgotPasswordPage() {
         ) : (
           <>
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-gray-900">Reset your password</h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <h1 className="text-2xl font-bold text-foreground">Reset your password</h1>
+              <p className="text-sm text-muted-foreground mt-1">
                 Enter your email and we'll send you reset instructions.
               </p>
             </div>
@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
               </Button>
             </form>
 
-            <Link href="/login" className="flex items-center justify-center gap-1 text-sm text-gray-500 hover:text-gray-700 mt-6 transition-colors">
+            <Link href="/login" className="flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground/80 mt-6 transition-colors">
               <ArrowLeft className="h-4 w-4" />
               Back to Sign In
             </Link>

@@ -72,10 +72,10 @@ export default function AdminDashboardPage() {
   }, []);
 
   const statCards = [
-    { label: 'Total Applications', value: stats.totalApplications, icon: FileText,     color: 'text-blue-600',   bg: 'bg-blue-50',   change: '+12%' },
-    { label: 'Pending Review',     value: stats.pendingReview,     icon: Clock,         color: 'text-yellow-600', bg: 'bg-yellow-50', change: '+3%'  },
-    { label: 'Approved',           value: stats.approvedToday,     icon: CheckCircle2,  color: 'text-green-600',  bg: 'bg-green-50',  change: '+8%'  },
-    { label: 'Rejected',           value: stats.rejectedTotal,     icon: XCircle,       color: 'text-red-500',    bg: 'bg-red-50',    change: '-2%'  },
+    { label: 'Total Applications', value: stats.totalApplications, icon: FileText,     color: 'text-brand',   bg: 'bg-brand-soft',   change: '+12%' },
+    { label: 'Pending Review',     value: stats.pendingReview,     icon: Clock,         color: 'text-warning-foreground', bg: 'bg-warning/10', change: '+3%'  },
+    { label: 'Approved',           value: stats.approvedToday,     icon: CheckCircle2,  color: 'text-success',  bg: 'bg-success/10',  change: '+8%'  },
+    { label: 'Rejected',           value: stats.rejectedTotal,     icon: XCircle,       color: 'text-destructive',    bg: 'bg-destructive/10',    change: '-2%'  },
   ];
 
   const actionRequired = applications.filter(a => ['SUBMITTED', 'UNDER_REVIEW', 'MISSING_DOCUMENTS'].includes(a.status));
@@ -84,8 +84,8 @@ export default function AdminDashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500 mt-1">Overview of all applications and system activity.</p>
+        <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-1">Overview of all applications and system activity.</p>
       </div>
 
       {/* Stats */}
@@ -95,13 +95,13 @@ export default function AdminDashboardPage() {
             <Card>
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{card.label}</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{card.label}</p>
                   <div className={`w-8 h-8 rounded-lg ${card.bg} flex items-center justify-center`}>
                     <card.icon className={`w-4 h-4 ${card.color}`} />
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">{card.value}</p>
-                <p className={`text-xs mt-1 font-medium ${card.change.startsWith('+') ? 'text-green-600' : 'text-red-500'}`}>
+                <p className="text-3xl font-bold text-foreground">{card.value}</p>
+                <p className={`text-xs mt-1 font-medium ${card.change.startsWith('+') ? 'text-success' : 'text-destructive'}`}>
                   {card.change} vs last month
                 </p>
               </CardContent>
@@ -117,7 +117,7 @@ export default function AdminDashboardPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Recent Applications</CardTitle>
-                <Link href="/admin/applications" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                <Link href="/admin/applications" className="text-sm text-brand hover:text-brand font-medium flex items-center gap-1">
                   View all <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
@@ -125,10 +125,10 @@ export default function AdminDashboardPage() {
             <CardContent className="pt-0">
               {loading ? (
                 <div className="flex justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground/70" />
                 </div>
               ) : applications.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
+                <div className="text-center py-8 text-muted-foreground/70">
                   <Globe className="w-10 h-10 mx-auto mb-2 opacity-40" />
                   <p className="text-sm">No applications yet</p>
                 </div>
@@ -138,21 +138,21 @@ export default function AdminDashboardPage() {
                     const cfg = statusConfig[app.status] ?? defaultStatusConfig;
                     return (
                       <Link key={app.id} href={`/admin/applications/${app.id}`}>
-                        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
-                          <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-lg flex-shrink-0">
+                        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-sand/45 transition-colors cursor-pointer">
+                          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-lg flex-shrink-0">
                             {app.destinationCountry.flagEmoji ?? '🌍'}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                            <p className="text-sm font-medium text-foreground truncate">
                               {app.applicantFirstName} {app.applicantLastName}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground">
                               {app.destinationCountry.name} · {app.referenceNumber}
                             </p>
                           </div>
                           <div className="flex flex-col items-end gap-1">
                             <Badge variant={cfg.variant as never} className="text-xs">{cfg.label}</Badge>
-                            <span className="text-xs text-gray-400">{dayjs(app.createdAt).fromNow()}</span>
+                            <span className="text-xs text-muted-foreground/70">{dayjs(app.createdAt).fromNow()}</span>
                           </div>
                         </div>
                       </Link>
@@ -167,16 +167,16 @@ export default function AdminDashboardPage() {
         {/* Actions Panel */}
         <div className="space-y-4">
           {/* Action required */}
-          <Card className={actionRequired.length > 0 ? 'border-orange-200' : ''}>
+          <Card className={actionRequired.length > 0 ? 'border-coral/30' : ''}>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                {actionRequired.length > 0 && <AlertCircle className="w-4 h-4 text-orange-500" />}
+                {actionRequired.length > 0 && <AlertCircle className="w-4 h-4 text-coral" />}
                 Action Required
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               {actionRequired.length === 0 ? (
-                <div className="flex items-center gap-2 text-green-600 py-2">
+                <div className="flex items-center gap-2 text-success py-2">
                   <CheckCircle2 className="w-5 h-5" />
                   <span className="text-sm font-medium">All caught up!</span>
                 </div>
@@ -184,19 +184,19 @@ export default function AdminDashboardPage() {
                 <div className="space-y-2">
                   {actionRequired.slice(0, 4).map(app => (
                     <Link key={app.id} href={`/admin/applications/${app.id}`}>
-                      <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-orange-50 transition-colors cursor-pointer">
-                        <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-sm flex-shrink-0">
+                      <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-coral/15 transition-colors cursor-pointer">
+                        <div className="w-6 h-6 rounded-full bg-coral/20 flex items-center justify-center text-sm flex-shrink-0">
                           {app.destinationCountry.flagEmoji}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">{app.referenceNumber}</p>
-                          <p className="text-xs text-gray-500 truncate">{app.status.replace(/_/g, ' ')}</p>
+                          <p className="text-xs font-medium text-foreground truncate">{app.referenceNumber}</p>
+                          <p className="text-xs text-muted-foreground truncate">{app.status.replace(/_/g, ' ')}</p>
                         </div>
                       </div>
                     </Link>
                   ))}
                   {actionRequired.length > 4 && (
-                    <p className="text-xs text-gray-400 text-center">+{actionRequired.length - 4} more</p>
+                    <p className="text-xs text-muted-foreground/70 text-center">+{actionRequired.length - 4} more</p>
                   )}
                 </div>
               )}
@@ -219,8 +219,8 @@ export default function AdminDashboardPage() {
                     <div className={`w-8 h-8 rounded-xl bg-${item.color}-100 flex items-center justify-center`}>
                       <item.icon className={`w-4 h-4 text-${item.color}-600`} />
                     </div>
-                    <span className="text-sm font-medium text-gray-900">{item.label}</span>
-                    <ArrowRight className="w-3 h-3 text-gray-400 ml-auto" />
+                    <span className="text-sm font-medium text-foreground">{item.label}</span>
+                    <ArrowRight className="w-3 h-3 text-muted-foreground/70 ml-auto" />
                   </div>
                 </Link>
               ))}

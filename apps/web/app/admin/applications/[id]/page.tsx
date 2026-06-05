@@ -126,7 +126,7 @@ export default function AdminApplicationDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+        <Loader2 className="w-10 h-10 animate-spin text-coral" />
       </div>
     );
   }
@@ -134,8 +134,8 @@ export default function AdminApplicationDetailPage() {
   if (!app) {
     return (
       <div className="text-center py-20">
-        <Globe className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500">Application not found.</p>
+        <Globe className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
+        <p className="text-muted-foreground">Application not found.</p>
         <Link href="/admin/applications">
           <Button variant="outline" className="mt-4">Back to Applications</Button>
         </Link>
@@ -150,7 +150,7 @@ export default function AdminApplicationDetailPage() {
   return (
     <div className="max-w-4xl space-y-6">
       {/* Back */}
-      <Link href="/admin/applications" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+      <Link href="/admin/applications" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground/80 transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Applications
       </Link>
@@ -159,12 +159,12 @@ export default function AdminApplicationDetailPage() {
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-2xl">
+            <div className="w-12 h-12 rounded-full bg-brand-soft flex items-center justify-center text-2xl">
               {app.destinationCountry.flagEmoji}
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{app.visaType.name}</h1>
-              <p className="text-gray-500 text-sm">
+              <h1 className="text-xl font-bold text-foreground">{app.visaType.name}</h1>
+              <p className="text-muted-foreground text-sm">
                 {app.destinationCountry.name} · <span className="font-mono">{app.referenceNumber}</span>
               </p>
             </div>
@@ -181,10 +181,10 @@ export default function AdminApplicationDetailPage() {
       {/* Status Actions */}
       {transitions.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <Card className="border-blue-100 bg-blue-50/30">
+          <Card className="border-brand-soft bg-brand-soft/30">
             <CardContent className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <p className="text-sm font-medium text-gray-700 flex-1">Update Status:</p>
+                <p className="text-sm font-medium text-foreground/80 flex-1">Update Status:</p>
                 <div className="flex flex-wrap gap-2">
                   {transitions.map(t => (
                     <Button
@@ -212,7 +212,7 @@ export default function AdminApplicationDetailPage() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <User className="w-4 h-4 text-gray-400" />
+                  <User className="w-4 h-4 text-muted-foreground/70" />
                   Applicant Information
                 </CardTitle>
               </CardHeader>
@@ -232,7 +232,7 @@ export default function AdminApplicationDetailPage() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-gray-400" />
+                  <Globe className="w-4 h-4 text-muted-foreground/70" />
                   Travel Details
                 </CardTitle>
               </CardHeader>
@@ -253,18 +253,18 @@ export default function AdminApplicationDetailPage() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-gray-400" />
+                    <FileText className="w-4 h-4 text-muted-foreground/70" />
                     Documents ({app.documents.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-2">
                     {app.documents.map(doc => (
-                      <div key={doc.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
-                        <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <div key={doc.id} className="flex items-center gap-3 p-3 rounded-xl bg-sand/45">
+                        <FileText className="w-4 h-4 text-muted-foreground/70 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{doc.fileName}</p>
-                          <p className="text-xs text-gray-500 capitalize">{doc.type.replace(/_/g, ' ').toLowerCase()}</p>
+                          <p className="text-sm font-medium text-foreground truncate">{doc.fileName}</p>
+                          <p className="text-xs text-muted-foreground capitalize">{doc.type.replace(/_/g, ' ').toLowerCase()}</p>
                         </div>
                         <Badge variant={doc.status === 'VERIFIED' ? 'success' : doc.status === 'REJECTED' ? 'destructive' : 'warning'} className="text-xs">
                           {doc.status}
@@ -282,7 +282,7 @@ export default function AdminApplicationDetailPage() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-gray-400" />
+                  <MessageSquare className="w-4 h-4 text-muted-foreground/70" />
                   Admin Notes
                 </CardTitle>
               </CardHeader>
@@ -292,7 +292,7 @@ export default function AdminApplicationDetailPage() {
                   onChange={e => setAdminNote(e.target.value)}
                   rows={4}
                   placeholder="Add internal notes visible only to admins..."
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                 />
                 <div className="flex justify-end">
                   <Button variant="brand" size="sm" isLoading={savingNote} onClick={handleSaveNote} className="gap-2">
@@ -312,7 +312,7 @@ export default function AdminApplicationDetailPage() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <Calendar className="w-4 h-4 text-muted-foreground/70" />
                   Timeline
                 </CardTitle>
               </CardHeader>
@@ -336,20 +336,20 @@ export default function AdminApplicationDetailPage() {
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-500">Progress</span>
-                  <span className="text-sm font-bold text-gray-900">{app.completionPercentage}%</span>
+                  <span className="text-xs text-muted-foreground">Progress</span>
+                  <span className="text-sm font-bold text-foreground">{app.completionPercentage}%</span>
                 </div>
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-muted rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-500 rounded-full transition-all"
+                    className="h-full bg-coral rounded-full transition-all"
                     style={{ width: `${app.completionPercentage}%` }}
                   />
                 </div>
                 {app.visaType.fee && (
                   <div className="mt-4 pt-3 border-t">
                     <div className="flex justify-between">
-                      <span className="text-xs text-gray-500">Application Fee</span>
-                      <span className="text-sm font-bold text-gray-900">${app.visaType.fee}</span>
+                      <span className="text-xs text-muted-foreground">Application Fee</span>
+                      <span className="text-sm font-bold text-foreground">${app.visaType.fee}</span>
                     </div>
                   </div>
                 )}
@@ -365,8 +365,8 @@ export default function AdminApplicationDetailPage() {
 function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">{label}</p>
-      <p className={`text-sm text-gray-900 ${mono ? 'font-mono' : ''}`}>{value}</p>
+      <p className="text-xs text-muted-foreground/70 font-medium uppercase tracking-wide mb-0.5">{label}</p>
+      <p className={`text-sm text-foreground ${mono ? 'font-mono' : ''}`}>{value}</p>
     </div>
   );
 }
@@ -374,10 +374,10 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
 function TimelineRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0" />
+      <div className="w-1.5 h-1.5 rounded-full bg-coral/80 mt-1.5 flex-shrink-0" />
       <div>
-        <p className="text-xs text-gray-400">{label}</p>
-        <p className="text-xs font-medium text-gray-700">{value}</p>
+        <p className="text-xs text-muted-foreground/70">{label}</p>
+        <p className="text-xs font-medium text-foreground/80">{value}</p>
       </div>
     </div>
   );

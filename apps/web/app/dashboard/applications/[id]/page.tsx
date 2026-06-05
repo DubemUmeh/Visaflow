@@ -26,7 +26,7 @@ const defaultStatusConfig: StatusConfig = {
 
 const defaultDocStatusConfig: DocStatusConfig = {
   label: 'Pending',
-  color: 'text-gray-500',
+  color: 'text-muted-foreground',
 };
 
 const statusConfig: Record<string, StatusConfig> = {
@@ -42,11 +42,11 @@ const statusConfig: Record<string, StatusConfig> = {
 
 const docStatusConfig: Record<string, DocStatusConfig> = {
   PENDING:    defaultDocStatusConfig,
-  UPLOADING:  { label: 'Uploading',  color: 'text-blue-500'  },
-  PROCESSING: { label: 'Processing', color: 'text-yellow-600'},
-  VERIFIED:   { label: 'Verified',   color: 'text-green-600' },
-  REJECTED:   { label: 'Rejected',   color: 'text-red-600'   },
-  EXPIRED:    { label: 'Expired',    color: 'text-orange-500'},
+  UPLOADING:  { label: 'Uploading',  color: 'text-coral'  },
+  PROCESSING: { label: 'Processing', color: 'text-warning-foreground'},
+  VERIFIED:   { label: 'Verified',   color: 'text-success' },
+  REJECTED:   { label: 'Rejected',   color: 'text-destructive'   },
+  EXPIRED:    { label: 'Expired',    color: 'text-coral'},
 };
 
 export default function ApplicationDetailPage() {
@@ -64,7 +64,7 @@ export default function ApplicationDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-32">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-coral" />
       </div>
     );
   }
@@ -80,7 +80,7 @@ export default function ApplicationDetailPage() {
   return (
     <div className="max-w-4xl space-y-6">
       {/* Back */}
-      <Link href="/dashboard/applications" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+      <Link href="/dashboard/applications" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground/80">
         <ArrowLeft className="w-4 h-4" />
         Back to Applications
       </Link>
@@ -90,21 +90,21 @@ export default function ApplicationDetailPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-3xl">
+              <div className="w-14 h-14 rounded-full bg-brand-soft flex items-center justify-center text-3xl">
                 {application.destinationCountry.flagEmoji ?? '🌍'}
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <h1 className="text-xl font-bold text-gray-900">{application.visaType.name}</h1>
+                  <h1 className="text-xl font-bold text-foreground">{application.visaType.name}</h1>
                   <Badge variant={cfg.variant as never} className="gap-1">
                     <StatusIcon className="w-3 h-3" />
                     {cfg.label}
                   </Badge>
                 </div>
-                <p className="text-gray-500 text-sm">
-                  {application.destinationCountry.name} · Ref: <span className="font-mono font-medium text-gray-700">{application.referenceNumber}</span>
+                <p className="text-muted-foreground text-sm">
+                  {application.destinationCountry.name} · Ref: <span className="font-mono font-medium text-foreground/80">{application.referenceNumber}</span>
                 </p>
-                <p className="text-xs text-gray-400 mt-1">{cfg.description}</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">{cfg.description}</p>
               </div>
               <div className="flex gap-2">
                 {application.status === 'DRAFT' && (
@@ -123,16 +123,16 @@ export default function ApplicationDetailPage() {
 
             {/* Progress */}
             <div className="mt-5">
-              <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+              <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
                 <span>Application Progress</span>
-                <span className="font-semibold text-gray-700">{application.completionPercentage}%</span>
+                <span className="font-semibold text-foreground/80">{application.completionPercentage}%</span>
               </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${application.completionPercentage}%` }}
                   transition={{ duration: 0.8, ease: 'easeOut' }}
-                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
+                  className="h-full bg-gradient-to-r from-brand to-coral rounded-full"
                 />
               </div>
             </div>
@@ -160,8 +160,8 @@ export default function ApplicationDetailPage() {
                   { label: 'Travel To', value: application.travelDateTo ? dayjs(application.travelDateTo).format('DD MMM YYYY') : '—' },
                 ].map(item => (
                   <div key={item.label}>
-                    <p className="text-xs text-gray-500 mb-0.5">{item.label}</p>
-                    <p className="text-sm font-medium text-gray-900">{item.value}</p>
+                    <p className="text-xs text-muted-foreground mb-0.5">{item.label}</p>
+                    <p className="text-sm font-medium text-foreground">{item.value}</p>
                   </div>
                 ))}
               </div>
@@ -178,13 +178,13 @@ export default function ApplicationDetailPage() {
                 {application.documents.map(doc => {
                   const ds = docStatusConfig[doc.status] ?? defaultDocStatusConfig;
                   return (
-                    <div key={doc.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                      <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-                        <FileText className="w-4 h-4 text-gray-400" />
+                    <div key={doc.id} className="flex items-center gap-3 p-3 bg-sand/45 rounded-xl">
+                      <div className="w-9 h-9 bg-card rounded-lg flex items-center justify-center border border-border">
+                        <FileText className="w-4 h-4 text-muted-foreground/70" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{doc.originalFileName}</p>
-                        <p className="text-xs text-gray-400">{doc.documentType.replace(/_/g, ' ')}</p>
+                        <p className="text-sm font-medium text-foreground truncate">{doc.originalFileName}</p>
+                        <p className="text-xs text-muted-foreground/70">{doc.documentType.replace(/_/g, ' ')}</p>
                       </div>
                       <span className={`text-xs font-medium ${ds.color}`}>{ds.label}</span>
                       {doc.cdnUrl && (
@@ -203,13 +203,13 @@ export default function ApplicationDetailPage() {
 
           {/* Rejection reason */}
           {application.rejectionReason && (
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-destructive/30 bg-destructive/10">
               <CardContent className="p-5">
                 <div className="flex gap-3">
-                  <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                  <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-red-700 text-sm mb-1">Application Rejected</p>
-                    <p className="text-sm text-red-600">{application.rejectionReason}</p>
+                    <p className="font-semibold text-destructive text-sm mb-1">Application Rejected</p>
+                    <p className="text-sm text-destructive">{application.rejectionReason}</p>
                   </div>
                 </div>
               </CardContent>
@@ -218,13 +218,13 @@ export default function ApplicationDetailPage() {
 
           {/* Missing docs note */}
           {application.missingDocumentsNote && (
-            <Card className="border-orange-200 bg-orange-50">
+            <Card className="border-coral/30 bg-coral/15">
               <CardContent className="p-5">
                 <div className="flex gap-3">
-                  <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-coral flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-orange-700 text-sm mb-1">Action Required</p>
-                    <p className="text-sm text-orange-600">{application.missingDocumentsNote}</p>
+                    <p className="font-semibold text-warning-foreground text-sm mb-1">Action Required</p>
+                    <p className="text-sm text-coral">{application.missingDocumentsNote}</p>
                   </div>
                 </div>
               </CardContent>
@@ -247,14 +247,14 @@ export default function ApplicationDetailPage() {
                 { label: 'Created', value: dayjs(application.createdAt).format('DD MMM YYYY') },
               ].map(item => (
                 <div key={item.label} className="flex justify-between">
-                  <span className="text-gray-500">{item.label}</span>
-                  <span className="font-medium text-gray-900">{item.value}</span>
+                  <span className="text-muted-foreground">{item.label}</span>
+                  <span className="font-medium text-foreground">{item.value}</span>
                 </div>
               ))}
               {totalPaid > 0 && (
                 <div className="flex justify-between border-t pt-3 mt-3">
-                  <span className="text-gray-500">Total Paid</span>
-                  <span className="font-bold text-gray-900">${(totalPaid / 100).toFixed(2)}</span>
+                  <span className="text-muted-foreground">Total Paid</span>
+                  <span className="font-bold text-foreground">${(totalPaid / 100).toFixed(2)}</span>
                 </div>
               )}
             </CardContent>
@@ -271,13 +271,13 @@ export default function ApplicationDetailPage() {
                   {application.statusHistory.map((entry, i) => (
                     <div key={entry.id} className="flex gap-3">
                       <div className="flex flex-col items-center">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
+                        <div className="w-2 h-2 rounded-full bg-coral mt-1.5" />
                         {i < application.statusHistory.length - 1 && <div className="w-px flex-1 bg-gray-200 mt-1" />}
                       </div>
                       <div className="pb-3">
-                        <p className="text-xs font-medium text-gray-900">{entry.toStatus.replace(/_/g, ' ')}</p>
-                        {entry.note && <p className="text-xs text-gray-500 mt-0.5">{entry.note}</p>}
-                        <p className="text-xs text-gray-400 mt-0.5">{dayjs(entry.createdAt).format('DD MMM YYYY HH:mm')}</p>
+                        <p className="text-xs font-medium text-foreground">{entry.toStatus.replace(/_/g, ' ')}</p>
+                        {entry.note && <p className="text-xs text-muted-foreground mt-0.5">{entry.note}</p>}
+                        <p className="text-xs text-muted-foreground/70 mt-0.5">{dayjs(entry.createdAt).format('DD MMM YYYY HH:mm')}</p>
                       </div>
                     </div>
                   ))}

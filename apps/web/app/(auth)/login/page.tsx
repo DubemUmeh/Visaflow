@@ -45,10 +45,10 @@ export default function LoginPage() {
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-md"
     >
-      <div className="bg-white rounded-2xl shadow-elevated border border-gray-100 p-8">
+      <div className="bg-card rounded-2xl shadow-elevated border border-border/70 p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-sm text-gray-500 mt-1">Sign in to your VisaFlow account</p>
+          <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
+          <p className="text-sm text-muted-foreground mt-1">Sign in to your VisaFlow account</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -68,7 +68,7 @@ export default function LoginPage() {
               placeholder="Your password"
               leftIcon={<Lock />}
               rightIcon={
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-muted-foreground/70 hover:text-muted-foreground">
                   {showPassword ? <EyeOff /> : <Eye />}
                 </button>
               }
@@ -80,9 +80,9 @@ export default function LoginPage() {
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" className="rounded" {...register('rememberMe')} />
-              <span className="text-sm text-gray-600">Remember me</span>
+              <span className="text-sm text-muted-foreground">Remember me</span>
             </label>
-            <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+            <Link href="/forgot-password" className="text-sm text-brand hover:text-brand font-medium">
               Forgot password?
             </Link>
           </div>
@@ -94,9 +94,9 @@ export default function LoginPage() {
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
+            <div className="w-full border-t border-border" />
           </div>
-          <div className="relative flex justify-center text-xs text-gray-400 bg-white px-2">
+          <div className="relative flex justify-center text-xs text-muted-foreground/70 bg-card px-2">
             or continue with
           </div>
         </div>
@@ -119,9 +119,9 @@ export default function LoginPage() {
           </Button>
         </div>
 
-        <p className="text-center text-sm text-gray-600 mt-6">
+        <p className="text-center text-sm text-muted-foreground mt-6">
           Don&apos;t have an account?{' '}
-          <Link href="/register" className="text-blue-600 font-medium hover:text-blue-700">
+          <Link href="/register" className="text-brand font-medium hover:text-brand">
             Sign up free
           </Link>
         </p>

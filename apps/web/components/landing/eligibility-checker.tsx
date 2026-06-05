@@ -41,7 +41,7 @@ export function EligibilityChecker() {
   };
 
   return (
-    <section id="eligibility" className="py-20 bg-white">
+    <section id="eligibility" className="py-20 bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -49,10 +49,10 @@ export function EligibilityChecker() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-foreground mb-4">
             Check Your Visa Eligibility
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Instantly find out what visa you need and start your application in under 5 minutes.
           </p>
         </motion.div>
@@ -64,10 +64,10 @@ export function EligibilityChecker() {
           transition={{ delay: 0.1 }}
           className="max-w-3xl mx-auto"
         >
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-elevated p-8">
+          <div className="bg-card rounded-2xl border border-border shadow-elevated p-8">
             <div className="grid sm:grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-foreground/80 mb-1.5">
                   I am from
                 </label>
                 <Select value={nationality} onValueChange={setNationality}>
@@ -85,7 +85,7 @@ export function EligibilityChecker() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-foreground/80 mb-1.5">
                   I want to visit
                 </label>
                 <Select value={destination} onValueChange={setDestination}>
@@ -118,11 +118,11 @@ export function EligibilityChecker() {
             {/* Quick info */}
             <div className="mt-6 grid sm:grid-cols-3 gap-3">
               {[
-                { icon: CheckCircle2, color: 'text-green-500', label: 'Instant results' },
-                { icon: Info, color: 'text-blue-500', label: 'All visa types' },
-                { icon: CheckCircle2, color: 'text-green-500', label: 'No signup needed to check' },
+                { icon: CheckCircle2, color: 'text-success', label: 'Instant results' },
+                { icon: Info, color: 'text-coral', label: 'All visa types' },
+                { icon: CheckCircle2, color: 'text-success', label: 'No signup needed to check' },
               ].map(({ icon: Icon, color, label }) => (
-                <div key={label} className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+                <div key={label} className="flex items-center gap-2 text-sm text-muted-foreground bg-sand/45 rounded-lg px-3 py-2">
                   <Icon className={`h-4 w-4 ${color} shrink-0`} />
                   {label}
                 </div>

@@ -76,19 +76,19 @@ export default function StepPersonalInfo() {
       <Card>
         <CardContent className="p-6 space-y-5">
           <div>
-            <h2 className="font-semibold text-gray-900 text-lg mb-1">Personal Information</h2>
-            <p className="text-sm text-gray-500">Enter the applicant's personal details as they appear on their passport.</p>
+            <h2 className="font-semibold text-foreground text-lg mb-1">Personal Information</h2>
+            <p className="text-sm text-muted-foreground">Enter the applicant's personal details as they appear on their passport.</p>
           </div>
 
-          <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+          <div className="rounded-xl border border-brand-soft bg-brand-soft p-4">
             <div className="flex items-start gap-3">
-              <Sparkles className="mt-1 h-4 w-4 flex-shrink-0 text-blue-600" />
+              <Sparkles className="mt-1 h-4 w-4 flex-shrink-0 text-brand" />
               <div className="flex-1 space-y-3">
                 <textarea
                   value={aiNotes}
                   onChange={e => setAiNotes(e.target.value)}
                   placeholder="Paste passport notes or applicant details to fill fields faster..."
-                  className="min-h-20 w-full resize-none rounded-lg border border-blue-100 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                  className="min-h-20 w-full resize-none rounded-lg border border-brand-soft bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
                 />
                 <Button
                   type="button"
@@ -96,7 +96,7 @@ export default function StepPersonalInfo() {
                   size="sm"
                   onClick={handleAiAutofill}
                   disabled={!aiNotes.trim() || aiLoading}
-                  className="gap-2 bg-white"
+                  className="gap-2 bg-card"
                 >
                   {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                   Autofill with AI
@@ -149,8 +149,8 @@ export default function StepPersonalInfo() {
             <div />
           </div>
 
-          <div className="border-t border-gray-100 pt-5">
-            <h3 className="font-medium text-gray-900 mb-4">Passport Details</h3>
+          <div className="border-t border-border/70 pt-5">
+            <h3 className="font-medium text-foreground mb-4">Passport Details</h3>
             <div className="grid sm:grid-cols-2 gap-4">
               <Input
                 label="Passport Number"

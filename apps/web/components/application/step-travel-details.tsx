@@ -56,8 +56,8 @@ export default function StepTravelDetails() {
       <Card>
         <CardContent className="p-6 space-y-5">
           <div>
-            <h2 className="font-semibold text-gray-900 text-lg mb-1">Travel Details</h2>
-            <p className="text-sm text-gray-500">Provide information about your intended travel.</p>
+            <h2 className="font-semibold text-foreground text-lg mb-1">Travel Details</h2>
+            <p className="text-sm text-muted-foreground">Provide information about your intended travel.</p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -85,15 +85,15 @@ export default function StepTravelDetails() {
                   onClick={() => setValue('purposeOfTravel', p)}
                   className={`px-3 py-2 rounded-xl border-2 text-xs font-medium transition-all ${
                     selectedPurpose === p
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                      ? 'border-coral bg-brand-soft text-brand'
+                      : 'border-border text-muted-foreground hover:border-border'
                   }`}
                 >
                   {p}
                 </button>
               ))}
             </div>
-            {errors.purposeOfTravel && <p className="text-xs text-red-500 mt-1">{errors.purposeOfTravel.message}</p>}
+            {errors.purposeOfTravel && <p className="text-xs text-destructive mt-1">{errors.purposeOfTravel.message}</p>}
           </div>
 
           <Input

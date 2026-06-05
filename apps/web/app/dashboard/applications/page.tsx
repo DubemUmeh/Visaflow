@@ -83,8 +83,8 @@ export default function ApplicationsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Applications</h1>
-          <p className="text-gray-500 mt-1">{applications.length} total application{applications.length !== 1 ? 's' : ''}</p>
+          <h1 className="text-2xl font-bold text-foreground">My Applications</h1>
+          <p className="text-muted-foreground mt-1">{applications.length} total application{applications.length !== 1 ? 's' : ''}</p>
         </div>
         <Link href="/dashboard/applications/new">
           <Button variant="brand" className="gap-2">
@@ -97,12 +97,12 @@ export default function ApplicationsPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by country, reference..."
-            className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            className="w-full pl-9 pr-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-card"
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1">
@@ -112,8 +112,8 @@ export default function ApplicationsPage() {
               onClick={() => setStatusFilter(f.value)}
               className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                 statusFilter === f.value
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-300'
+                  ? 'bg-brand text-white'
+                  : 'bg-card border border-border text-muted-foreground hover:border-coral/50'
               }`}
             >
               {f.label}
@@ -125,15 +125,15 @@ export default function ApplicationsPage() {
       {/* Content */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-coral" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">
           <Globe className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <h3 className="text-lg font-semibold text-foreground/80 mb-2">
             {search || statusFilter !== 'ALL' ? 'No applications found' : 'No applications yet'}
           </h3>
-          <p className="text-gray-400 mb-6">
+          <p className="text-muted-foreground/70 mb-6">
             {search || statusFilter !== 'ALL' ? 'Try adjusting your filters.' : 'Create your first visa application to get started.'}
           </p>
           {(!search && statusFilter === 'ALL') && (
@@ -155,18 +155,18 @@ export default function ApplicationsPage() {
                 transition={{ delay: i * 0.03 }}
               >
                 <Link href={`/dashboard/applications/${app.id}`}>
-                  <Card className="hover:shadow-md transition-shadow cursor-pointer group">
+                  <Card className="hover:shadow-card transition-shadow cursor-pointer group">
                     <CardContent className="p-5">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-2xl flex-shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-brand-soft flex items-center justify-center text-2xl flex-shrink-0">
                           {app.destinationCountry.flagEmoji ?? '🌍'}
                         </div>
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <h3 className="font-semibold text-gray-900 text-sm">{app.visaType.name}</h3>
-                              <p className="text-gray-500 text-xs mt-0.5">
+                              <h3 className="font-semibold text-foreground text-sm">{app.visaType.name}</h3>
+                              <p className="text-muted-foreground text-xs mt-0.5">
                                 {app.destinationCountry.name} · Ref: {app.referenceNumber}
                               </p>
                             </div>
@@ -180,19 +180,19 @@ export default function ApplicationsPage() {
                             {/* Progress bar */}
                             <div className="flex-1 max-w-xs">
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs text-gray-400">Completion</span>
-                                <span className="text-xs font-medium text-gray-700">{app.completionPercentage}%</span>
+                                <span className="text-xs text-muted-foreground/70">Completion</span>
+                                <span className="text-xs font-medium text-foreground/80">{app.completionPercentage}%</span>
                               </div>
-                              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-blue-500 rounded-full transition-all"
+                                  className="h-full bg-coral rounded-full transition-all"
                                   style={{ width: `${app.completionPercentage}%` }}
                                 />
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3 text-xs text-gray-400 flex-shrink-0">
-                              <span className="px-2 py-0.5 bg-gray-100 rounded-md font-medium">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground/70 flex-shrink-0">
+                              <span className="px-2 py-0.5 bg-muted rounded-md font-medium">
                                 {tierConfig[app.processingTier] ?? app.processingTier}
                               </span>
                               <span>{dayjs(app.createdAt).fromNow()}</span>
@@ -200,7 +200,7 @@ export default function ApplicationsPage() {
                           </div>
                         </div>
 
-                        <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0" />
+                        <ArrowRight className="w-5 h-5 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
                       </div>
                     </CardContent>
                   </Card>

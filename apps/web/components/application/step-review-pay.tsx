@@ -77,11 +77,11 @@ export default function StepReviewPay() {
         animate={{ opacity: 1, scale: 1 }}
         className="text-center py-16"
       >
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle2 className="w-10 h-10 text-green-600" />
+        <div className="w-20 h-20 bg-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 className="w-10 h-10 text-success" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Submitted!</h2>
-        <p className="text-gray-500">Redirecting you to your application details…</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Application Submitted!</h2>
+        <p className="text-muted-foreground">Redirecting you to your application details…</p>
       </motion.div>
     );
   }
@@ -123,21 +123,21 @@ export default function StepReviewPay() {
     <div className="space-y-6">
       <Card>
         <CardContent className="p-6">
-          <h2 className="font-semibold text-gray-900 text-lg mb-1">Review Your Application</h2>
-          <p className="text-sm text-gray-500 mb-6">Please verify all details before submitting. You can go back to edit.</p>
+          <h2 className="font-semibold text-foreground text-lg mb-1">Review Your Application</h2>
+          <p className="text-sm text-muted-foreground mb-6">Please verify all details before submitting. You can go back to edit.</p>
 
           <div className="space-y-6">
             {sections.map(section => (
               <div key={section.title}>
                 <div className="flex items-center gap-2 mb-3">
-                  <section.icon className="w-4 h-4 text-blue-600" />
-                  <h3 className="font-semibold text-gray-900 text-sm">{section.title}</h3>
+                  <section.icon className="w-4 h-4 text-brand" />
+                  <h3 className="font-semibold text-foreground text-sm">{section.title}</h3>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 pl-6">
                   {section.items.map(item => (
                     <div key={item.label} className="flex justify-between text-sm">
-                      <span className="text-gray-500">{item.label}</span>
-                      <span className="font-medium text-gray-900 text-right ml-4 truncate max-w-[60%]">{item.value}</span>
+                      <span className="text-muted-foreground">{item.label}</span>
+                      <span className="font-medium text-foreground text-right ml-4 truncate max-w-[60%]">{item.value}</span>
                     </div>
                   ))}
                 </div>
@@ -148,10 +148,10 @@ export default function StepReviewPay() {
       </Card>
 
       {/* Terms */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="p-5 text-sm text-blue-800">
+      <Card className="bg-brand-soft border-coral/30">
+        <CardContent className="p-5 text-sm text-brand">
           <p className="font-semibold mb-1">Before you submit</p>
-          <ul className="list-disc list-inside space-y-1 text-blue-700 text-xs">
+          <ul className="list-disc list-inside space-y-1 text-brand text-xs">
             <li>All information must match your passport exactly</li>
             <li>Processing fees are non-refundable once the application is submitted</li>
             <li>Additional documents may be requested during review</li>

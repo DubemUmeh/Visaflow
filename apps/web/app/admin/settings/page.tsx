@@ -18,11 +18,11 @@ function Toggle({ checked, onChange }: ToggleProps) {
       type="button"
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-        checked ? 'bg-blue-600' : 'bg-gray-200'
+        checked ? 'bg-brand' : 'bg-gray-200'
       }`}
     >
       <span
-        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-card shadow transition-transform ${
           checked ? 'translate-x-4' : 'translate-x-1'
         }`}
       />
@@ -95,13 +95,13 @@ export default function AdminSettingsPage() {
             { label: 'Default Language', key: 'defaultLanguage', type: 'text', placeholder: 'en' },
           ].map(field => (
             <div key={field.key}>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">{field.label}</label>
+              <label className="block text-sm font-medium text-foreground/80 mb-1.5">{field.label}</label>
               <input
                 type={field.type}
                 value={general[field.key as keyof typeof general]}
                 onChange={e => setGeneral(p => ({ ...p, [field.key]: e.target.value }))}
                 placeholder={field.placeholder}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-card"
               />
             </div>
           ))}
@@ -122,8 +122,8 @@ export default function AdminSettingsPage() {
           ].map(item => (
             <div key={item.key} className="flex items-center justify-between py-2">
               <div>
-                <p className="text-sm font-medium text-gray-900">{item.label}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                <p className="text-sm font-medium text-foreground">{item.label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
               </div>
               <Toggle
                 checked={notificationSettings[item.key as keyof typeof notificationSettings]}
@@ -146,12 +146,12 @@ export default function AdminSettingsPage() {
             { key: 'requireEmailVerify',     label: 'Require Email Verification', desc: 'New accounts must verify email', danger: false },
             { key: 'autoAssignApplications', label: 'Auto-assign Applications',   desc: 'Automatically assign to available agents', danger: false },
           ].map(item => (
-            <div key={item.key} className={`flex items-center justify-between py-2 ${item.danger && systemSettings.maintenanceMode && item.key === 'maintenanceMode' ? 'text-red-600' : ''}`}>
+            <div key={item.key} className={`flex items-center justify-between py-2 ${item.danger && systemSettings.maintenanceMode && item.key === 'maintenanceMode' ? 'text-destructive' : ''}`}>
               <div>
-                <p className={`text-sm font-medium ${item.danger && systemSettings[item.key as keyof typeof systemSettings] ? 'text-red-600' : 'text-gray-900'}`}>
+                <p className={`text-sm font-medium ${item.danger && systemSettings[item.key as keyof typeof systemSettings] ? 'text-destructive' : 'text-foreground'}`}>
                   {item.label}
                 </p>
-                <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
               </div>
               <Toggle
                 checked={systemSettings[item.key as keyof typeof systemSettings]}
@@ -168,12 +168,12 @@ export default function AdminSettingsPage() {
       icon: Shield,
       content: (
         <div className="space-y-4">
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
+          <div className="p-4 bg-brand-soft rounded-xl border border-brand-soft">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-brand flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-blue-900">Security Status: Good</p>
-                <p className="text-xs text-blue-700 mt-0.5">All security features are properly configured.</p>
+                <p className="text-sm font-semibold text-brand">Security Status: Good</p>
+                <p className="text-xs text-brand mt-0.5">All security features are properly configured.</p>
               </div>
             </div>
           </div>
@@ -183,11 +183,11 @@ export default function AdminSettingsPage() {
             { label: 'Password Min Length',       value: '8',  type: 'number' },
           ].map(field => (
             <div key={field.label}>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">{field.label}</label>
+              <label className="block text-sm font-medium text-foreground/80 mb-1.5">{field.label}</label>
               <input
                 type={field.type}
                 defaultValue={field.value}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white max-w-xs"
+                className="w-full px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-card max-w-xs"
               />
             </div>
           ))}
@@ -200,8 +200,8 @@ export default function AdminSettingsPage() {
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-500 mt-1">Configure system-wide preferences.</p>
+          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground mt-1">Configure system-wide preferences.</p>
         </div>
         <Button variant="brand" onClick={handleSave} isLoading={saving} className="gap-2">
           <Save className="w-4 h-4" />
@@ -219,7 +219,7 @@ export default function AdminSettingsPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <section.icon className="w-4 h-4 text-gray-400" />
+                <section.icon className="w-4 h-4 text-muted-foreground/70" />
                 {section.title}
               </CardTitle>
             </CardHeader>

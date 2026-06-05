@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Globe, /*Twitter, Instagram, Linkedin, Facebook*/ } from 'lucide-react';
+import { Globe, ShieldCheck } from 'lucide-react';
 
 const footerLinks = {
   Product: [
@@ -30,53 +30,51 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-gray-950 text-gray-400">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
-          {/* Brand */}
+    <footer className="relative overflow-hidden border-t border-white/10 bg-[#09090b] text-neutral-400">
+      <div
+        className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(245,159,109,0.09),transparent_34%)]"
+        aria-hidden
+      />
+      <div className="container-page relative py-16">
+        <div className="mb-12 grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg gradient-brand flex items-center justify-center">
-                <Globe className="w-4 h-4 text-white" />
+            <Link href="/" className="mb-4 flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-2xl border border-white/15 gradient-brand">
+                <Globe className="h-4 w-4 text-white" />
               </div>
-              <span className="text-lg font-bold text-white">VisaFlow</span>
+              <span className="font-display text-2xl font-semibold tracking-tight text-white">VisaFlow</span>
             </Link>
-            <p className="text-sm leading-relaxed mb-6 max-w-xs">
+            <p className="mb-6 max-w-xs text-sm leading-relaxed">
               The fastest, most trusted way to apply for visas online. Serving travelers in 180+ countries.
             </p>
             <div className="flex items-center gap-3">
               {[
-                { icon: Globe, href: 'https://twitter.com/visaflow', label: 'Twitter' },
-                { icon: Globe, href: 'https://instagram.com/visaflow', label: 'Instagram' },
-                { icon: Globe, href: 'https://linkedin.com/company/visaflow', label: 'LinkedIn' },
-                { icon: Globe, href: 'https://facebook.com/visaflow', label: 'Facebook' },
-                // { icon: Twitter, href: 'https://twitter.com/visaflow', label: 'Twitter' },
-                // { icon: Instagram, href: 'https://instagram.com/visaflow', label: 'Instagram' },
-                // { icon: Linkedin, href: 'https://linkedin.com/company/visaflow', label: 'LinkedIn' },
-                // { icon: Facebook, href: 'https://facebook.com/visaflow', label: 'Facebook' },
-              ].map(({ icon: Icon, href, label }) => (
+                { href: 'https://twitter.com/visaflow', label: 'Twitter' },
+                { href: 'https://instagram.com/visaflow', label: 'Instagram' },
+                { href: 'https://linkedin.com/company/visaflow', label: 'LinkedIn' },
+                { href: 'https://facebook.com/visaflow', label: 'Facebook' },
+              ].map(({ href, label }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-card/5 text-white transition-all hover:border-white/30 hover:bg-card/15"
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Globe className="h-4 w-4" />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Links */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h4 className="text-white text-sm font-semibold mb-4">{category}</h4>
-              <ul className="space-y-2.5">
+              <h4 className="mb-4 text-sm font-semibold text-white">{category}</h4>
+              <ul className="space-y-2.5 font-mono">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <Link href={link.href} className="text-sm hover:text-white transition-colors">
+                    <Link href={link.href} className="text-sm transition-colors hover:text-white">
                       {link.label}
                     </Link>
                   </li>
@@ -86,16 +84,16 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-gray-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} VisaFlow, Inc. All rights reserved.
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
+          <p className="text-xs text-neutral-500">
+            &copy; {new Date().getFullYear()} VisaFlow, Inc. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
-            <span className="text-xs bg-gray-800 text-gray-400 px-3 py-1 rounded-full">
-              🔒 256-bit SSL Encryption
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-card/5 px-3 py-1 text-xs text-neutral-300">
+              <ShieldCheck className="h-3.5 w-3.5 text-coral" /> 256-bit SSL Encryption
             </span>
-            <span className="text-xs bg-gray-800 text-gray-400 px-3 py-1 rounded-full">
-              ✓ GDPR Compliant
+            <span className="rounded-full border border-white/10 bg-card/5 px-3 py-1 text-xs text-neutral-300">
+              GDPR Compliant
             </span>
           </div>
         </div>

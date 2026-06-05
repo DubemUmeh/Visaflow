@@ -2,7 +2,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { countries, eligibilityRules, visaTypes, visaRequirements } from '../schema';
 import { countriesData } from './countries.seed';
 import { visaTypesData } from './visa-types.seed';
@@ -248,7 +248,7 @@ async function updateVisaTypesCount(
 
     // Query for count; normalize result safely in case no rows are returned
     const rows = (await db
-      .select({ count: db.$count(visaTypes.id) } as any)
+      .select({ count: sql<number>`count(*)` })
       .from(visaTypes)
       .where(and(eq(visaTypes.destinationCountryId, countryId), eq(visaTypes.isPublished, true)))) as any[];
 

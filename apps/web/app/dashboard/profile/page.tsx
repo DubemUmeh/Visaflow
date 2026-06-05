@@ -95,8 +95,8 @@ export default function ProfilePage() {
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-        <p className="text-gray-500 mt-1">Manage your personal information and account settings.</p>
+        <h1 className="text-2xl font-bold text-foreground">Profile</h1>
+        <p className="text-muted-foreground mt-1">Manage your personal information and account settings.</p>
       </div>
 
       {/* Avatar Card */}
@@ -107,15 +107,15 @@ export default function ProfilePage() {
               <div className="relative">
                 <Avatar className="w-20 h-20">
                   <AvatarImage src={user?.avatarUrl ?? undefined} />
-                  <AvatarFallback className="bg-blue-600 text-white text-2xl font-bold">{initials}</AvatarFallback>
+                  <AvatarFallback className="bg-brand text-white text-2xl font-bold">{initials}</AvatarFallback>
                 </Avatar>
-                <button className="absolute bottom-0 right-0 w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors">
+                <button className="absolute bottom-0 right-0 w-7 h-7 bg-brand rounded-full flex items-center justify-center text-white hover:bg-brand transition-colors">
                   <Camera className="w-3.5 h-3.5" />
                 </button>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{user?.firstName} {user?.lastName}</h2>
-                <p className="text-gray-500 text-sm">{user?.email}</p>
+                <h2 className="text-xl font-bold text-foreground">{user?.firstName} {user?.lastName}</h2>
+                <p className="text-muted-foreground text-sm">{user?.email}</p>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant={user?.emailVerified ? 'success' : 'warning'} className="gap-1 text-xs">
                     {user?.emailVerified ? <CheckCircle2 className="w-3 h-3" /> : null}
@@ -132,13 +132,13 @@ export default function ProfilePage() {
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl w-fit">
+      <div className="flex gap-1 bg-muted p-1 rounded-xl w-fit">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === tab.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              activeTab === tab.key ? 'bg-card text-foreground shadow-card' : 'text-muted-foreground hover:text-foreground/80'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -206,7 +206,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="border-t pt-5">
-                  <h3 className="font-medium text-gray-900 mb-4 text-sm">Passport Information</h3>
+                  <h3 className="font-medium text-foreground mb-4 text-sm">Passport Information</h3>
                   <Input
                     label="Passport Number"
                     placeholder="AB1234567"
@@ -272,10 +272,10 @@ export default function ProfilePage() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-900 font-medium">
+                  <p className="text-sm text-foreground font-medium">
                     {user?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     Add an extra layer of security to your account.
                   </p>
                 </div>
@@ -286,15 +286,15 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="border-red-200">
+          <Card className="border-destructive/30">
             <CardHeader>
-              <CardTitle className="text-base text-red-700">Danger Zone</CardTitle>
+              <CardTitle className="text-base text-destructive">Danger Zone</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-900 font-medium">Delete Account</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Permanently delete your account and all data.</p>
+                  <p className="text-sm text-foreground font-medium">Delete Account</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Permanently delete your account and all data.</p>
                 </div>
                 <Button variant="destructive" size="sm">Delete Account</Button>
               </div>

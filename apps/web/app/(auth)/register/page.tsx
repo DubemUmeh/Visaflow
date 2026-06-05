@@ -49,9 +49,9 @@ function RegisterForm() {
     if (/[0-9]/.test(pw)) score++;
     if (/[^A-Za-z0-9]/.test(pw)) score++;
     if (pw.length >= 12) score++;
-    if (score <= 2) return { level: score, label: 'Weak', color: 'bg-red-500' };
-    if (score <= 3) return { level: score, label: 'Fair', color: 'bg-yellow-500' };
-    return { level: score, label: 'Strong', color: 'bg-green-500' };
+    if (score <= 2) return { level: score, label: 'Weak', color: 'bg-destructive/100' };
+    if (score <= 3) return { level: score, label: 'Fair', color: 'bg-warning/100' };
+    return { level: score, label: 'Strong', color: 'bg-success/100' };
   };
 
   const strength = getPasswordStrength(password);
@@ -81,10 +81,10 @@ function RegisterForm() {
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-md"
     >
-      <div className="bg-white rounded-2xl shadow-elevated border border-gray-100 p-8">
+      <div className="bg-card rounded-2xl shadow-elevated border border-border/70 p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">Create your account</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             {from && to ? `Start your visa application from ${from} to ${to}` : 'Start applying for visas in minutes'}
           </p>
         </div>
@@ -124,7 +124,7 @@ function RegisterForm() {
               placeholder="Create a strong password"
               leftIcon={<Lock />}
               rightIcon={
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600">
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-muted-foreground/70 hover:text-muted-foreground">
                   {showPassword ? <EyeOff /> : <Eye />}
                 </button>
               }
@@ -141,7 +141,7 @@ function RegisterForm() {
                     />
                   ))}
                 </div>
-                <p className={`text-xs ${strength.level <= 2 ? 'text-red-500' : strength.level <= 3 ? 'text-yellow-600' : 'text-green-600'}`}>
+                <p className={`text-xs ${strength.level <= 2 ? 'text-destructive' : strength.level <= 3 ? 'text-warning-foreground' : 'text-success'}`}>
                   {strength.label} password
                 </p>
               </div>
@@ -151,11 +151,11 @@ function RegisterForm() {
           <div>
             <label className="flex items-start gap-2 cursor-pointer">
               <input type="checkbox" className="mt-0.5 rounded" {...register('agreeToTerms')} />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted-foreground">
                 I agree to the{' '}
-                <Link href="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>
+                <Link href="/terms" className="text-brand hover:underline">Terms of Service</Link>
                 {' '}and{' '}
-                <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
+                <Link href="/privacy" className="text-brand hover:underline">Privacy Policy</Link>
               </span>
             </label>
             {errors.agreeToTerms && (
@@ -168,9 +168,9 @@ function RegisterForm() {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-gray-600 mt-6">
+        <p className="text-center text-sm text-muted-foreground mt-6">
           Already have an account?{' '}
-          <Link href="/login" className="text-blue-600 font-medium hover:text-blue-700">
+          <Link href="/login" className="text-brand font-medium hover:text-brand">
             Sign in
           </Link>
         </p>

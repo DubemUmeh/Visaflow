@@ -20,16 +20,16 @@ export default function StatusPage() {
       <ContentCard>
         <div className="space-y-3">
           {services.map(([name, status]) => (
-            <div key={name} className="flex items-center justify-between rounded-xl border border-gray-100 px-4 py-3">
+            <div key={name} className="flex items-center justify-between rounded-xl border border-border/70 px-4 py-3">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                <span className="font-medium text-gray-900">{name}</span>
+                <span className="font-medium text-foreground">{name}</span>
               </div>
               <span className="text-sm text-emerald-700">{status}</span>
             </div>
           ))}
         </div>
-        <p className="mt-6 flex items-center gap-2 text-sm text-gray-500">
+        <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
           <Clock className="h-4 w-4" /> Last checked just now.
         </p>
       </ContentCard>

@@ -10,6 +10,7 @@ const config = {
     extend: {
       fontFamily: {
         sans: ['var(--font-geist-sans)', ...fontFamily.sans],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
         mono: ['var(--font-geist-mono)', ...fontFamily.mono],
       },
       colors: {
@@ -61,11 +62,27 @@ const config = {
           foreground: 'hsl(var(--card-foreground))',
         },
         brand: {
-          blue: '#1A56DB',
-          'blue-light': '#3B82F6',
-          green: '#16A34A',
-          orange: '#EA580C',
-          slate: '#1E293B',
+          DEFAULT: 'hsl(var(--brand))',
+          foreground: 'hsl(var(--brand-foreground))',
+          soft: 'hsl(var(--brand-soft))',
+          blue: 'hsl(var(--brand))',
+          'blue-light': 'hsl(193 49% 31%)',
+          green: 'hsl(var(--success))',
+          orange: 'hsl(var(--coral))',
+          slate: 'hsl(var(--foreground))',
+        },
+        coral: {
+          DEFAULT: 'hsl(var(--coral))',
+          foreground: 'hsl(var(--coral-foreground))',
+        },
+        sand: 'hsl(var(--sand))',
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
         },
       },
       borderRadius: {

@@ -22,26 +22,26 @@ type StatusConfig = { label: string; color: string; bg: string };
 
 const defaultStatusConfig: StatusConfig = {
   label: 'Draft',
-  color: 'text-gray-600',
-  bg: 'bg-gray-100',
+  color: 'text-muted-foreground',
+  bg: 'bg-muted',
 };
 
 const statusConfig: Record<string, StatusConfig> = {
   DRAFT:            defaultStatusConfig,
-  SUBMITTED:        { label: 'Submitted',       color: 'text-blue-700',  bg: 'bg-blue-100'   },
-  UNDER_REVIEW:     { label: 'Under Review',    color: 'text-yellow-700',bg: 'bg-yellow-100' },
-  MISSING_DOCUMENTS:{ label: 'Docs Needed',     color: 'text-orange-700',bg: 'bg-orange-100' },
-  APPROVED:         { label: 'Approved',        color: 'text-green-700', bg: 'bg-green-100'  },
-  REJECTED:         { label: 'Rejected',        color: 'text-red-700',   bg: 'bg-red-100'    },
-  COMPLETED:        { label: 'Completed',       color: 'text-green-700', bg: 'bg-green-100'  },
-  CANCELLED:        { label: 'Cancelled',       color: 'text-gray-500',  bg: 'bg-gray-100'   },
+  SUBMITTED:        { label: 'Submitted',       color: 'text-brand',  bg: 'bg-brand-soft'   },
+  UNDER_REVIEW:     { label: 'Under Review',    color: 'text-warning-foreground',bg: 'bg-warning/20' },
+  MISSING_DOCUMENTS:{ label: 'Docs Needed',     color: 'text-warning-foreground',bg: 'bg-coral/20' },
+  APPROVED:         { label: 'Approved',        color: 'text-success-foreground', bg: 'bg-success/15'  },
+  REJECTED:         { label: 'Rejected',        color: 'text-destructive',   bg: 'bg-destructive/15'    },
+  COMPLETED:        { label: 'Completed',       color: 'text-success-foreground', bg: 'bg-success/15'  },
+  CANCELLED:        { label: 'Cancelled',       color: 'text-muted-foreground',  bg: 'bg-muted'   },
 };
 
 const statCards = (stats: { total: number; approved: number; inProgress: number; rejected: number }) => [
-  { label: 'Total Applications', value: stats.total,      icon: FileText,      color: 'text-blue-600',   bg: 'bg-blue-50'   },
-  { label: 'Approved',           value: stats.approved,   icon: CheckCircle2,  color: 'text-green-600',  bg: 'bg-green-50'  },
-  { label: 'In Progress',        value: stats.inProgress, icon: Clock,         color: 'text-yellow-600', bg: 'bg-yellow-50' },
-  { label: 'Rejected',           value: stats.rejected,   icon: XCircle,       color: 'text-red-500',    bg: 'bg-red-50'    },
+  { label: 'Total Applications', value: stats.total,      icon: FileText,      color: 'text-brand',   bg: 'bg-brand-soft'   },
+  { label: 'Approved',           value: stats.approved,   icon: CheckCircle2,  color: 'text-success',  bg: 'bg-success/10'  },
+  { label: 'In Progress',        value: stats.inProgress, icon: Clock,         color: 'text-warning-foreground', bg: 'bg-warning/10' },
+  { label: 'Rejected',           value: stats.rejected,   icon: XCircle,       color: 'text-destructive',    bg: 'bg-destructive/10'    },
 ];
 
 export default function DashboardPage() {
@@ -74,10 +74,10 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             {greeting()}, {user?.firstName ?? 'there'} 👋
           </h1>
-          <p className="text-gray-500 mt-1">Here&apos;s an overview of your visa applications.</p>
+          <p className="text-muted-foreground mt-1">Here&apos;s an overview of your visa applications.</p>
         </div>
         <Link href="/dashboard/applications/new">
           <Button variant="brand" className="gap-2">
@@ -94,12 +94,12 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{card.label}</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{card.label}</p>
                   <div className={`w-8 h-8 rounded-lg ${card.bg} flex items-center justify-center`}>
                     <card.icon className={`w-4 h-4 ${card.color}`} />
                   </div>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">{card.value}</p>
+                <p className="text-3xl font-bold text-foreground">{card.value}</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -114,7 +114,7 @@ export default function DashboardPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Recent Applications</CardTitle>
-                <Link href="/dashboard/applications" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                <Link href="/dashboard/applications" className="text-sm text-brand hover:text-brand font-medium flex items-center gap-1">
                   View all <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>
@@ -122,13 +122,13 @@ export default function DashboardPage() {
             <CardContent className="pt-0">
               {loading ? (
                 <div className="flex justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground/70" />
                 </div>
               ) : applications.length === 0 ? (
                 <div className="text-center py-12">
-                  <Globe className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500 font-medium">No applications yet</p>
-                  <p className="text-gray-400 text-sm mb-4">Start your first visa application today.</p>
+                  <Globe className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
+                  <p className="text-muted-foreground font-medium">No applications yet</p>
+                  <p className="text-muted-foreground/70 text-sm mb-4">Start your first visa application today.</p>
                   <Link href="/dashboard/applications/new">
                     <Button variant="brand" size="sm">Apply Now</Button>
                   </Link>
@@ -139,13 +139,13 @@ export default function DashboardPage() {
                     const cfg = statusConfig[app.status] ?? defaultStatusConfig;
                     return (
                       <Link key={app.id} href={`/dashboard/applications/${app.id}`}>
-                        <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer">
-                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-lg shrink-0">
+                        <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-sand/45 transition-colors group cursor-pointer">
+                          <div className="w-10 h-10 rounded-full bg-brand-soft flex items-center justify-center text-lg shrink-0">
                             {app.destinationCountry.flagEmoji ?? '🌍'}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900 text-sm truncate">{app.visaType.name}</p>
-                            <p className="text-xs text-gray-500">
+                            <p className="font-medium text-foreground text-sm truncate">{app.visaType.name}</p>
+                            <p className="text-xs text-muted-foreground">
                               {app.destinationCountry.name} · {app.referenceNumber}
                             </p>
                           </div>
@@ -153,9 +153,9 @@ export default function DashboardPage() {
                             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cfg.bg} ${cfg.color}`}>
                               {cfg.label}
                             </span>
-                            <span className="text-xs text-gray-400">{dayjs(app.createdAt).fromNow()}</span>
+                            <span className="text-xs text-muted-foreground/70">{dayjs(app.createdAt).fromNow()}</span>
                           </div>
-                          <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                          <ArrowRight className="w-4 h-4 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
                         </div>
                       </Link>
                     );
@@ -174,35 +174,35 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="pt-0 space-y-2">
               <Link href="/dashboard/applications/new">
-                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 transition-colors text-left group">
-                  <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
-                    <Plus className="w-4 h-4 text-blue-600" />
+                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-brand-soft transition-colors text-left group">
+                  <div className="w-9 h-9 rounded-xl bg-brand-soft flex items-center justify-center">
+                    <Plus className="w-4 h-4 text-brand" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">New Application</p>
-                    <p className="text-xs text-gray-500">Start a visa application</p>
+                    <p className="text-sm font-medium text-foreground">New Application</p>
+                    <p className="text-xs text-muted-foreground">Start a visa application</p>
                   </div>
                 </button>
               </Link>
               <Link href="/dashboard/explore">
-                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-green-50 transition-colors text-left group">
-                  <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center">
-                    <Globe className="w-4 h-4 text-green-600" />
+                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-success/10 transition-colors text-left group">
+                  <div className="w-9 h-9 rounded-xl bg-success/15 flex items-center justify-center">
+                    <Globe className="w-4 h-4 text-success" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Explore Countries</p>
-                    <p className="text-xs text-gray-500">Check visa requirements</p>
+                    <p className="text-sm font-medium text-foreground">Explore Countries</p>
+                    <p className="text-xs text-muted-foreground">Check visa requirements</p>
                   </div>
                 </button>
               </Link>
               <Link href="/dashboard/profile">
-                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-purple-50 transition-colors text-left group">
-                  <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-purple-600" />
+                <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-brand-soft transition-colors text-left group">
+                  <div className="w-9 h-9 rounded-xl bg-brand-soft flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-brand" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Complete Profile</p>
-                    <p className="text-xs text-gray-500">Speed up future applications</p>
+                    <p className="text-sm font-medium text-foreground">Complete Profile</p>
+                    <p className="text-xs text-muted-foreground">Speed up future applications</p>
                   </div>
                 </button>
               </Link>
@@ -210,13 +210,13 @@ export default function DashboardPage() {
           </Card>
 
           {/* Progress tip */}
-          <Card className="bg-linear-to-br from-blue-600 to-indigo-600 border-0 text-white">
+          <Card className="bg-linear-to-br bg-hero border-0 text-white">
             <CardContent className="p-5">
               <TrendingUp className="w-8 h-8 mb-3 opacity-80" />
               <h3 className="font-semibold mb-1">Complete Your Profile</h3>
-              <p className="text-sm text-blue-100 mb-4">Fill in your passport details to pre-fill applications faster.</p>
+              <p className="text-sm text-brand-foreground/80 mb-4">Fill in your passport details to pre-fill applications faster.</p>
               <Link href="/dashboard/profile">
-                <Button variant="secondary" size="sm" className="w-full bg-white/20 hover:bg-white/30 border-0 text-white">
+                <Button variant="secondary" size="sm" className="w-full bg-card/20 hover:bg-card/30 border-0 text-white">
                   Go to Profile
                 </Button>
               </Link>

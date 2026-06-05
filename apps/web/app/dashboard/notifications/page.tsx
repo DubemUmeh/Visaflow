@@ -31,8 +31,8 @@ export default function NotificationsPage() {
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-          <p className="text-gray-500 mt-1">Updates about your applications, payments, and documents.</p>
+          <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
+          <p className="text-muted-foreground mt-1">Updates about your applications, payments, and documents.</p>
         </div>
         <Button variant="outline" onClick={markAllRead} className="gap-2">
           <CheckCheck className="h-4 w-4" />
@@ -47,10 +47,10 @@ export default function NotificationsPage() {
         <CardContent className="pt-0">
           {loading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+              <Loader2 className="h-6 w-6 animate-spin text-coral" />
             </div>
           ) : items.length === 0 ? (
-            <div className="py-12 text-center text-gray-400">
+            <div className="py-12 text-center text-muted-foreground/70">
               <Bell className="mx-auto mb-2 h-10 w-10 opacity-40" />
               <p className="text-sm">No notifications yet</p>
             </div>
@@ -58,11 +58,11 @@ export default function NotificationsPage() {
             <div className="divide-y divide-gray-100">
               {items.map(item => (
                 <div key={item.id} className="flex gap-3 py-4">
-                  <div className={`mt-1 h-2.5 w-2.5 rounded-full ${item.readAt ? 'bg-gray-200' : 'bg-blue-500'}`} />
+                  <div className={`mt-1 h-2.5 w-2.5 rounded-full ${item.readAt ? 'bg-gray-200' : 'bg-coral'}`} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-gray-900">{item.subject ?? item.channel}</p>
-                    <p className="mt-1 text-sm text-gray-600">{item.body}</p>
-                    <p className="mt-1 text-xs text-gray-400">{dayjs(item.createdAt).format('DD MMM YYYY, HH:mm')}</p>
+                    <p className="text-sm font-semibold text-foreground">{item.subject ?? item.channel}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
+                    <p className="mt-1 text-xs text-muted-foreground/70">{dayjs(item.createdAt).format('DD MMM YYYY, HH:mm')}</p>
                   </div>
                 </div>
               ))}

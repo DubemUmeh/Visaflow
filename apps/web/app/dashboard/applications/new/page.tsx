@@ -31,15 +31,15 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
             <div className="flex flex-col items-center">
               <div className={cn(
                 'w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all',
-                isCompleted ? 'bg-blue-600 text-white' :
-                isActive    ? 'bg-blue-600 text-white ring-4 ring-blue-100' :
-                              'bg-gray-100 text-gray-400'
+                isCompleted ? 'bg-brand text-white' :
+                isActive    ? 'bg-brand text-white ring-4 ring-blue-100' :
+                              'bg-muted text-muted-foreground/70'
               )}>
                 {isCompleted ? <Check className="w-4 h-4" /> : <step.icon className="w-4 h-4" />}
               </div>
               <span className={cn(
                 'text-xs mt-1 font-medium hidden sm:block',
-                isActive ? 'text-blue-600' : isCompleted ? 'text-gray-600' : 'text-gray-400'
+                isActive ? 'text-brand' : isCompleted ? 'text-muted-foreground' : 'text-muted-foreground/70'
               )}>
                 {step.label}
               </span>
@@ -47,7 +47,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
             {index < STEPS.length - 1 && (
               <div className={cn(
                 'h-0.5 w-8 sm:w-16 mx-1 sm:mx-2 mb-4 transition-colors',
-                currentStep > step.id ? 'bg-blue-600' : 'bg-gray-200'
+                currentStep > step.id ? 'bg-brand' : 'bg-gray-200'
               )} />
             )}
           </div>
@@ -77,8 +77,8 @@ export default function NewApplicationPage() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">New Visa Application</h1>
-        <p className="text-gray-500 mt-1">Complete the steps below to submit your application.</p>
+        <h1 className="text-2xl font-bold text-foreground">New Visa Application</h1>
+        <p className="text-muted-foreground mt-1">Complete the steps below to submit your application.</p>
       </div>
 
       <StepIndicator currentStep={currentStep} />

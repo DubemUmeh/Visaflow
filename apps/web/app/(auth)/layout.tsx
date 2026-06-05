@@ -10,7 +10,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="w-8 h-8 rounded-lg gradient-brand flex items-center justify-center">
             <Globe className="w-4 h-4 text-white" />
           </div>
-          <span className="text-lg font-bold text-gray-900">VisaFlow</span>
+          <span className="text-lg font-bold text-foreground">VisaFlow</span>
         </Link>
       </header>
 
@@ -20,11 +20,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* Footer */}
-      <footer className="px-6 py-4 text-center text-xs text-gray-400">
+      <footer className="px-6 py-4 text-center text-xs text-muted-foreground/70">
         © {new Date().getFullYear()} VisaFlow. All rights reserved. ·{' '}
-        <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
+        <Link href="/privacy" className="hover:text-muted-foreground transition-colors">Privacy</Link>
         {' · '}
-        <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms</Link>
+        <Link href="/terms" className="hover:text-muted-foreground transition-colors">Terms</Link>
       </footer>
     </div>
   );

@@ -42,54 +42,54 @@ function DocDropzone({ doc, uploaded, onUpload }: {
   });
 
   return (
-    <div className={cn('rounded-xl border-2 transition-all', uploaded ? 'border-green-300' : 'border-gray-200')}>
-      <div className="flex items-center justify-between p-3 border-b border-gray-100">
+    <div className={cn('rounded-xl border-2 transition-all', uploaded ? 'border-success/40' : 'border-border')}>
+      <div className="flex items-center justify-between p-3 border-b border-border/70">
         <div className="flex items-center gap-2">
           {uploaded ? (
-            <CheckCircle2 className="w-4 h-4 text-green-500" />
+            <CheckCircle2 className="w-4 h-4 text-success" />
           ) : doc.required ? (
-            <div className="w-4 h-4 rounded-full border-2 border-red-300 bg-red-50" />
+            <div className="w-4 h-4 rounded-full border-2 border-red-300 bg-destructive/10" />
           ) : (
-            <div className="w-4 h-4 rounded-full border-2 border-gray-200" />
+            <div className="w-4 h-4 rounded-full border-2 border-border" />
           )}
           <div>
-            <p className="text-sm font-medium text-gray-900">{doc.label}</p>
-            <p className="text-xs text-gray-500">{doc.desc}</p>
+            <p className="text-sm font-medium text-foreground">{doc.label}</p>
+            <p className="text-xs text-muted-foreground">{doc.desc}</p>
           </div>
         </div>
         {doc.required && !uploaded && (
-          <span className="text-xs text-red-500 font-medium">Required</span>
+          <span className="text-xs text-destructive font-medium">Required</span>
         )}
         {!doc.required && !uploaded && (
-          <span className="text-xs text-gray-400">Optional</span>
+          <span className="text-xs text-muted-foreground/70">Optional</span>
         )}
       </div>
 
       {uploaded ? (
         <div className="flex items-center gap-3 p-3">
-          <FileText className="w-8 h-8 text-gray-400 flex-shrink-0" />
+          <FileText className="w-8 h-8 text-muted-foreground/70 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{uploaded.file.name}</p>
-            <p className="text-xs text-gray-400">{(uploaded.file.size / 1024).toFixed(0)} KB</p>
+            <p className="text-sm font-medium text-foreground truncate">{uploaded.file.name}</p>
+            <p className="text-xs text-muted-foreground/70">{(uploaded.file.size / 1024).toFixed(0)} KB</p>
           </div>
-          {uploaded.status === 'uploading' && <Loader2 className="w-4 h-4 animate-spin text-blue-500" />}
-          {uploaded.status === 'done' && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-          {uploaded.status === 'error' && <AlertCircle className="w-4 h-4 text-red-500" />}
+          {uploaded.status === 'uploading' && <Loader2 className="w-4 h-4 animate-spin text-coral" />}
+          {uploaded.status === 'done' && <CheckCircle2 className="w-4 h-4 text-success" />}
+          {uploaded.status === 'error' && <AlertCircle className="w-4 h-4 text-destructive" />}
         </div>
       ) : (
         <div
           {...getRootProps()}
           className={cn(
             'flex flex-col items-center justify-center p-6 cursor-pointer transition-colors',
-            isDragActive ? 'bg-blue-50' : 'hover:bg-gray-50'
+            isDragActive ? 'bg-brand-soft' : 'hover:bg-sand/45'
           )}
         >
           <input {...getInputProps()} />
-          <Upload className="w-6 h-6 text-gray-400 mb-2" />
-          <p className="text-xs text-gray-500 text-center">
+          <Upload className="w-6 h-6 text-muted-foreground/70 mb-2" />
+          <p className="text-xs text-muted-foreground text-center">
             {isDragActive ? 'Drop here' : 'Drag & drop or click to upload'}
           </p>
-          <p className="text-xs text-gray-400">PDF, JPG, PNG up to 10MB</p>
+          <p className="text-xs text-muted-foreground/70">PDF, JPG, PNG up to 10MB</p>
         </div>
       )}
     </div>
@@ -139,8 +139,8 @@ export default function StepDocuments() {
       <Card>
         <CardContent className="p-6">
           <div className="mb-6">
-            <h2 className="font-semibold text-gray-900 text-lg mb-1">Upload Documents</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="font-semibold text-foreground text-lg mb-1">Upload Documents</h2>
+            <p className="text-sm text-muted-foreground">
               Upload the required documents. Make sure all documents are clear, legible and not expired.
             </p>
           </div>
