@@ -1,44 +1,55 @@
-'use client';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Search, CheckCircle2, XCircle, Info } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { useRouter } from 'next/navigation';
+"use client";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { ArrowRight, Search, CheckCircle2, XCircle, Info } from "lucide-react";
+import { Button } from "../ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import Link from "next/link";
 
 // Common countries for the demo
 const countries = [
-  { code: 'US', name: 'United States', flag: '🇺🇸' },
-  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
-  { code: 'CA', name: 'Canada', flag: '🇨🇦' },
-  { code: 'AU', name: 'Australia', flag: '🇦🇺' },
-  { code: 'FR', name: 'France', flag: '🇫🇷' },
-  { code: 'DE', name: 'Germany', flag: '🇩🇪' },
-  { code: 'JP', name: 'Japan', flag: '🇯🇵' },
-  { code: 'CN', name: 'China', flag: '🇨🇳' },
-  { code: 'IN', name: 'India', flag: '🇮🇳' },
-  { code: 'BR', name: 'Brazil', flag: '🇧🇷' },
-  { code: 'NG', name: 'Nigeria', flag: '🇳🇬' },
-  { code: 'GH', name: 'Ghana', flag: '🇬🇭' },
-  { code: 'ZA', name: 'South Africa', flag: '🇿🇦' },
-  { code: 'EG', name: 'Egypt', flag: '🇪🇬' },
-  { code: 'MX', name: 'Mexico', flag: '🇲🇽' },
-  { code: 'AE', name: 'UAE', flag: '🇦🇪' },
-  { code: 'SG', name: 'Singapore', flag: '🇸🇬' },
-  { code: 'TH', name: 'Thailand', flag: '🇹🇭' },
-  { code: 'KE', name: 'Kenya', flag: '🇰🇪' },
-  { code: 'ET', name: 'Ethiopia', flag: '🇪🇹' },
+  { code: "US", name: "United States", flag: "🇺🇸" },
+  { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
+  { code: "CA", name: "Canada", flag: "🇨🇦" },
+  { code: "AU", name: "Australia", flag: "🇦🇺" },
+  { code: "FR", name: "France", flag: "🇫🇷" },
+  { code: "DE", name: "Germany", flag: "🇩🇪" },
+  { code: "JP", name: "Japan", flag: "🇯🇵" },
+  { code: "CN", name: "China", flag: "🇨🇳" },
+  { code: "IN", name: "India", flag: "🇮🇳" },
+  { code: "BR", name: "Brazil", flag: "🇧🇷" },
+  { code: "NG", name: "Nigeria", flag: "🇳🇬" },
+  { code: "GH", name: "Ghana", flag: "🇬🇭" },
+  { code: "ZA", name: "South Africa", flag: "🇿🇦" },
+  { code: "EG", name: "Egypt", flag: "🇪🇬" },
+  { code: "MX", name: "Mexico", flag: "🇲🇽" },
+  { code: "AE", name: "UAE", flag: "🇦🇪" },
+  { code: "SG", name: "Singapore", flag: "🇸🇬" },
+  { code: "TH", name: "Thailand", flag: "🇹🇭" },
+  { code: "KE", name: "Kenya", flag: "🇰🇪" },
+  { code: "ET", name: "Ethiopia", flag: "🇪🇹" },
 ];
 
 export function EligibilityChecker() {
-  const [nationality, setNationality] = useState('');
-  const [destination, setDestination] = useState('');
-  const router = useRouter();
+  const [nationality, setNationality] = useState("");
+  const [destination, setDestination] = useState("");
+  const [result, setResult] = useState<{ from: string; to: string } | null>(
+    null,
+  );
 
   const handleCheck = () => {
     if (!nationality || !destination) return;
-    router.push(`/register?from=${nationality}&to=${destination}`);
+    setResult({ from: nationality, to: destination });
   };
+
+  const fromCountry = countries.find((c) => c.code === result?.from);
+  const toCountry = countries.find((c) => c.code === result?.to);
 
   return (
     <section id="eligibility" className="py-20 bg-sunrise/80">
@@ -53,7 +64,8 @@ export function EligibilityChecker() {
             Check Your Visa Eligibility
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Instantly find out what visa you need and start your application in under 5 minutes.
+            Instantly find out what visa you need and start your application in
+            under 5 minutes.
           </p>
         </motion.div>
 
@@ -93,11 +105,13 @@ export function EligibilityChecker() {
                     <SelectValue placeholder="Select destination..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {countries.filter((c) => c.code !== nationality).map((c) => (
-                      <SelectItem key={c.code} value={c.code}>
-                        {c.flag} {c.name}
-                      </SelectItem>
-                    ))}
+                    {countries
+                      .filter((c) => c.code !== nationality)
+                      .map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.flag} {c.name}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -115,14 +129,51 @@ export function EligibilityChecker() {
               <ArrowRight className="h-4 w-4" />
             </Button>
 
+            {result && (
+              <div className="mt-6 rounded-2xl border border-success/20 bg-success/10 p-5">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 text-success" />
+                  <div>
+                    <h3 className="font-semibold text-foreground">
+                      Eligibility preview ready
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {fromCountry?.name} passport holders can review available
+                      VisaFlow options for {toCountry?.name}. Create or use your
+                      account only when you are ready to save and submit an
+                      application.
+                    </p>
+                    <Button asChild variant="brand" size="sm" className="mt-4">
+                      <Link
+                        href={`/dashboard/applications/new?from=${result.from}&to=${result.to}`}
+                      >
+                        Start application
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Quick info */}
             <div className="mt-6 grid sm:grid-cols-3 gap-3">
               {[
-                { icon: CheckCircle2, color: 'text-success', label: 'Instant results' },
-                { icon: Info, color: 'text-coral', label: 'All visa types' },
-                { icon: CheckCircle2, color: 'text-success', label: 'No signup needed to check' },
+                {
+                  icon: CheckCircle2,
+                  color: "text-success",
+                  label: "Instant results",
+                },
+                { icon: Info, color: "text-coral", label: "All visa types" },
+                {
+                  icon: CheckCircle2,
+                  color: "text-success",
+                  label: "No signup needed to check",
+                },
               ].map(({ icon: Icon, color, label }) => (
-                <div key={label} className="flex items-center gap-2 text-sm text-muted-foreground bg-sand/45 rounded-lg px-3 py-2">
+                <div
+                  key={label}
+                  className="flex items-center gap-2 text-sm text-muted-foreground bg-sand/45 rounded-lg px-3 py-2"
+                >
                   <Icon className={`h-4 w-4 ${color} shrink-0`} />
                   {label}
                 </div>

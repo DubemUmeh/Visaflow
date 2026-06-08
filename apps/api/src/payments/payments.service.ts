@@ -2,17 +2,12 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { and, desc, eq, isNull, sql, type InferModel } from 'drizzle-orm';
 import {
-  and,
-  desc,
-  eq,
-  isNull,
-  sql,
-  type InferModel,
-} from 'drizzle-orm';
-import {
+  applicationStatusHistory,
   applications,
   paymentLineItems,
   payments,
@@ -96,7 +91,9 @@ export class PaymentsService {
     visaType: InferModel<typeof visaTypes>,
   ) {
     if (tier === 'EXPEDITED') {
-      return visaType.priceExpedited ?? Math.round(visaType.priceStandard * 1.5);
+      return (
+        visaType.priceExpedited ?? Math.round(visaType.priceStandard * 1.5)
+      );
     }
     if (tier === 'RUSH') {
       return visaType.priceRush ?? Math.round(visaType.priceStandard * 2.5);
@@ -113,13 +110,18 @@ export class PaymentsService {
       .select()
       .from(applications)
       .where(
-        and(eq(applications.id, dto.applicationId), isNull(applications.deletedAt)),
+        and(
+          eq(applications.id, dto.applicationId),
+          isNull(applications.deletedAt),
+        ),
       )
       .limit(1);
 
     if (!application) throw new NotFoundException('Application not found');
     if (!this.isAdmin(role) && application.userId !== userId) {
-      throw new ForbiddenException('You do not have access to this application');
+      throw new ForbiddenException(
+        'You do not have access to this application',
+      );
     }
 
     const [visaType] = await this.dbClient.db
@@ -134,6 +136,16 @@ export class PaymentsService {
     const amountGovFee = visaType.govFee;
     const amountServiceFee = Math.max(0, amountTotal - amountGovFee);
     const provider = dto.provider === 'paypal' ? 'PAYPAL' : 'STRIPE';
+
+    const stripeSecret = this.configService.get<string>(
+      'STRIPE_SECRET_KEY',
+      '',
+    );
+    if (!stripeSecret) {
+      throw new ServiceUnavailableException(
+        'Stripe is not configured. Your application is saved as a draft; please try payment again later.',
+      );
+    }
 
     const [payment] = await this.dbClient.db
       .insert(payments)
@@ -169,8 +181,7 @@ export class PaymentsService {
       metadata: { applicationId: application.id, visaTypeId: visaType.id },
     });
 
-    const stripeSecret = this.configService.get<string>('STRIPE_SECRET_KEY', '');
-    if (stripeSecret) {
+    try {
       const stripe = new Stripe(stripeSecret);
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
@@ -210,15 +221,19 @@ export class PaymentsService {
           ? new Date(session.expires_at * 1000).toISOString()
           : new Date(Date.now() + 30 * 60 * 1000).toISOString(),
       };
+    } catch (error) {
+      await this.dbClient.db
+        .delete(paymentLineItems)
+        .where(eq(paymentLineItems.paymentId, payment.id));
+      await this.dbClient.db
+        .delete(payments)
+        .where(eq(payments.id, payment.id));
+
+      throw new ServiceUnavailableException(
+        'Stripe checkout could not be created. Your application is saved as a draft; no payment was recorded.',
+        { cause: error },
+      );
     }
-
-    const checkoutUrl = `${dto.successUrl}${dto.successUrl.includes('?') ? '&' : '?'}payment_id=${payment.id}`;
-
-    return {
-      sessionId: payment.id,
-      checkoutUrl,
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-    };
   }
 
   async findAll(params: {
@@ -230,8 +245,12 @@ export class PaymentsService {
   }) {
     const { skip, take } = buildPaginationSkipTake(params.page, params.limit);
     const conditions = [
-      this.isAdmin(params.role) ? undefined : eq(payments.userId, params.userId),
-      params.applicationId ? eq(payments.applicationId, params.applicationId) : undefined,
+      this.isAdmin(params.role)
+        ? undefined
+        : eq(payments.userId, params.userId),
+      params.applicationId
+        ? eq(payments.applicationId, params.applicationId)
+        : undefined,
     ].filter(Boolean) as Parameters<typeof and>[0][];
     const where = conditions.length ? and(...conditions) : undefined;
 
@@ -243,12 +262,19 @@ export class PaymentsService {
         .orderBy(desc(payments.createdAt))
         .limit(take)
         .offset(skip),
-      this.dbClient.db.select({ count: sql`count(*)` }).from(payments).where(where),
+      this.dbClient.db
+        .select({ count: sql`count(*)` })
+        .from(payments)
+        .where(where),
     ]);
 
     return {
       data: rows.map((row) => this.toSummary(row)),
-      meta: buildPaginationMeta(Number(countRows[0]?.count ?? 0), params.page, params.limit),
+      meta: buildPaginationMeta(
+        Number(countRows[0]?.count ?? 0),
+        params.page,
+        params.limit,
+      ),
     };
   }
 
@@ -272,21 +298,48 @@ export class PaymentsService {
     return this.toEntity(payment, lines);
   }
 
-  async markPaid(id: string, userId: string, role: string | undefined, dto: MarkPaymentPaidDto) {
+  async markPaid(
+    id: string,
+    userId: string,
+    role: string | undefined,
+    dto: MarkPaymentPaidDto,
+  ) {
     if (!this.isAdmin(role)) {
       throw new ForbiddenException('Only admins can mark payments as paid');
     }
 
     await this.findById(id, userId, role);
 
+    const paidAt = new Date();
+
     await this.dbClient.db
       .update(payments)
       .set({
         status: 'COMPLETED',
-        paidAt: new Date(),
+        paidAt,
         providerPaymentId: dto.providerPaymentId,
       })
       .where(eq(payments.id, id));
+
+    const payment = await this.findById(id, userId, role);
+    await this.dbClient.db
+      .update(applications)
+      .set({
+        status: 'SUBMITTED',
+        submittedAt: paidAt,
+        currentStep: 5,
+        completionPercentage: 100,
+      })
+      .where(eq(applications.id, payment.applicationId));
+
+    await this.dbClient.db.insert(applicationStatusHistory).values({
+      applicationId: payment.applicationId,
+      fromStatus: 'DRAFT',
+      toStatus: 'SUBMITTED',
+      changedById: userId,
+      note: 'Payment completed; application submitted for review',
+      isSystemChange: true,
+    });
 
     return this.findById(id, userId, role);
   }
