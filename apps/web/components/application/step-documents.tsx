@@ -1,8 +1,7 @@
 'use client';
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, X, CheckCircle2, Loader2, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, Loader2, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { useApplicationWizardStore } from '@/store/application.store';
@@ -10,20 +9,20 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
+// All type values must match the API's RequestUploadUrlDto enum exactly
 const REQUIRED_DOCS = [
-  { type: 'PASSPORT_SCAN',   label: 'Passport Scan',      desc: 'Data page of your passport', required: true },
-  { type: 'PASSPORT_PHOTO',  label: 'Passport Photo',     desc: '2x2 inch white background photo', required: true },
-  { type: 'BANK_STATEMENT',  label: 'Bank Statement',     desc: 'Last 3 months, showing sufficient funds', required: true },
-  { type: 'TRAVEL_INSURANCE',label: 'Travel Insurance',   desc: 'Valid for the entire trip duration', required: false },
-  { type: 'FLIGHT_BOOKING',  label: 'Flight Booking',     desc: 'Confirmed round-trip booking', required: false },
-  { type: 'HOTEL_BOOKING',   label: 'Hotel Booking',      desc: 'Accommodation confirmation', required: false },
+  { type: 'PASSPORT_COPY',    label: 'Passport Scan',      desc: 'Data page of your passport',              required: true  },
+  { type: 'PASSPORT_PHOTO',   label: 'Passport Photo',     desc: '2x2 inch white background photo',         required: true  },
+  { type: 'BANK_STATEMENT',   label: 'Bank Statement',     desc: 'Last 3 months, showing sufficient funds', required: true  },
+  { type: 'TRAVEL_INSURANCE', label: 'Travel Insurance',   desc: 'Valid for the entire trip duration',       required: false },
+  { type: 'FLIGHT_ITINERARY', label: 'Flight Booking',     desc: 'Confirmed round-trip booking',             required: false },
+  { type: 'HOTEL_BOOKING',    label: 'Hotel Booking',      desc: 'Accommodation confirmation',               required: false },
 ];
 
 interface UploadedFile {
   docType: string;
   file: File;
   status: 'pending' | 'uploading' | 'done' | 'error';
-  preview?: string;
 }
 
 function DocDropzone({ doc, uploaded, onUpload }: {
@@ -67,21 +66,21 @@ function DocDropzone({ doc, uploaded, onUpload }: {
 
       {uploaded ? (
         <div className="flex items-center gap-3 p-3">
-          <FileText className="w-8 h-8 text-muted-foreground/70 flex-shrink-0" />
+          <FileText className="w-8 h-8 text-muted-foreground/70 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">{uploaded.file.name}</p>
             <p className="text-xs text-muted-foreground/70">{(uploaded.file.size / 1024).toFixed(0)} KB</p>
           </div>
           {uploaded.status === 'uploading' && <Loader2 className="w-4 h-4 animate-spin text-coral" />}
-          {uploaded.status === 'done' && <CheckCircle2 className="w-4 h-4 text-success" />}
-          {uploaded.status === 'error' && <AlertCircle className="w-4 h-4 text-destructive" />}
+          {uploaded.status === 'done'      && <CheckCircle2 className="w-4 h-4 text-success" />}
+          {uploaded.status === 'error'     && <AlertCircle  className="w-4 h-4 text-destructive" />}
         </div>
       ) : (
         <div
           {...getRootProps()}
           className={cn(
             'flex flex-col items-center justify-center p-6 cursor-pointer transition-colors',
-            isDragActive ? 'bg-brand-soft' : 'hover:bg-sand/45'
+            isDragActive ? 'bg-brand-soft' : 'hover:bg-sand/45',
           )}
         >
           <input {...getInputProps()} />
@@ -89,7 +88,7 @@ function DocDropzone({ doc, uploaded, onUpload }: {
           <p className="text-xs text-muted-foreground text-center">
             {isDragActive ? 'Drop here' : 'Drag & drop or click to upload'}
           </p>
-          <p className="text-xs text-muted-foreground/70">PDF, JPG, PNG up to 10MB</p>
+          <p className="text-xs text-muted-foreground/70">PDF, JPG, PNG up to 10 MB</p>
         </div>
       )}
     </div>
@@ -101,10 +100,10 @@ export default function StepDocuments() {
   const [uploads, setUploads] = useState<UploadedFile[]>([]);
 
   const handleUpload = async (docType: string, file: File) => {
-    setUploads(prev => {
-      const existing = prev.filter(u => u.docType !== docType);
-      return [...existing, { docType, file, status: 'uploading' }];
-    });
+    setUploads(prev => [
+      ...prev.filter(u => u.docType !== docType),
+      { docType, file, status: 'uploading' },
+    ]);
 
     try {
       const { data } = await api.post('/documents/upload-url', {
@@ -130,7 +129,7 @@ export default function StepDocuments() {
 
   const requiredDocs = REQUIRED_DOCS.filter(d => d.required);
   const uploadedRequired = uploads.filter(u =>
-    requiredDocs.some(d => d.type === u.docType) && u.status === 'done'
+    requiredDocs.some(d => d.type === u.docType) && u.status === 'done',
   );
   const allRequiredDone = uploadedRequired.length >= requiredDocs.length;
 
@@ -158,7 +157,7 @@ export default function StepDocuments() {
 
           {!allRequiredDone && (
             <div className="mt-4 flex items-center gap-2 p-3 bg-amber-50 rounded-xl text-sm text-amber-700">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{requiredDocs.length - uploadedRequired.length} required document(s) still needed.</span>
             </div>
           )}

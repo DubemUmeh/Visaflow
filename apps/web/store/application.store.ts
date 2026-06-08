@@ -1,15 +1,13 @@
 'use client';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
 export interface ApplicationFormData {
-  // Step 1 – Choose destination
   visaTypeId: string;
   destinationCountryId: string;
   nationalityCountryId: string;
   processingTier: 'STANDARD' | 'EXPEDITED' | 'RUSH';
-
-  // Step 2 – Personal Info
   applicantFirstName: string;
   applicantLastName: string;
   applicantEmail: string;
@@ -17,15 +15,10 @@ export interface ApplicationFormData {
   applicantDob: string;
   applicantPassportNo: string;
   applicantPassportExpiry: string;
-
-  // Step 3 – Travel Details
   travelDateFrom: string;
   travelDateTo: string;
   purposeOfTravel: string;
   accommodationAddress: string;
-
-  // Step 4 – Documents (tracked separately as file uploads)
-  // Step 5 – Review & Pay
 }
 
 interface WizardState {
@@ -58,16 +51,28 @@ const initialState: WizardState = {
 };
 
 export const useApplicationWizardStore = create<WizardState & WizardActions>()(
-  immer((set) => ({
-    ...initialState,
+  persist(
+    immer((set) => ({
+      ...initialState,
 
-    setStep: (step) => set((s) => { s.currentStep = step; }),
-    nextStep: () => set((s) => { if (s.currentStep < s.totalSteps) s.currentStep++; }),
-    prevStep: () => set((s) => { if (s.currentStep > 1) s.currentStep--; }),
-    updateFormData: (data) => set((s) => { Object.assign(s.formData, data); }),
-    setApplicationId: (id) => set((s) => { s.applicationId = id; }),
-    setSubmitting: (v) => set((s) => { s.isSubmitting = v; }),
-    setSaving: (v) => set((s) => { s.isSaving = v; }),
-    reset: () => set(() => ({ ...initialState })),
-  }))
+      setStep: (step) => set((s) => { s.currentStep = step; }),
+      nextStep: () => set((s) => { if (s.currentStep < s.totalSteps) s.currentStep++; }),
+      prevStep: () => set((s) => { if (s.currentStep > 1) s.currentStep--; }),
+      updateFormData: (data) => set((s) => { Object.assign(s.formData, data); }),
+      setApplicationId: (id) => set((s) => { s.applicationId = id; }),
+      setSubmitting: (v) => set((s) => { s.isSubmitting = v; }),
+      setSaving: (v) => set((s) => { s.isSaving = v; }),
+      reset: () => set(() => ({ ...initialState })),
+    })),
+    {
+      name: 'visaflow-wizard',
+      storage: createJSONStorage(() => sessionStorage),
+      // Only persist the fields that matter — skip transient flags
+      partialize: (s) => ({
+        currentStep: s.currentStep,
+        formData: s.formData,
+        applicationId: s.applicationId,
+      }),
+    }
+  )
 );

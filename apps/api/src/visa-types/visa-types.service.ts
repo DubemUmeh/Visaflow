@@ -268,7 +268,10 @@ export class VisaTypesService {
         ? eq(visaTypes.destinationCountryId, destinationCountryFilter)
         : undefined,
       nationalityCountryFilter
-        ? eq(visaTypes.nationalityCountryId, nationalityCountryFilter)
+        ? or(
+          eq(visaTypes.nationalityCountryId, nationalityCountryFilter),
+          isNull(visaTypes.nationalityCountryId),
+        )
         : undefined,
     ].filter(Boolean) as Parameters<typeof and>[0][];
 

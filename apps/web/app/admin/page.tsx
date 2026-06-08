@@ -139,7 +139,7 @@ export default function AdminDashboardPage() {
                     return (
                       <Link key={app.id} href={`/admin/applications/${app.id}`}>
                         <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-sand/45 transition-colors cursor-pointer">
-                          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-lg flex-shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-lg shrink-0">
                             {app.destinationCountry.flagEmoji ?? '🌍'}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -185,7 +185,7 @@ export default function AdminDashboardPage() {
                   {actionRequired.slice(0, 4).map(app => (
                     <Link key={app.id} href={`/admin/applications/${app.id}`}>
                       <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-coral/15 transition-colors cursor-pointer">
-                        <div className="w-6 h-6 rounded-full bg-coral/20 flex items-center justify-center text-sm flex-shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-coral/20 flex items-center justify-center text-sm shrink-0">
                           {app.destinationCountry.flagEmoji}
                         </div>
                         <div className="min-w-0">

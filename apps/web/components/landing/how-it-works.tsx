@@ -56,7 +56,7 @@ export function HowItWorks() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
           {/* Connector line */}
-          <div className="hidden lg:block absolute top-12 left-[calc(12.5%+1.5rem)] right-[calc(12.5%+1.5rem)] h-0.5 bg-gradient-to-r from-brand-soft via-coral/40 to-success/30" />
+          <div className="hidden lg:block absolute top-12 left-[calc(12.5%+1.5rem)] right-[calc(12.5%+1.5rem)] h-0.5 bg-linear-to-r from-brand-soft via-coral/40 to-success/30" />
 
           {steps.map((item, index) => (
             <motion.div

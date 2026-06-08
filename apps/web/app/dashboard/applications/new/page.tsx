@@ -1,5 +1,4 @@
 'use client';
-import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, User, MapPin, FileText, CreditCard, Check } from 'lucide-react';
 import { useApplicationWizardStore } from '@/store/application.store';
@@ -66,11 +65,10 @@ const stepComponents: Record<number, React.ComponentType> = {
 };
 
 export default function NewApplicationPage() {
-  const { currentStep, reset } = useApplicationWizardStore();
-
-  useEffect(() => {
-    return () => { reset(); };
-  }, [reset]);
+  // reset is intentionally not called here — state must survive refreshes and
+  // back/forward navigation. The store persists to sessionStorage and reset()
+  // is called by StepReviewPay after a successful submission.
+  const { currentStep } = useApplicationWizardStore();
 
   const StepComponent = stepComponents[currentStep] ?? StepSelectVisa;
 

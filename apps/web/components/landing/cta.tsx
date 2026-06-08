@@ -36,7 +36,7 @@ export function CTA() {
               </Button>
             </Link>
             <Link href="/#eligibility">
-              <Button size="xl" variant="outline" className="border-white/40 text-white hover:bg-card/10 w-full sm:w-auto">
+              <Button size="xl" variant="outline" className="border-white/40 bg-accent/70 text-white hover:bg-card/10 w-full sm:w-auto">
                 Check Eligibility First
               </Button>
             </Link>

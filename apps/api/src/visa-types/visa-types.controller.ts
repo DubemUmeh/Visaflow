@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { VisaTypesService } from './visa-types.service';
 import { Public } from '../common/decorators/public.decorator';
@@ -17,9 +18,20 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 class VisaTypeQueryDto extends PaginationDto {
+  @IsOptional()
+  @IsUUID()
   destinationCountryId?: string;
+
+  @IsOptional()
+  @IsString()
   destinationCountryCode?: string;
+
+  @IsOptional()
+  @IsUUID()
   nationalityCountryId?: string;
+
+  @IsOptional()
+  @IsString()
   nationalityCountryCode?: string;
 }
 
