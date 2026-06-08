@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -18,6 +27,12 @@ type CurrentUserShape = { id: string; role?: string };
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
+  @Get('options')
+  @ApiOperation({ summary: 'Get configured payment options' })
+  async getOptions() {
+    return this.paymentsService.getOptions();
+  }
+
   @Post('checkout')
   @ApiOperation({ summary: 'Create checkout session for an application' })
   async createCheckout(
@@ -29,7 +44,10 @@ export class PaymentsController {
 
   @Get()
   @ApiOperation({ summary: 'List payments' })
-  async listPayments(@CurrentUser() user: CurrentUserShape, @Query() query: ListPaymentsDto) {
+  async listPayments(
+    @CurrentUser() user: CurrentUserShape,
+    @Query() query: ListPaymentsDto,
+  ) {
     return this.paymentsService.findAll({
       userId: user.id,
       role: user.role,
@@ -41,7 +59,10 @@ export class PaymentsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get payment by ID' })
-  async getPayment(@CurrentUser() user: CurrentUserShape, @Param('id') id: string) {
+  async getPayment(
+    @CurrentUser() user: CurrentUserShape,
+    @Param('id') id: string,
+  ) {
     return this.paymentsService.findById(id, user.id, user.role);
   }
 

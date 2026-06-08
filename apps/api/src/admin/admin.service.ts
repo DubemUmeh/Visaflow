@@ -34,6 +34,49 @@ const DEFAULT_SETTINGS = {
     maxLoginAttempts: 5,
     passwordMinLength: 8,
   },
+  payments: {
+    stripeEnabled: true,
+    paypalEnabled: false,
+    paypalEmail: 'payments@visaflow.com',
+    paypalNarration: 'VisaFlow visa application fee',
+    cryptoEnabled: false,
+    walletConnectEnabled: false,
+    walletConnectProjectId: '',
+    walletAddresses: [
+      {
+        id: 'usdt-erc20',
+        label: 'USDT (ERC-20)',
+        coin: 'USDT',
+        chain: 'Ethereum ERC-20',
+        address: '',
+        enabled: true,
+      },
+      {
+        id: 'usdt-bep20',
+        label: 'USDT (BEP-20)',
+        coin: 'USDT',
+        chain: 'BNB Smart Chain BEP-20',
+        address: '',
+        enabled: true,
+      },
+      {
+        id: 'btc',
+        label: 'Bitcoin',
+        coin: 'BTC',
+        chain: 'Bitcoin',
+        address: '',
+        enabled: true,
+      },
+      {
+        id: 'bnb',
+        label: 'BNB',
+        coin: 'BNB',
+        chain: 'BNB Smart Chain',
+        address: '',
+        enabled: true,
+      },
+    ],
+  },
 };
 
 @Injectable()
@@ -54,28 +97,59 @@ export class AdminService {
       revenue,
       openTickets,
     ] = await Promise.all([
-      this.dbClient.db.select({ count: sql`count(*)` }).from(applications).where(isNull(applications.deletedAt)),
       this.dbClient.db
         .select({ count: sql`count(*)` })
         .from(applications)
-        .where(and(isNull(applications.deletedAt), sql`${applications.status} in ('SUBMITTED', 'UNDER_REVIEW', 'MISSING_DOCUMENTS')`)),
+        .where(isNull(applications.deletedAt)),
       this.dbClient.db
         .select({ count: sql`count(*)` })
         .from(applications)
-        .where(and(isNull(applications.deletedAt), sql`${applications.status} in ('APPROVED', 'COMPLETED')`)),
+        .where(
+          and(
+            isNull(applications.deletedAt),
+            sql`${applications.status} in ('SUBMITTED', 'UNDER_REVIEW', 'MISSING_DOCUMENTS')`,
+          ),
+        ),
       this.dbClient.db
         .select({ count: sql`count(*)` })
         .from(applications)
-        .where(and(isNull(applications.deletedAt), eq(applications.status, 'REJECTED'))),
-      this.dbClient.db.select({ count: sql`count(*)` }).from(users).where(isNull(users.deletedAt)),
+        .where(
+          and(
+            isNull(applications.deletedAt),
+            sql`${applications.status} in ('APPROVED', 'COMPLETED')`,
+          ),
+        ),
+      this.dbClient.db
+        .select({ count: sql`count(*)` })
+        .from(applications)
+        .where(
+          and(
+            isNull(applications.deletedAt),
+            eq(applications.status, 'REJECTED'),
+          ),
+        ),
+      this.dbClient.db
+        .select({ count: sql`count(*)` })
+        .from(users)
+        .where(isNull(users.deletedAt)),
       this.dbClient.db
         .select({ cents: sql`coalesce(sum(${payments.amountTotal}), 0)` })
         .from(payments)
-        .where(and(eq(payments.status, 'COMPLETED'), gte(payments.createdAt, monthStart))),
+        .where(
+          and(
+            eq(payments.status, 'COMPLETED'),
+            gte(payments.createdAt, monthStart),
+          ),
+        ),
       this.dbClient.db
         .select({ count: sql`count(*)` })
         .from(supportTickets)
-        .where(and(isNull(supportTickets.deletedAt), sql`${supportTickets.status} in ('OPEN', 'IN_PROGRESS')`)),
+        .where(
+          and(
+            isNull(supportTickets.deletedAt),
+            sql`${supportTickets.status} in ('OPEN', 'IN_PROGRESS')`,
+          ),
+        ),
     ]);
 
     const totalApplications = Number(totalApps[0]?.count ?? 0);
@@ -86,7 +160,9 @@ export class AdminService {
         totalApplications,
         totalRevenue: Number(revenue[0]?.cents ?? 0),
         activeApplications: Number(pendingApps[0]?.count ?? 0),
-        approvalRate: totalApplications ? Math.round((approved / totalApplications) * 100) : 0,
+        approvalRate: totalApplications
+          ? Math.round((approved / totalApplications) * 100)
+          : 0,
         avgProcessingDays: 3,
         totalUsers: Number(totalUsers[0]?.count ?? 0),
       },
@@ -118,7 +194,10 @@ export class AdminService {
       ...Object.fromEntries(
         Object.entries(dto).map(([key, value]) => [
           key,
-          { ...(current as Record<string, Record<string, unknown>>)[key], ...value },
+          {
+            ...(current as Record<string, Record<string, unknown>>)[key],
+            ...value,
+          },
         ]),
       ),
     };

@@ -5,12 +5,21 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { and, desc, eq, isNull, sql, type InferModel } from 'drizzle-orm';
+import {
+  and,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  sql,
+  type InferModel,
+} from 'drizzle-orm';
 import {
   applicationStatusHistory,
   applications,
   paymentLineItems,
   payments,
+  systemSettings,
   visaTypes,
 } from '@visaflow/database';
 import Stripe from 'stripe';
@@ -27,6 +36,73 @@ import type {
 
 type PaymentRow = InferModel<typeof payments>;
 type LineItemRow = InferModel<typeof paymentLineItems>;
+type PaymentProvider = 'STRIPE' | 'PAYPAL' | 'CRYPTO';
+type CheckoutProvider = NonNullable<CreateCheckoutSessionDto['provider']>;
+
+type PaymentWalletAddress = {
+  id: string;
+  label: string;
+  coin: string;
+  chain: string;
+  address: string;
+  memo?: string;
+  enabled: boolean;
+};
+
+type PaymentSettings = {
+  stripeEnabled: boolean;
+  paypalEnabled: boolean;
+  paypalEmail: string;
+  paypalNarration: string;
+  cryptoEnabled: boolean;
+  walletConnectEnabled: boolean;
+  walletConnectProjectId: string;
+  walletAddresses: PaymentWalletAddress[];
+};
+
+const DEFAULT_PAYMENT_SETTINGS: PaymentSettings = {
+  stripeEnabled: true,
+  paypalEnabled: false,
+  paypalEmail: 'payments@visaflow.com',
+  paypalNarration: 'VisaFlow visa application fee',
+  cryptoEnabled: false,
+  walletConnectEnabled: false,
+  walletConnectProjectId: '',
+  walletAddresses: [
+    {
+      id: 'usdt-erc20',
+      label: 'USDT (ERC-20)',
+      coin: 'USDT',
+      chain: 'Ethereum ERC-20',
+      address: '',
+      enabled: true,
+    },
+    {
+      id: 'usdt-bep20',
+      label: 'USDT (BEP-20)',
+      coin: 'USDT',
+      chain: 'BNB Smart Chain BEP-20',
+      address: '',
+      enabled: true,
+    },
+    {
+      id: 'btc',
+      label: 'Bitcoin',
+      coin: 'BTC',
+      chain: 'Bitcoin',
+      address: '',
+      enabled: true,
+    },
+    {
+      id: 'bnb',
+      label: 'BNB',
+      coin: 'BNB',
+      chain: 'BNB Smart Chain',
+      address: '',
+      enabled: true,
+    },
+  ],
+};
 
 @Injectable()
 export class PaymentsService {
@@ -43,6 +119,10 @@ export class PaymentsService {
     if (value instanceof Date) return value.toISOString();
     if (typeof value === 'string') return value;
     return null;
+  }
+
+  private moneyFromCents(amount: number) {
+    return (amount / 100).toFixed(2);
   }
 
   private toSummary(row: PaymentRow): PaymentSummary {
@@ -75,6 +155,7 @@ export class PaymentsService {
       invoiceUrl: row.invoiceUrl,
       paidAt: this.toIso(row.paidAt),
       createdAt: this.toIso(row.createdAt) ?? '',
+      metadata: (row.metadata as Record<string, unknown>) ?? {},
       lineItems: lineItems.map((item) => ({
         id: item.id,
         description: item.description,
@@ -99,6 +180,99 @@ export class PaymentsService {
       return visaType.priceRush ?? Math.round(visaType.priceStandard * 2.5);
     }
     return visaType.priceStandard;
+  }
+
+  private async getPaymentSettings(): Promise<PaymentSettings> {
+    const [row] = await this.dbClient.db
+      .select({ value: systemSettings.value })
+      .from(systemSettings)
+      .where(eq(systemSettings.key, 'payments'))
+      .limit(1);
+
+    return {
+      ...DEFAULT_PAYMENT_SETTINGS,
+      ...((row?.value as Partial<PaymentSettings> | undefined) ?? {}),
+    };
+  }
+
+  async getOptions() {
+    const settings = await this.getPaymentSettings();
+
+    return {
+      stripeEnabled: settings.stripeEnabled,
+      paypalEnabled: settings.paypalEnabled && Boolean(settings.paypalEmail),
+      paypalEmail: settings.paypalEmail,
+      paypalNarration: settings.paypalNarration,
+      cryptoEnabled: settings.cryptoEnabled,
+      walletConnectEnabled:
+        settings.cryptoEnabled && settings.walletConnectEnabled,
+      walletConnectProjectId: settings.walletConnectProjectId,
+      walletAddresses: settings.walletAddresses.filter(
+        (wallet) => wallet.enabled && wallet.address.trim().length > 0,
+      ),
+    };
+  }
+
+  private providerFor(provider?: CheckoutProvider): PaymentProvider {
+    if (provider === 'paypal') return 'PAYPAL';
+    if (
+      provider === 'crypto_wallet_address' ||
+      provider === 'crypto_wallet_connect'
+    ) {
+      return 'CRYPTO';
+    }
+    return 'STRIPE';
+  }
+
+  private async createPendingPayment(params: {
+    userId: string;
+    applicationId: string;
+    visaTypeId: string;
+    referenceNumber: string;
+    visaName: string;
+    amountTotal: number;
+    amountGovFee: number;
+    amountServiceFee: number;
+    currency: string;
+    processingTier: 'STANDARD' | 'EXPEDITED' | 'RUSH';
+    provider: PaymentProvider;
+    metadata: Record<string, unknown>;
+  }) {
+    const [payment] = await this.dbClient.db
+      .insert(payments)
+      .values({
+        userId: params.userId,
+        applicationId: params.applicationId,
+        status: 'PENDING',
+        provider: params.provider,
+        amountTotal: params.amountTotal,
+        amountGovFee: params.amountGovFee,
+        amountServiceFee: params.amountServiceFee,
+        amountTax: 0,
+        amountRefunded: 0,
+        currency: params.currency,
+        processingTier: params.processingTier,
+        description: `${params.visaName} application ${params.referenceNumber}`,
+        metadata: params.metadata,
+      })
+      .returning();
+
+    if (!payment) throw new NotFoundException('Payment could not be created');
+
+    await this.dbClient.db.insert(paymentLineItems).values({
+      paymentId: payment.id,
+      description: `${params.visaName} (${params.processingTier.toLowerCase()})`,
+      quantity: 1,
+      unitAmount: params.amountTotal,
+      totalAmount: params.amountTotal,
+      currency: payment.currency,
+      metadata: {
+        applicationId: params.applicationId,
+        visaTypeId: params.visaTypeId,
+      },
+    });
+
+    return payment;
   }
 
   async createCheckout(
@@ -132,10 +306,115 @@ export class PaymentsService {
 
     if (!visaType) throw new NotFoundException('Visa type not found');
 
+    const settings = await this.getPaymentSettings();
+    const requestedProvider = dto.provider ?? 'stripe';
+    const provider = this.providerFor(requestedProvider);
     const amountTotal = this.amountForTier(dto.processingTier, visaType);
     const amountGovFee = visaType.govFee;
     const amountServiceFee = Math.max(0, amountTotal - amountGovFee);
-    const provider = dto.provider === 'paypal' ? 'PAYPAL' : 'STRIPE';
+    const currency = dto.currency?.toUpperCase() ?? 'USD';
+    const paymentPageUrl = `${dto.successUrl.split('/dashboard/applications/')[0]}/dashboard/payments/${application.id}`;
+
+    if (provider === 'STRIPE' && !settings.stripeEnabled) {
+      throw new ServiceUnavailableException('Stripe payments are disabled.');
+    }
+    if (
+      provider === 'PAYPAL' &&
+      (!settings.paypalEnabled || !settings.paypalEmail)
+    ) {
+      throw new ServiceUnavailableException(
+        'PayPal payments are not configured.',
+      );
+    }
+    if (provider === 'CRYPTO' && !settings.cryptoEnabled) {
+      throw new ServiceUnavailableException(
+        'Crypto payments are not configured.',
+      );
+    }
+    if (
+      requestedProvider === 'crypto_wallet_connect' &&
+      !settings.walletConnectEnabled
+    ) {
+      throw new ServiceUnavailableException(
+        'WalletConnect payments are not enabled.',
+      );
+    }
+
+    const payment = await this.createPendingPayment({
+      userId,
+      applicationId: application.id,
+      visaTypeId: visaType.id,
+      referenceNumber: application.referenceNumber,
+      visaName: visaType.name,
+      amountTotal,
+      amountGovFee,
+      amountServiceFee,
+      currency,
+      processingTier: dto.processingTier,
+      provider,
+      metadata: {
+        successUrl: dto.successUrl,
+        cancelUrl: dto.cancelUrl,
+        requestedProvider,
+        walletId: dto.walletId,
+      },
+    });
+
+    if (provider === 'PAYPAL') {
+      const narration = `${settings.paypalNarration} - ${application.referenceNumber}`;
+      const checkoutUrl = new URL('https://www.paypal.com/cgi-bin/webscr');
+      checkoutUrl.searchParams.set('cmd', '_xclick');
+      checkoutUrl.searchParams.set('business', settings.paypalEmail);
+      checkoutUrl.searchParams.set('item_name', narration);
+      checkoutUrl.searchParams.set('amount', this.moneyFromCents(amountTotal));
+      checkoutUrl.searchParams.set('currency_code', currency);
+      checkoutUrl.searchParams.set('custom', payment.id);
+      checkoutUrl.searchParams.set(
+        'return',
+        `${paymentPageUrl}?payment_id=${payment.id}&provider=paypal&status=returned`,
+      );
+      checkoutUrl.searchParams.set(
+        'cancel_return',
+        `${paymentPageUrl}?payment_id=${payment.id}&provider=paypal&status=cancelled`,
+      );
+
+      await this.dbClient.db
+        .update(payments)
+        .set({ providerSessionId: payment.id })
+        .where(eq(payments.id, payment.id));
+
+      return {
+        sessionId: payment.id,
+        paymentId: payment.id,
+        provider: 'paypal',
+        checkoutUrl: checkoutUrl.toString(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        instructions: {
+          paypalEmail: settings.paypalEmail,
+          narration,
+        },
+      };
+    }
+
+    if (provider === 'CRYPTO') {
+      const method = requestedProvider;
+      return {
+        sessionId: payment.id,
+        paymentId: payment.id,
+        provider: method,
+        checkoutUrl: `${paymentPageUrl}?payment_id=${payment.id}&provider=${method}`,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        instructions: {
+          walletConnectProjectId: settings.walletConnectProjectId,
+          walletAddresses: settings.walletAddresses.filter(
+            (wallet) => wallet.enabled && wallet.address.trim().length > 0,
+          ),
+          amount: amountTotal,
+          currency,
+          referenceNumber: application.referenceNumber,
+        },
+      };
+    }
 
     const stripeSecret = this.configService.get<string>(
       'STRIPE_SECRET_KEY',
@@ -146,40 +425,6 @@ export class PaymentsService {
         'Stripe is not configured. Your application is saved as a draft; please try payment again later.',
       );
     }
-
-    const [payment] = await this.dbClient.db
-      .insert(payments)
-      .values({
-        userId,
-        applicationId: application.id,
-        status: 'PENDING',
-        provider,
-        amountTotal,
-        amountGovFee,
-        amountServiceFee,
-        amountTax: 0,
-        amountRefunded: 0,
-        currency: dto.currency?.toUpperCase() ?? 'USD',
-        processingTier: dto.processingTier,
-        description: `${visaType.name} application ${application.referenceNumber}`,
-        metadata: {
-          successUrl: dto.successUrl,
-          cancelUrl: dto.cancelUrl,
-        },
-      })
-      .returning();
-
-    if (!payment) throw new NotFoundException('Payment could not be created');
-
-    await this.dbClient.db.insert(paymentLineItems).values({
-      paymentId: payment.id,
-      description: `${visaType.name} (${dto.processingTier.toLowerCase()})`,
-      quantity: 1,
-      unitAmount: amountTotal,
-      totalAmount: amountTotal,
-      currency: payment.currency,
-      metadata: { applicationId: application.id, visaTypeId: visaType.id },
-    });
 
     try {
       const stripe = new Stripe(stripeSecret);
@@ -216,6 +461,8 @@ export class PaymentsService {
 
       return {
         sessionId: session.id,
+        paymentId: payment.id,
+        provider: 'stripe',
         checkoutUrl: session.url ?? dto.successUrl,
         expiresAt: session.expires_at
           ? new Date(session.expires_at * 1000).toISOString()
@@ -268,8 +515,28 @@ export class PaymentsService {
         .where(where),
     ]);
 
+    const lineItems = rows.length
+      ? await this.dbClient.db
+          .select()
+          .from(paymentLineItems)
+          .where(
+            inArray(
+              paymentLineItems.paymentId,
+              rows.map((row) => row.id),
+            ),
+          )
+      : [];
+    const itemsByPayment = new Map<string, LineItemRow[]>();
+    for (const item of lineItems) {
+      const current = itemsByPayment.get(item.paymentId) ?? [];
+      current.push(item);
+      itemsByPayment.set(item.paymentId, current);
+    }
+
     return {
-      data: rows.map((row) => this.toSummary(row)),
+      data: rows.map((row) =>
+        this.toEntity(row, itemsByPayment.get(row.id) ?? []),
+      ),
       meta: buildPaginationMeta(
         Number(countRows[0]?.count ?? 0),
         params.page,
@@ -278,7 +545,7 @@ export class PaymentsService {
     };
   }
 
-  async findById(id: string, userId: string, role?: string) {
+  private async findRow(id: string, userId: string, role?: string) {
     const [payment] = await this.dbClient.db
       .select()
       .from(payments)
@@ -289,13 +556,16 @@ export class PaymentsService {
     if (!this.isAdmin(role) && payment.userId !== userId) {
       throw new ForbiddenException('You do not have access to this payment');
     }
+    return payment;
+  }
 
-    const lines = await this.dbClient.db
+  async findById(id: string, userId: string, role?: string) {
+    const payment = await this.findRow(id, userId, role);
+    const lineItems = await this.dbClient.db
       .select()
       .from(paymentLineItems)
-      .where(eq(paymentLineItems.paymentId, payment.id));
-
-    return this.toEntity(payment, lines);
+      .where(eq(paymentLineItems.paymentId, id));
+    return this.toEntity(payment, lineItems);
   }
 
   async markPaid(
@@ -304,41 +574,35 @@ export class PaymentsService {
     role: string | undefined,
     dto: MarkPaymentPaidDto,
   ) {
-    if (!this.isAdmin(role)) {
+    if (!this.isAdmin(role))
       throw new ForbiddenException('Only admins can mark payments as paid');
-    }
-
-    await this.findById(id, userId, role);
-
-    const paidAt = new Date();
+    const payment = await this.findRow(id, userId, role);
 
     await this.dbClient.db
       .update(payments)
       .set({
         status: 'COMPLETED',
-        paidAt,
-        providerPaymentId: dto.providerPaymentId,
+        providerPaymentId: dto.providerPaymentId ?? payment.providerPaymentId,
+        paidAt: new Date(),
       })
       .where(eq(payments.id, id));
 
-    const payment = await this.findById(id, userId, role);
     await this.dbClient.db
       .update(applications)
       .set({
         status: 'SUBMITTED',
-        submittedAt: paidAt,
-        currentStep: 5,
+        submittedAt: new Date(),
         completionPercentage: 100,
       })
       .where(eq(applications.id, payment.applicationId));
 
     await this.dbClient.db.insert(applicationStatusHistory).values({
       applicationId: payment.applicationId,
-      fromStatus: 'DRAFT',
+      fromStatus: null,
       toStatus: 'SUBMITTED',
       changedById: userId,
-      note: 'Payment completed; application submitted for review',
-      isSystemChange: true,
+      note: 'Payment confirmed manually',
+      isSystemChange: false,
     });
 
     return this.findById(id, userId, role);
