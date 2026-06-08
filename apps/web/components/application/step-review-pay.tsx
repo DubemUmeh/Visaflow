@@ -64,22 +64,14 @@ export default function StepReviewPay() {
         ? { id: applicationId }
         : (await api.post("/applications", payload)).data.data;
       if (!applicationId) setApplicationId(application.id);
-      const origin = window.location.origin;
-      const checkout = await api.post("/payments/checkout", {
-        applicationId: application.id,
-        processingTier: formData.processingTier ?? "STANDARD",
-        currency: "USD",
-        successUrl: `${origin}/dashboard/applications/${application.id}`,
-        cancelUrl: `${origin}/dashboard/applications/${application.id}`,
-        provider: "stripe",
-      });
-
       setSubmitted(true);
-      toast.success("Draft saved. Redirecting to secure checkout.");
+      toast.success("Draft saved. Redirecting to payment options.");
       setTimeout(() => {
         reset();
-        window.location.href = checkout.data.data.checkoutUrl;
-      }, 2000);
+        router.push(
+          `/dashboard/payments/${application.id}?tier=${formData.processingTier ?? "STANDARD"}`,
+        );
+      }, 800);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
@@ -103,7 +95,7 @@ export default function StepReviewPay() {
         </div>
         <h2 className="text-2xl font-bold text-foreground mb-2">Draft Saved</h2>
         <p className="text-muted-foreground">
-          Redirecting you to secure checkout…
+          Redirecting you to the payment page…
         </p>
       </motion.div>
     );
@@ -246,7 +238,7 @@ export default function StepReviewPay() {
           className="gap-2"
         >
           <CreditCard className="w-4 h-4" />
-          Submit Application
+          Continue to Payment
         </Button>
       </div>
     </div>
