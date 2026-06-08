@@ -3,14 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  and,
-  desc,
-  eq,
-  isNull,
-  sql,
-  type InferModel,
-} from 'drizzle-orm';
+import { and, desc, eq, isNull, sql, type InferModel } from 'drizzle-orm';
 import {
   applicationStatusHistory,
   applications,
@@ -44,7 +37,13 @@ type ApplicationRow = InferModel<typeof applications>;
 type VisaTypeRow = InferModel<typeof visaTypes>;
 type CountryRow = Pick<
   InferModel<typeof countries>,
-  'id' | 'name' | 'code' | 'flagEmoji' | 'slug' | 'visaTypesCount' | 'avgProcessingDays'
+  | 'id'
+  | 'name'
+  | 'code'
+  | 'flagEmoji'
+  | 'slug'
+  | 'visaTypesCount'
+  | 'avgProcessingDays'
 >;
 type DocumentRow = InferModel<typeof uploadedDocuments>;
 type PaymentRow = InferModel<typeof payments>;
@@ -230,7 +229,9 @@ export class ApplicationService {
     const { skip, take } = buildPaginationSkipTake(page, limit);
     const conditions = [
       isNull(applications.deletedAt),
-      this.isAdmin(params.role) ? undefined : eq(applications.userId, params.userId),
+      this.isAdmin(params.role)
+        ? undefined
+        : eq(applications.userId, params.userId),
       params.status ? eq(applications.status, params.status) : undefined,
       params.destinationCountryId
         ? eq(applications.destinationCountryId, params.destinationCountryId)
@@ -246,7 +247,10 @@ export class ApplicationService {
           visaType: visaTypes,
         })
         .from(applications)
-        .innerJoin(countries, eq(applications.destinationCountryId, countries.id))
+        .innerJoin(
+          countries,
+          eq(applications.destinationCountryId, countries.id),
+        )
         .innerJoin(visaTypes, eq(applications.visaTypeId, visaTypes.id))
         .where(where)
         .orderBy(desc(applications.createdAt))
@@ -294,11 +298,11 @@ export class ApplicationService {
         destinationCountryId: dto.destinationCountryId,
         nationalityCountryId: dto.nationalityCountryId,
         processingTier: dto.processingTier ?? 'STANDARD',
-        status: 'SUBMITTED',
+        status: 'DRAFT',
         currentStep: 5,
         totalSteps: 5,
         completionPercentage: 100,
-        submittedAt: new Date(),
+        draftData: dto.formData ?? {},
         applicantFirstName: dto.applicantFirstName,
         applicantLastName: dto.applicantLastName,
         applicantEmail: dto.applicantEmail,
@@ -319,8 +323,8 @@ export class ApplicationService {
     await this.dbClient.db.insert(applicationStatusHistory).values({
       applicationId: created.id,
       fromStatus: null,
-      toStatus: 'SUBMITTED',
-      note: 'Application submitted',
+      toStatus: 'DRAFT',
+      note: 'Application draft completed pending payment',
       isSystemChange: true,
     });
 
@@ -339,29 +343,32 @@ export class ApplicationService {
     }
 
     if (!this.isAdmin(role) && app.userId !== userId) {
-      throw new ForbiddenException('You do not have access to this application');
+      throw new ForbiddenException(
+        'You do not have access to this application',
+      );
     }
 
-    const [visaType, destinationCountry, nationalityCountry] = await Promise.all([
-      this.dbClient.db
-        .select()
-        .from(visaTypes)
-        .where(eq(visaTypes.id, app.visaTypeId))
-        .limit(1)
-        .then((rows) => rows[0]),
-      this.dbClient.db
-        .select()
-        .from(countries)
-        .where(eq(countries.id, app.destinationCountryId))
-        .limit(1)
-        .then((rows) => rows[0]),
-      this.dbClient.db
-        .select()
-        .from(countries)
-        .where(eq(countries.id, app.nationalityCountryId))
-        .limit(1)
-        .then((rows) => rows[0]),
-    ]);
+    const [visaType, destinationCountry, nationalityCountry] =
+      await Promise.all([
+        this.dbClient.db
+          .select()
+          .from(visaTypes)
+          .where(eq(visaTypes.id, app.visaTypeId))
+          .limit(1)
+          .then((rows) => rows[0]),
+        this.dbClient.db
+          .select()
+          .from(countries)
+          .where(eq(countries.id, app.destinationCountryId))
+          .limit(1)
+          .then((rows) => rows[0]),
+        this.dbClient.db
+          .select()
+          .from(countries)
+          .where(eq(countries.id, app.nationalityCountryId))
+          .limit(1)
+          .then((rows) => rows[0]),
+      ]);
 
     if (!visaType || !destinationCountry || !nationalityCountry) {
       throw new NotFoundException('Application references could not be loaded');
@@ -415,7 +422,8 @@ export class ApplicationService {
       applicantPhone: dto.applicantPhone,
       applicantDob: this.toDate(dto.applicantDob) ?? undefined,
       applicantPassportNo: dto.applicantPassportNo,
-      applicantPassportExpiry: this.toDate(dto.applicantPassportExpiry) ?? undefined,
+      applicantPassportExpiry:
+        this.toDate(dto.applicantPassportExpiry) ?? undefined,
       formData: dto.formData,
       internalNotes: this.isAdmin(role) ? dto.adminNotes : undefined,
     };
@@ -460,7 +468,9 @@ export class ApplicationService {
         rejectionReason: dto.rejectionReason,
         missingDocumentsNote: dto.missingDocumentsNote,
         ...(Object.fromEntries(
-          Object.entries(statusDates).filter(([, value]) => value !== undefined),
+          Object.entries(statusDates).filter(
+            ([, value]) => value !== undefined,
+          ),
         ) as Partial<InferModel<typeof applications, 'insert'>>),
       })
       .where(eq(applications.id, id));

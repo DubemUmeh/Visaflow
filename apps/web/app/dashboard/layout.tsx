@@ -1,30 +1,39 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, FileText, Globe, User, Settings,
-  LogOut, Bell, ChevronRight, Menu, X, LifeBuoy,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/store/auth.store';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import NotificationPopover from '@/components/ui/notification-popover';
+  LayoutDashboard,
+  FileText,
+  Globe,
+  User,
+  Settings,
+  LogOut,
+  Bell,
+  ChevronRight,
+  Menu,
+  X,
+  LifeBuoy,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/auth.store";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import NotificationPopover from "@/components/ui/notification-popover";
 
 dayjs.extend(relativeTime);
 
 const navItems = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { href: '/dashboard/applications', label: 'Applications', icon: FileText },
-  { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
-  { href: '/dashboard/support', label: 'Support', icon: LifeBuoy },
-  { href: '/dashboard/explore', label: 'Explore Visas', icon: Globe },
-  { href: '/dashboard/profile', label: 'Profile', icon: User },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
+  { href: "/dashboard/applications", label: "Applications", icon: FileText },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
+  { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
+  { href: "/dashboard/explore", label: "Explore Visas", icon: Globe },
+  { href: "/dashboard/settings/profile", label: "Profile", icon: User },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 // ─────────────────────────────────────────────
@@ -36,11 +45,19 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const router = useRouter();
 
   const handleLogout = async () => {
+    if (
+      !window.confirm(
+        "Sign out of VisaFlow? Unsaved application edits on this device will be cleared.",
+      )
+    )
+      return;
     await logout();
-    router.push('/login');
+    router.push("/login");
   };
 
-  const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : 'VF';
+  const initials = user
+    ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+    : "VF";
 
   return (
     <>
@@ -59,9 +76,9 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
 
       <aside
         className={cn(
-          'fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-100 z-50 flex flex-col transition-transform duration-300',
-          'lg:translate-x-0 lg:z-auto',
-          open ? 'translate-x-0' : '-translate-x-full',
+          "fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-100 z-50 flex flex-col transition-transform duration-300",
+          "lg:translate-x-0 lg:z-auto",
+          open ? "translate-x-0" : "-translate-x-full",
         )}
       >
         {/* Logo */}
@@ -72,7 +89,10 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
             </div>
             <span className="font-bold text-gray-900 text-lg">VisaFlow</span>
           </Link>
-          <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-gray-600">
+          <button
+            onClick={onClose}
+            className="lg:hidden text-gray-400 hover:text-gray-600"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -107,22 +127,24 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group',
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group",
                   active
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
                 )}
               >
                 <item.icon
                   className={cn(
-                    'w-4 h-4 shrink-0',
+                    "w-4 h-4 shrink-0",
                     active
-                      ? 'text-blue-600'
-                      : 'text-gray-400 group-hover:text-gray-600',
+                      ? "text-blue-600"
+                      : "text-gray-400 group-hover:text-gray-600",
                   )}
                 />
                 {item.label}
-                {active && <ChevronRight className="w-3 h-3 ml-auto text-blue-400" />}
+                {active && (
+                  <ChevronRight className="w-3 h-3 ml-auto text-blue-400" />
+                )}
               </Link>
             );
           })}
@@ -146,14 +168,18 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
 // ─────────────────────────────────────────────
 // Layout
 // ─────────────────────────────────────────────
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isAuthenticated, refreshUser } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
     refreshUser();
