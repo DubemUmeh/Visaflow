@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
   Param,
   Patch,
   Post,
@@ -25,6 +26,7 @@ import {
 type CurrentUserShape = {
   id: string;
   role?: string;
+  emailVerified?: boolean;
 };
 
 @ApiTags('applications')
@@ -35,7 +37,9 @@ export class ApplicationController {
   constructor(private readonly applicationService: ApplicationService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List applications for current user or all for admins' })
+  @ApiOperation({
+    summary: 'List applications for current user or all for admins',
+  })
   async listApplications(
     @CurrentUser() user: CurrentUserShape,
     @Query() query: ListApplicationsDto,
@@ -51,12 +55,18 @@ export class ApplicationController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Create and submit a visa application' })
+  @ApiOperation({ summary: 'Create a draft visa application pending payment' })
   async createApplication(
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: CurrentUserShape,
     @Body() dto: CreateApplicationDto,
   ) {
-    return this.applicationService.create(userId, dto);
+    if (!user.emailVerified) {
+      throw new ForbiddenException(
+        'Verify your email before starting a visa application',
+      );
+    }
+
+    return this.applicationService.create(user.id, dto);
   }
 
   @Get(':id')

@@ -101,7 +101,7 @@ export class CountriesService {
   }
 
   async findAllSimple() {
-    const cacheKey = 'countries:all-simple';
+    const cacheKey = 'countries:all-simple:v2';
     const cached = await this.cache.get(cacheKey);
     if (cached) return cached;
 
@@ -116,7 +116,7 @@ export class CountriesService {
         avgProcessingDays: countries.avgProcessingDays,
       })
       .from(countries)
-      .where(and(isNull(countries.deletedAt), eq(countries.isPublished, true)))
+      .where(isNull(countries.deletedAt))
       .orderBy(asc(countries.name));
 
     await this.cache.set(cacheKey, countriesList, CACHE_TTL.VERY_LONG);
@@ -147,7 +147,12 @@ export class CountriesService {
     return this.dbClient.db
       .select()
       .from(countries)
-      .where(and(eq(countries.code, code.toUpperCase()), isNull(countries.deletedAt)))
+      .where(
+        and(
+          eq(countries.code, code.toUpperCase()),
+          isNull(countries.deletedAt),
+        ),
+      )
       .limit(1)
       .then((rows) => rows[0]);
   }
@@ -170,7 +175,9 @@ export class CountriesService {
       .groupBy(countries.region)
       .orderBy(asc(countries.region));
 
-    const regions = regionsResult.map((r) => r.region).filter(Boolean) as string[];
+    const regions = regionsResult
+      .map((r) => r.region)
+      .filter(Boolean) as string[];
 
     await this.cache.set(cacheKey, regions, CACHE_TTL.VERY_LONG);
     return regions;
