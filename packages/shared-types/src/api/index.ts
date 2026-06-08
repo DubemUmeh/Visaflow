@@ -21,7 +21,7 @@ import type {
   UserEntity,
   VisaTypeEntity,
   VisaTypeSummary,
-} from '../entities';
+} from "../entities";
 
 // ── Generic API response wrappers ──────────────────────────────────────────
 
@@ -56,7 +56,7 @@ export interface PaginationQuery {
   page?: number;
   limit?: number;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
   search?: string;
 }
 
@@ -81,7 +81,7 @@ export interface LoginRequest {
 }
 
 export interface OAuthCallbackRequest {
-  provider: 'google' | 'apple';
+  provider: "google" | "apple";
   idToken: string;
   email?: string;
   firstName?: string;
@@ -92,7 +92,7 @@ export interface AuthTokensResponse {
   accessToken: string;
   refreshToken: string;
   expiresIn: number; // seconds
-  tokenType: 'Bearer';
+  tokenType: "Bearer";
   user: UserEntity;
 }
 
@@ -173,7 +173,9 @@ export interface ListCountriesQuery extends PaginationQuery {
   isPublished?: boolean;
 }
 
-export type ListCountriesResponse = ApiResponse<PaginatedResponse<CountrySummary>>;
+export type ListCountriesResponse = ApiResponse<
+  PaginatedResponse<CountrySummary>
+>;
 export type GetCountryResponse = ApiResponse<CountryEntity>;
 export type ListAllCountriesResponse = ApiResponse<CountrySummary[]>;
 
@@ -207,7 +209,9 @@ export interface ListVisaTypesQuery extends PaginationQuery {
   isPublished?: boolean;
 }
 
-export type ListVisaTypesResponse = ApiResponse<PaginatedResponse<VisaTypeSummary>>;
+export type ListVisaTypesResponse = ApiResponse<
+  PaginatedResponse<VisaTypeSummary>
+>;
 export type GetVisaTypeResponse = ApiResponse<VisaTypeEntity>;
 
 // ============================================================
@@ -217,7 +221,7 @@ export type GetVisaTypeResponse = ApiResponse<VisaTypeEntity>;
 export interface CheckEligibilityRequest {
   nationalityCode: string; // ISO alpha-2
   destinationCode: string; // ISO alpha-2
-  travelPurpose?: 'TOURISM' | 'BUSINESS' | 'STUDY' | 'MEDICAL' | 'TRANSIT';
+  travelPurpose?: "TOURISM" | "BUSINESS" | "STUDY" | "MEDICAL" | "TRANSIT";
 }
 
 export type CheckEligibilityResponse = ApiResponse<EligibilityResult>;
@@ -271,7 +275,9 @@ export interface ListApplicationsQuery extends PaginationQuery {
 
 export type CreateApplicationResponse = ApiResponse<ApplicationEntity>;
 export type GetApplicationResponse = ApiResponse<ApplicationEntity>;
-export type ListApplicationsResponse = ApiResponse<PaginatedResponse<ApplicationSummary>>;
+export type ListApplicationsResponse = ApiResponse<
+  PaginatedResponse<ApplicationSummary>
+>;
 export type UpdateApplicationResponse = ApiResponse<ApplicationEntity>;
 
 // Admin operations
@@ -319,7 +325,7 @@ export type GetDocumentResponse = ApiResponse<UploadedDocumentEntity>;
 
 // Admin
 export interface AdminReviewDocumentRequest {
-  status: 'VERIFIED' | 'REJECTED';
+  status: "VERIFIED" | "REJECTED";
   rejectionReason?: string;
 }
 
@@ -334,7 +340,12 @@ export interface CreateCheckoutSessionRequest {
   promoCode?: string;
   successUrl: string;
   cancelUrl: string;
-  provider?: 'stripe' | 'paypal';
+  provider?:
+    | "stripe"
+    | "paypal"
+    | "crypto_wallet_connect"
+    | "crypto_wallet_address";
+  walletId?: string;
 }
 
 export interface CreatePayPalOrderRequest {
@@ -355,7 +366,7 @@ export interface ApplyPromoCodeRequest {
 
 export interface ApplyPromoCodeResponse {
   valid: boolean;
-  discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discountType: "PERCENTAGE" | "FIXED_AMOUNT";
   discountValue: number;
   discountAmount: number; // calculated cents off
   newTotal: number;
@@ -363,7 +374,9 @@ export interface ApplyPromoCodeResponse {
 
 export type CreateCheckoutResponse = ApiResponse<CheckoutSessionResponse>;
 export type GetPaymentResponse = ApiResponse<PaymentEntity>;
-export type ListPaymentsResponse = ApiResponse<PaginatedResponse<PaymentEntity>>;
+export type ListPaymentsResponse = ApiResponse<
+  PaginatedResponse<PaymentEntity>
+>;
 
 // ============================================================
 // NOTIFICATIONS — /api/v1/notifications
@@ -378,7 +391,9 @@ export interface MarkNotificationsReadRequest {
   notificationIds: string[]; // empty = mark all
 }
 
-export type ListNotificationsResponse = ApiResponse<PaginatedResponse<NotificationEntity>>;
+export type ListNotificationsResponse = ApiResponse<
+  PaginatedResponse<NotificationEntity>
+>;
 export type UnreadCountResponse = ApiResponse<{ count: number }>;
 
 // ============================================================
@@ -401,14 +416,16 @@ export interface ReplyToTicketRequest {
 }
 
 export interface AdminUpdateTicketRequest {
-  status?: SupportTicketEntity['status'];
-  priority?: SupportTicketEntity['priority'];
+  status?: SupportTicketEntity["status"];
+  priority?: SupportTicketEntity["priority"];
   assignedToId?: string;
   isInternal?: boolean;
 }
 
 export type GetTicketResponse = ApiResponse<SupportTicketEntity>;
-export type ListTicketsResponse = ApiResponse<PaginatedResponse<SupportTicketEntity>>;
+export type ListTicketsResponse = ApiResponse<
+  PaginatedResponse<SupportTicketEntity>
+>;
 
 // ============================================================
 // AI FEATURES — /api/v1/ai

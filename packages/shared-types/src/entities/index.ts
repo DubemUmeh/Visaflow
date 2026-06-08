@@ -3,59 +3,59 @@
 // Mirror of Prisma models for use in frontend/API contracts
 // ============================================================
 
-export type UserRole = 'APPLICANT' | 'AGENT' | 'ADMIN' | 'SUPER_ADMIN';
-export type AuthProvider = 'LOCAL' | 'GOOGLE' | 'APPLE';
+export type UserRole = "APPLICANT" | "AGENT" | "ADMIN" | "SUPER_ADMIN";
+export type AuthProvider = "LOCAL" | "GOOGLE" | "APPLE";
 export type ApplicationStatus =
-  | 'DRAFT'
-  | 'SUBMITTED'
-  | 'UNDER_REVIEW'
-  | 'MISSING_DOCUMENTS'
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'COMPLETED'
-  | 'CANCELLED';
-export type ProcessingTier = 'STANDARD' | 'EXPEDITED' | 'RUSH';
-export type VisaEntryType = 'SINGLE' | 'DOUBLE' | 'MULTIPLE';
+  | "DRAFT"
+  | "SUBMITTED"
+  | "UNDER_REVIEW"
+  | "MISSING_DOCUMENTS"
+  | "APPROVED"
+  | "REJECTED"
+  | "COMPLETED"
+  | "CANCELLED";
+export type ProcessingTier = "STANDARD" | "EXPEDITED" | "RUSH";
+export type VisaEntryType = "SINGLE" | "DOUBLE" | "MULTIPLE";
 export type DocumentType =
-  | 'PASSPORT_PHOTO'
-  | 'PASSPORT_COPY'
-  | 'BANK_STATEMENT'
-  | 'INVITATION_LETTER'
-  | 'TRAVEL_ITINERARY'
-  | 'HOTEL_BOOKING'
-  | 'FLIGHT_ITINERARY'
-  | 'EMPLOYMENT_LETTER'
-  | 'FINANCIAL_PROOF'
-  | 'BIRTH_CERTIFICATE'
-  | 'MARRIAGE_CERTIFICATE'
-  | 'TRAVEL_INSURANCE'
-  | 'YELLOW_FEVER_CERT'
-  | 'BUSINESS_REGISTRATION'
-  | 'VISA_FOR_DESTINATION'
-  | 'OTHER';
+  | "PASSPORT_PHOTO"
+  | "PASSPORT_COPY"
+  | "BANK_STATEMENT"
+  | "INVITATION_LETTER"
+  | "TRAVEL_ITINERARY"
+  | "HOTEL_BOOKING"
+  | "FLIGHT_ITINERARY"
+  | "EMPLOYMENT_LETTER"
+  | "FINANCIAL_PROOF"
+  | "BIRTH_CERTIFICATE"
+  | "MARRIAGE_CERTIFICATE"
+  | "TRAVEL_INSURANCE"
+  | "YELLOW_FEVER_CERT"
+  | "BUSINESS_REGISTRATION"
+  | "VISA_FOR_DESTINATION"
+  | "OTHER";
 export type DocumentStatus =
-  | 'PENDING'
-  | 'UPLOADING'
-  | 'PROCESSING'
-  | 'VERIFIED'
-  | 'REJECTED'
-  | 'EXPIRED';
+  | "PENDING"
+  | "UPLOADING"
+  | "PROCESSING"
+  | "VERIFIED"
+  | "REJECTED"
+  | "EXPIRED";
 export type PaymentStatus =
-  | 'PENDING'
-  | 'PROCESSING'
-  | 'COMPLETED'
-  | 'FAILED'
-  | 'REFUNDED'
-  | 'PARTIALLY_REFUNDED';
-export type PaymentProvider = 'STRIPE' | 'PAYPAL';
-export type NotificationChannel = 'EMAIL' | 'SMS' | 'IN_APP' | 'PUSH';
+  | "PENDING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "FAILED"
+  | "REFUNDED"
+  | "PARTIALLY_REFUNDED";
+export type PaymentProvider = "STRIPE" | "PAYPAL" | "CRYPTO";
+export type NotificationChannel = "EMAIL" | "SMS" | "IN_APP" | "PUSH";
 export type SupportTicketStatus =
-  | 'OPEN'
-  | 'IN_PROGRESS'
-  | 'WAITING_ON_CUSTOMER'
-  | 'RESOLVED'
-  | 'CLOSED';
-export type SupportTicketPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "WAITING_ON_CUSTOMER"
+  | "RESOLVED"
+  | "CLOSED";
+export type SupportTicketPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 // ── User ─────────────────────────────────────────────────────────────────────
 
@@ -323,6 +323,7 @@ export interface PaymentEntity {
   invoiceUrl: string | null;
   paidAt: string | null;
   createdAt: string;
+  metadata?: Record<string, unknown>;
   lineItems: PaymentLineItemEntity[];
 }
 
@@ -346,8 +347,15 @@ export interface PaymentLineItemEntity {
 
 export interface CheckoutSessionResponse {
   sessionId: string;
+  paymentId?: string;
+  provider?:
+    | "stripe"
+    | "paypal"
+    | "crypto_wallet_connect"
+    | "crypto_wallet_address";
   checkoutUrl: string;
   expiresAt: string;
+  instructions?: Record<string, unknown>;
 }
 
 // ── Notification ────────────────────────────────────────────────────────────

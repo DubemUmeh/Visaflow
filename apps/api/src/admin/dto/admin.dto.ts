@@ -16,4 +16,8 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsObject()
   security?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  payments?: Record<string, unknown>;
 }
