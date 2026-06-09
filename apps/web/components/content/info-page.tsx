@@ -17,7 +17,7 @@ export function InfoPage({
   sections: Section[];
 }) {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-blue-50/70 via-white to-white px-4 py-16">
+    <main className="min-h-screen bg-linear-to-b from-blue-50/70 via-white to-white px-4 py-16">
       <div className="mx-auto max-w-5xl">
         <div className="mb-10 max-w-3xl">
           <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-brand">
