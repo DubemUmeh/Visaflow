@@ -252,6 +252,7 @@ export interface ApplicationEntity {
 export interface ApplicationSummary {
   id: string;
   referenceNumber: string;
+  userId?: string;
   status: ApplicationStatus;
   processingTier: ProcessingTier;
   completionPercentage: number;
@@ -385,6 +386,7 @@ export interface SupportTicketEntity {
   category: string;
   resolvedAt: string | null;
   createdAt: string;
+  requester?: UserEntity | null;
   messages: SupportMessageEntity[];
 }
 

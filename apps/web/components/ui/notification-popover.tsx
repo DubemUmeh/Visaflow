@@ -19,6 +19,11 @@ export default function NotificationPopover() {
   const [loading, setLoading] = useState(false);
   const [marking, setMarking] = useState(false);
 
+  const sortedNotifications = [...notifications].sort((a, b) => {
+    if (!a.readAt && b.readAt) return -1;
+    if (a.readAt && !b.readAt) return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   const unread = notifications.filter((n) => !n.readAt).length;
 
   const load = () => {
@@ -68,7 +73,7 @@ export default function NotificationPopover() {
           align="end"
           sideOffset={10}
           className={cn(
-            'z-50 w-90 rounded-2xl border border-gray-100 bg-white shadow-[0_20px_60px_-12px_rgba(0,0,0,0.18)]',
+            'z-50 w-[23rem] rounded-2xl border border-gray-100 bg-white shadow-[0_20px_60px_-12px_rgba(0,0,0,0.18)]',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
             'data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95',
@@ -101,7 +106,7 @@ export default function NotificationPopover() {
           </div>
 
           {/* Body */}
-          <div className="max-h-100 overflow-y-auto overscroll-contain">
+          <div className="max-h-[26rem] overflow-y-auto overscroll-contain">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 gap-2">
                 <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
@@ -117,7 +122,7 @@ export default function NotificationPopover() {
               </div>
             ) : (
               <div className="divide-y divide-gray-50">
-                {notifications.map((item) => (
+                {sortedNotifications.map((item) => (
                   <div
                     key={item.id}
                     className={cn(
@@ -144,9 +149,15 @@ export default function NotificationPopover() {
                       <p className="text-xs text-gray-600 leading-relaxed mt-0.5 line-clamp-2">
                         {item.body}
                       </p>
-                      <p className="mt-1 text-[11px] text-gray-400">
-                        {dayjs(item.createdAt).fromNow()}
-                      </p>
+                      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-gray-400">
+                        <span>{dayjs(item.createdAt).fromNow()}</span>
+                        <span className={cn(
+                          "rounded-full px-2 py-0.5 font-medium",
+                          item.readAt ? "bg-gray-100 text-gray-500" : "bg-blue-100 text-blue-700",
+                        )}>
+                          {item.readAt ? "Read" : "Unread"}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}

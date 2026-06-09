@@ -139,6 +139,7 @@ export class ApplicationService {
     return {
       id: app.id,
       referenceNumber: app.referenceNumber,
+      userId: app.userId,
       status: app.status,
       processingTier: app.processingTier,
       completionPercentage: app.completionPercentage,
