@@ -249,6 +249,212 @@ async function seedVisaTypes(
   return visaTypeCodeToId;
 }
 
+async function ensureCoreVisaTypesForAllCountries(
+  db: ReturnType<typeof drizzle>,
+  countryRows: SeedCountryRow[],
+): Promise<Map<string, string>> {
+  const expectedCount = countryRows.length * coreVisaCategories.length;
+  console.log(
+    `\n🌍 Ensuring ${expectedCount} core work/student/tourism visas across all countries...`,
+  );
+
+  const generatedVisaTypeCodeToId = new Map<string, string>();
+  let upserted = 0;
+
+  for (const country of countryRows) {
+    for (const category of coreVisaCategories) {
+      const code = getVisaCode(country, category);
+      const priceStandard = category.govFee + category.serviceFee;
+
+      const [row] = await db
+        .insert(visaTypes)
+        .values({
+          name: `${country.name} ${category.label}`,
+          code,
+          slug: getVisaSlug(country, category),
+          destinationCountryId: country.id,
+          nationalityCountryId: null,
+          entryType: category.entryType,
+          stayDuration: category.stayDuration,
+          validityPeriod: category.validityPeriod,
+          description: `${category.label} for travelers applying to visit ${country.name}.`,
+          notes: `Default VisaFlow seed record for ${country.name}; verify country-specific requirements before final submission.`,
+          isVisaRequired: true,
+          isVisaOnArrival: false,
+          isEVisa: true,
+          processingDaysMin: category.processingDaysMin,
+          processingDaysMax: category.processingDaysMax,
+          processingDaysExpedited: category.processingDaysExpedited,
+          processingDaysRush: category.processingDaysRush,
+          priceStandard,
+          priceExpedited: priceStandard + 4500,
+          priceRush: priceStandard + 8500,
+          govFee: category.govFee,
+          serviceFee: category.serviceFee,
+          metaTitle: `${country.name} ${category.label} | VisaFlow`,
+          metaDescription: `Apply for a ${country.name} ${category.label.toLowerCase()} with VisaFlow.`,
+          isPublished: true,
+          publishedAt: new Date(),
+          sortOrder: category.sortOrder,
+        })
+        .onConflictDoUpdate({
+          target: visaTypes.slug,
+          set: {
+            name: `${country.name} ${category.label}`,
+            destinationCountryId: country.id,
+            nationalityCountryId: null,
+            entryType: category.entryType,
+            stayDuration: category.stayDuration,
+            validityPeriod: category.validityPeriod,
+            description: `${category.label} for travelers applying to visit ${country.name}.`,
+            notes: `Default VisaFlow seed record for ${country.name}; verify country-specific requirements before final submission.`,
+            isVisaRequired: true,
+            isVisaOnArrival: false,
+            isEVisa: true,
+            processingDaysMin: category.processingDaysMin,
+            processingDaysMax: category.processingDaysMax,
+            processingDaysExpedited: category.processingDaysExpedited,
+            processingDaysRush: category.processingDaysRush,
+            priceStandard,
+            priceExpedited: priceStandard + 4500,
+            priceRush: priceStandard + 8500,
+            govFee: category.govFee,
+            serviceFee: category.serviceFee,
+            metaTitle: `${country.name} ${category.label} | VisaFlow`,
+            metaDescription: `Apply for a ${country.name} ${category.label.toLowerCase()} with VisaFlow.`,
+            isPublished: true,
+            publishedAt: sql`coalesce(${visaTypes.publishedAt}, now())`,
+            sortOrder: category.sortOrder,
+          },
+        })
+        .returning({ id: visaTypes.id, code: visaTypes.code });
+
+      if (row) {
+        generatedVisaTypeCodeToId.set(code, row.id);
+        upserted++;
+      }
+    }
+  }
+
+  console.log(`  ✅ ${upserted} core visa types inserted/updated`);
+  return generatedVisaTypeCodeToId;
+}
+
+async function ensureGeneratedVisaRequirements(
+  db: ReturnType<typeof drizzle>,
+  generatedVisaTypeCodeToId: Map<string, string>,
+  countryRows: SeedCountryRow[],
+) {
+  console.log(
+    "\n📑 Ensuring requirements for generated work/student/tourism visas...",
+  );
+
+  let inserted = 0;
+  let skipped = 0;
+
+  for (const country of countryRows) {
+    for (const category of coreVisaCategories) {
+      const visaTypeId = generatedVisaTypeCodeToId.get(
+        getVisaCode(country, category),
+      );
+      if (!visaTypeId) {
+        skipped += generatedRequirementTemplates[category.key].length;
+        continue;
+      }
+
+      const templates = generatedRequirementTemplates[category.key];
+      for (const [index, requirement] of templates.entries()) {
+        const [existing] = await db
+          .select({ id: visaRequirements.id })
+          .from(visaRequirements)
+          .where(
+            and(
+              eq(visaRequirements.visaTypeId, visaTypeId),
+              eq(
+                visaRequirements.documentType,
+                requirement.documentType as any,
+              ),
+              eq(visaRequirements.name, requirement.name),
+            ),
+          )
+          .limit(1);
+
+        if (existing) {
+          skipped++;
+          continue;
+        }
+
+        await db.insert(visaRequirements).values({
+          visaTypeId,
+          documentType: requirement.documentType as any,
+          name: requirement.name,
+          description: requirement.description,
+          isRequired: requirement.isRequired,
+          isOptional: requirement.isOptional,
+          sortOrder: index + 1,
+          helpText: requirement.helpText,
+          maxFileSizeMB: requirement.maxFileSizeMB,
+          allowedFormats: requirement.allowedFormats,
+        });
+        inserted++;
+      }
+    }
+  }
+
+  console.log(
+    `  ✅ ${inserted} generated visa requirements inserted, ${skipped} already present/skipped`,
+  );
+}
+
+async function ensureDefaultEligibilityRules(
+  db: ReturnType<typeof drizzle>,
+  countryRows: SeedCountryRow[],
+  countryMap: Map<string, string>,
+) {
+  console.log(
+    "\n🧭 Ensuring default eligibility rules for every destination country...",
+  );
+
+  const nationalityIds = defaultEligibilityNationalityCodes
+    .map((code) => ({ code, id: countryMap.get(code) }))
+    .filter((row): row is { code: string; id: string } => Boolean(row.id));
+
+  let inserted = 0;
+  let skipped = 0;
+
+  for (const destination of countryRows) {
+    for (const nationality of nationalityIds) {
+      if (nationality.id === destination.id) {
+        skipped++;
+        continue;
+      }
+
+      const result = await db
+        .insert(eligibilityRules)
+        .values({
+          nationalityCountryId: nationality.id,
+          destinationCountryId: destination.id,
+          isVisaRequired: true,
+          isVisaOnArrival: false,
+          isEVisa: true,
+          stayDurationDays: 90,
+          notes:
+            "Default seed eligibility rule for VisaFlow-published destination visas; confirm official requirements before travel.",
+          lastVerifiedAt: new Date(),
+        })
+        .onConflictDoNothing()
+        .returning({ id: eligibilityRules.id });
+
+      if (result.length > 0) inserted++;
+      else skipped++;
+    }
+  }
+
+  console.log(
+    `  ✅ ${inserted} default eligibility rules inserted, ${skipped} existing/skipped`,
+  );
+}
+
 async function seedVisaRequirements(
   db: ReturnType<typeof drizzle>,
   visaTypeCodeToId: Map<string, string>,
