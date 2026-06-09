@@ -1,32 +1,76 @@
-import path from 'path';
-import dotenv from 'dotenv';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import { eq, and, sql } from 'drizzle-orm';
-import { countries, eligibilityRules, visaTypes, visaRequirements } from '../schema';
-import { countriesData } from './countries.seed';
-import { visaTypesData } from './visa-types.seed';
-import { visaRequirementsData } from './visa-requirements.seed';
-import { eligibilityRulesData } from './eligibility-rules.seed';
+import path from "path";
+import dotenv from "dotenv";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { eq, and, sql } from "drizzle-orm";
+import {
+  countries,
+  eligibilityRules,
+  visaTypes,
+  visaRequirements,
+} from "../schema";
+import { countriesData } from "./countries.seed";
+import { visaTypesData } from "./visa-types.seed";
+import { visaRequirementsData } from "./visa-requirements.seed";
+import { eligibilityRulesData } from "./eligibility-rules.seed";
 
-dotenv.config({ path: path.resolve(process.cwd(), '../.env') });
+dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
 
 const connectionString =
   process.env.DATABASE_URL ||
-  'postgresql://postgres:@New$AccOut20$@localhost:5432/visaflow';
+  "postgresql://postgres:@New$AccOut20$@localhost:5432/visaflow";
+
+type SeedCountryRow = {
+  id: string;
+  name: string;
+  code: string;
+  code3: string;
+  slug: string;
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Build a code→id lookup map from inserted/existing countries */
 async function buildCountryMap(
-  db: ReturnType<typeof drizzle>
+  db: ReturnType<typeof drizzle>,
 ): Promise<Map<string, string>> {
-  const rows = await db.select({ id: countries.id, code: countries.code }).from(countries);
+  const rows = await db
+    .select({ id: countries.id, code: countries.code })
+    .from(countries);
   const map = new Map<string, string>();
   for (const row of rows) {
     map.set(row.code, row.id);
   }
   return map;
+}
+
+async function buildCountryRows(
+  db: ReturnType<typeof drizzle>,
+): Promise<SeedCountryRow[]> {
+  return db
+    .select({
+      id: countries.id,
+      name: countries.name,
+      code: countries.code,
+      code3: countries.code3,
+      slug: countries.slug,
+    })
+    .from(countries)
+    .where(sql`${countries.deletedAt} is null`);
+}
+
+async function publishAllCountries(db: ReturnType<typeof drizzle>) {
+  console.log("\n📣 Publishing all countries...");
+
+  await db
+    .update(countries)
+    .set({
+      isPublished: true,
+      publishedAt: sql`coalesce(${countries.publishedAt}, now())`,
+    })
+    .where(sql`${countries.deletedAt} is null`);
+
+  console.log("  ✅ all countries are marked as published");
 }
 
 // ─── Seeding stages ───────────────────────────────────────────────────────────
@@ -53,19 +97,23 @@ async function seedCountries(db: ReturnType<typeof drizzle>) {
         isPublished: true,
         publishedAt: new Date(),
         visaTypesCount: 0,
-      }))
+      })),
     )
     .onConflictDoNothing()
     .returning({ id: countries.id, code: countries.code });
 
-  console.log(`  ✅ ${inserted.length} countries inserted (skipped duplicates)`);
+  console.log(
+    `  ✅ ${inserted.length} countries inserted (skipped duplicates)`,
+  );
 }
 
 async function seedEligibilityRules(
   db: ReturnType<typeof drizzle>,
-  countryMap: Map<string, string>
+  countryMap: Map<string, string>,
 ) {
-  console.log(`\n🔗 Seeding ${eligibilityRulesData.length} eligibility rules...`);
+  console.log(
+    `\n🔗 Seeding ${eligibilityRulesData.length} eligibility rules...`,
+  );
 
   let inserted = 0;
   let skipped = 0;
@@ -75,7 +123,9 @@ async function seedEligibilityRules(
     const destId = countryMap.get(rule.dest);
 
     if (!natId || !destId) {
-      console.warn(`  ⚠️  Skipping rule ${rule.nat}→${rule.dest}: country not found`);
+      console.warn(
+        `  ⚠️  Skipping rule ${rule.nat}→${rule.dest}: country not found`,
+      );
       skipped++;
       continue;
     }
@@ -99,12 +149,14 @@ async function seedEligibilityRules(
     else skipped++;
   }
 
-  console.log(`  ✅ ${inserted} eligibility rules inserted, ${skipped} skipped`);
+  console.log(
+    `  ✅ ${inserted} eligibility rules inserted, ${skipped} skipped`,
+  );
 }
 
 async function seedVisaTypes(
   db: ReturnType<typeof drizzle>,
-  countryMap: Map<string, string>
+  countryMap: Map<string, string>,
 ): Promise<Map<string, string>> {
   console.log(`\n🛂 Seeding ${visaTypesData.length} visa types...`);
 
@@ -115,7 +167,9 @@ async function seedVisaTypes(
   for (const vt of visaTypesData) {
     const destId = countryMap.get(vt.destinationCountryCode);
     if (!destId) {
-      console.warn(`  ⚠️  Skipping ${vt.code}: destination ${vt.destinationCountryCode} not found`);
+      console.warn(
+        `  ⚠️  Skipping ${vt.code}: destination ${vt.destinationCountryCode} not found`,
+      );
       skipped++;
       continue;
     }
@@ -125,19 +179,21 @@ async function seedVisaTypes(
       : null;
 
     if (vt.nationalityCountryCode && !natId) {
-      console.warn(`  ⚠️  Skipping ${vt.code}: nationality ${vt.nationalityCountryCode} not found`);
+      console.warn(
+        `  ⚠️  Skipping ${vt.code}: nationality ${vt.nationalityCountryCode} not found`,
+      );
       skipped++;
       continue;
     }
 
     // Map seed entry types to the enum values Drizzle knows from visa-entry-type enum
-    const entryTypeMap: Record<string, 'SINGLE' | 'MULTIPLE' | 'DOUBLE'> = {
-      SINGLE: 'SINGLE',
-      MULTIPLE: 'MULTIPLE',
-      DOUBLE: 'DOUBLE',
-      TRANSIT: 'SINGLE', // TRANSIT isn't in the enum; treat as single-entry transit visa
+    const entryTypeMap: Record<string, "SINGLE" | "MULTIPLE" | "DOUBLE"> = {
+      SINGLE: "SINGLE",
+      MULTIPLE: "MULTIPLE",
+      DOUBLE: "DOUBLE",
+      TRANSIT: "SINGLE", // TRANSIT isn't in the enum; treat as single-entry transit visa
     };
-    const entryType = entryTypeMap[vt.entryType] ?? 'SINGLE';
+    const entryType = entryTypeMap[vt.entryType] ?? "SINGLE";
 
     const result = await db
       .insert(visaTypes)
@@ -187,15 +243,19 @@ async function seedVisaTypes(
     }
   }
 
-  console.log(`  ✅ ${inserted} visa types inserted, ${skipped} skipped/existing`);
+  console.log(
+    `  ✅ ${inserted} visa types inserted, ${skipped} skipped/existing`,
+  );
   return visaTypeCodeToId;
 }
 
 async function seedVisaRequirements(
   db: ReturnType<typeof drizzle>,
-  visaTypeCodeToId: Map<string, string>
+  visaTypeCodeToId: Map<string, string>,
 ) {
-  console.log(`\n📋 Seeding ${visaRequirementsData.length} visa requirements...`);
+  console.log(
+    `\n📋 Seeding ${visaRequirementsData.length} visa requirements...`,
+  );
 
   let inserted = 0;
   let skipped = 0;
@@ -203,68 +263,87 @@ async function seedVisaRequirements(
   for (const req of visaRequirementsData) {
     const vtId = visaTypeCodeToId.get(req.visaTypeCode);
     if (!vtId) {
-      console.warn(`  ⚠️  Skipping requirement for ${req.visaTypeCode}: visa type not found`);
+      console.warn(
+        `  ⚠️  Skipping requirement for ${req.visaTypeCode}: visa type not found`,
+      );
       skipped++;
       continue;
     }
 
-    const result = await db
-      .insert(visaRequirements)
-      .values({
-        visaTypeId: vtId,
-        // Cast to your documentTypeEnum — adjust the enum values to match yours
-        documentType: req.documentType as any,
-        name: req.name,
-        description: req.description,
-        isRequired: req.isRequired,
-        isOptional: req.isOptional,
-        sortOrder: req.sortOrder,
-        helpText: req.helpText,
-        maxFileSizeMB: req.maxFileSizeMB,
-        allowedFormats: req.allowedFormats,
-      })
-      .onConflictDoNothing()
-      .returning({ id: visaRequirements.id });
+    const [existing] = await db
+      .select({ id: visaRequirements.id })
+      .from(visaRequirements)
+      .where(
+        and(
+          eq(visaRequirements.visaTypeId, vtId),
+          eq(visaRequirements.documentType, req.documentType as any),
+          eq(visaRequirements.name, req.name),
+        ),
+      )
+      .limit(1);
 
-    if (result.length > 0) inserted++;
-    else skipped++;
+    if (existing) {
+      skipped++;
+      continue;
+    }
+
+    await db.insert(visaRequirements).values({
+      visaTypeId: vtId,
+      // Cast to your documentTypeEnum — adjust the enum values to match yours
+      documentType: req.documentType as any,
+      name: req.name,
+      description: req.description,
+      isRequired: req.isRequired,
+      isOptional: req.isOptional,
+      sortOrder: req.sortOrder,
+      helpText: req.helpText,
+      maxFileSizeMB: req.maxFileSizeMB,
+      allowedFormats: req.allowedFormats,
+    });
+    inserted++;
   }
 
-  console.log(`  ✅ ${inserted} visa requirements inserted, ${skipped} skipped`);
+  console.log(
+    `  ✅ ${inserted} visa requirements inserted, ${skipped} skipped`,
+  );
 }
 
 async function updateVisaTypesCount(
   db: ReturnType<typeof drizzle>,
-  countryMap: Map<string, string>
+  countryRows: SeedCountryRow[],
 ) {
-  console.log('\n🔢 Updating visa_types_count on countries...');
+  console.log("\n🔢 Updating visa_types_count on countries...");
 
-  // For each country that appears as a destination, count its published visa types
-  const destCodes = [...new Set(visaTypesData.map((v) => v.destinationCountryCode))];
-
-  for (const code of destCodes) {
-    const countryId = countryMap.get(code);
-    if (!countryId) continue;
-
-    // Query for count; normalize result safely in case no rows are returned
+  for (const country of countryRows) {
     const rows = (await db
       .select({ count: sql<number>`count(*)` })
       .from(visaTypes)
-      .where(and(eq(visaTypes.destinationCountryId, countryId), eq(visaTypes.isPublished, true)))) as any[];
+      .where(
+        and(
+          eq(visaTypes.destinationCountryId, country.id),
+          eq(visaTypes.isPublished, true),
+        ),
+      )) as any[];
 
     const count = Number(rows?.[0]?.count ?? 0);
 
-    await db.update(countries).set({ visaTypesCount: count }).where(eq(countries.id, countryId));
+    await db
+      .update(countries)
+      .set({ visaTypesCount: count })
+      .where(eq(countries.id, country.id));
   }
 
-  console.log('  ✅ visa_types_count updated');
+  console.log("  ✅ visa_types_count updated for all countries");
 }
 
 // ─── Main entry point ─────────────────────────────────────────────────────────
 
 async function seed() {
-  console.log('🌱 Starting VisaFlow database seed...');
-  console.log('   Connection:', connectionString.replace(/:([^@]+)@/, ':****@'));
+  console.log("🌱 Starting VisaFlow database seed...");
+  console.log(
+    "   Connection:",
+    connectionString.replace(/:([^@]+)@/, ":****@"),
+  );
 
   const client = postgres(connectionString);
   const db = drizzle(client);
@@ -273,30 +352,42 @@ async function seed() {
     // 1. Countries (no dependencies)
     await seedCountries(db);
 
-    // 2. Build country lookup map (needed by all subsequent steps)
+    // 2. Make every country usable from the public catalog, including existing rows
+    await publishAllCountries(db);
+
+    // 3. Build country lookup map (needed by all subsequent steps)
     const countryMap = await buildCountryMap(db);
+    const countryRows = await buildCountryRows(db);
     console.log(`\n🗺️  Loaded ${countryMap.size} countries into lookup map`);
 
-    // 3. Eligibility rules (depends on countries)
+    // 4. Curated eligibility rules (depends on countries)
     await seedEligibilityRules(db, countryMap);
 
-    // 4. Visa types (depends on countries)
+    // 5. Visa types, including generated work/student/tourism baselines (depends on countries)
     const visaTypeCodeToId = await seedVisaTypes(db, countryMap);
 
-    // 5. Visa requirements (depends on visa types)
+    // 6. Visa requirements, including generated baseline requirements (depends on visa types)
     await seedVisaRequirements(db, visaTypeCodeToId);
 
-    // 6. Denormalized counts
-    await updateVisaTypesCount(db, countryMap);
+    // 7. Denormalized counts
+    await updateVisaTypesCount(db, countryRows);
 
-    console.log('\n🎉 Seed complete!\n');
-    console.log('  Summary:');
-    console.log(`    Countries:          ${countriesData.length}`);
-    console.log(`    Eligibility rules:  ${eligibilityRulesData.length}`);
-    console.log(`    Visa types:         ${visaTypesData.length}`);
-    console.log(`    Visa requirements:  ${visaRequirementsData.length}`);
+    console.log("\n🎉 Seed complete!\n");
+    console.log("  Summary:");
+    console.log(
+      `    Countries:                         ${countriesData.length} seeded / ${countryRows.length} total published`,
+    );
+    console.log(
+      `    Eligibility rules:                  ${eligibilityRulesData.length}`,
+    );
+    console.log(
+      `    Visa types:                        ${visaTypesData.length}`,
+    );
+    console.log(
+      `    Visa requirements:                 ${visaRequirementsData.length}`,
+    );
   } catch (error) {
-    console.error('\n❌ Seed failed:', error);
+    console.error("\n❌ Seed failed:", error);
     throw error;
   } finally {
     await client.end();

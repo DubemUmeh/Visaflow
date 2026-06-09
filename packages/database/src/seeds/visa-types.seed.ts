@@ -1,3 +1,5 @@
+import { countriesData } from "./countries.seed";
+
 /**
  * Visa Types Seed Data
  * Covers popular e-visa destinations with realistic pricing, processing times, and details.
@@ -10,7 +12,7 @@ export type VisaTypeSeed = {
   slug: string;
   destinationCountryCode: string;
   nationalityCountryCode: string | null; // null = all nationalities
-  entryType: 'SINGLE' | 'MULTIPLE' | 'TRANSIT' | 'DOUBLE';
+  entryType: "SINGLE" | "MULTIPLE" | "TRANSIT" | "DOUBLE";
   stayDuration: number;
   validityPeriod: number;
   description: string;
@@ -31,19 +33,20 @@ export type VisaTypeSeed = {
   sortOrder: number;
 };
 
-export const visaTypesData: VisaTypeSeed[] = [
+const curatedVisaTypesData: VisaTypeSeed[] = [
   // ─────────────── UAE (United Arab Emirates) ───────────────
   {
-    name: 'UAE Tourist Visa - 30 Days Single Entry',
-    code: 'UAE_TOURIST_30_SINGLE',
-    slug: 'uae-tourist-visa-30-days-single',
-    destinationCountryCode: 'AE',
+    name: "UAE Tourist Visa - 30 Days Single Entry",
+    code: "UAE_TOURIST_30_SINGLE",
+    slug: "uae-tourist-visa-30-days-single",
+    destinationCountryCode: "AE",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 30,
     validityPeriod: 60,
-    description: 'Single-entry tourist visa for the United Arab Emirates valid for 30 days stay.',
-    notes: 'Must be used within 60 days of issue. Not extendable.',
+    description:
+      "Single-entry tourist visa for the United Arab Emirates valid for 30 days stay.",
+    notes: "Must be used within 60 days of issue. Not extendable.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -60,16 +63,17 @@ export const visaTypesData: VisaTypeSeed[] = [
     sortOrder: 1,
   },
   {
-    name: 'UAE Tourist Visa - 30 Days Multiple Entry',
-    code: 'UAE_TOURIST_30_MULTI',
-    slug: 'uae-tourist-visa-30-days-multiple',
-    destinationCountryCode: 'AE',
+    name: "UAE Tourist Visa - 30 Days Multiple Entry",
+    code: "UAE_TOURIST_30_MULTI",
+    slug: "uae-tourist-visa-30-days-multiple",
+    destinationCountryCode: "AE",
     nationalityCountryCode: null,
-    entryType: 'MULTIPLE',
+    entryType: "MULTIPLE",
     stayDuration: 30,
     validityPeriod: 90,
-    description: 'Multiple-entry tourist visa for the UAE. Each stay limited to 30 days.',
-    notes: 'Ideal for frequent visitors. Each entry allows up to 30 days.',
+    description:
+      "Multiple-entry tourist visa for the UAE. Each stay limited to 30 days.",
+    notes: "Ideal for frequent visitors. Each entry allows up to 30 days.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -86,16 +90,17 @@ export const visaTypesData: VisaTypeSeed[] = [
     sortOrder: 2,
   },
   {
-    name: 'UAE Tourist Visa - 60 Days Single Entry',
-    code: 'UAE_TOURIST_60_SINGLE',
-    slug: 'uae-tourist-visa-60-days-single',
-    destinationCountryCode: 'AE',
+    name: "UAE Tourist Visa - 60 Days Single Entry",
+    code: "UAE_TOURIST_60_SINGLE",
+    slug: "uae-tourist-visa-60-days-single",
+    destinationCountryCode: "AE",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 60,
     validityPeriod: 90,
-    description: 'Long-stay tourist visa for the UAE, allowing 60 days in-country.',
-    notes: 'Perfect for extended visits or business trips.',
+    description:
+      "Long-stay tourist visa for the UAE, allowing 60 days in-country.",
+    notes: "Perfect for extended visits or business trips.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -112,16 +117,16 @@ export const visaTypesData: VisaTypeSeed[] = [
     sortOrder: 3,
   },
   {
-    name: 'UAE Transit Visa - 96 Hours',
-    code: 'UAE_TRANSIT_96H',
-    slug: 'uae-transit-visa-96-hours',
-    destinationCountryCode: 'AE',
+    name: "UAE Transit Visa - 96 Hours",
+    code: "UAE_TRANSIT_96H",
+    slug: "uae-transit-visa-96-hours",
+    destinationCountryCode: "AE",
     nationalityCountryCode: null,
-    entryType: 'TRANSIT',
+    entryType: "TRANSIT",
     stayDuration: 4,
     validityPeriod: 14,
-    description: 'Short transit visa allowing a 96-hour layover in the UAE.',
-    notes: 'Ideal for stopover travelers wanting to explore Dubai.',
+    description: "Short transit visa allowing a 96-hour layover in the UAE.",
+    notes: "Ideal for stopover travelers wanting to explore Dubai.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -140,16 +145,18 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── Turkey ───────────────
   {
-    name: 'Turkey e-Visa - Single Entry',
-    code: 'TR_TOURIST_30_SINGLE',
-    slug: 'turkey-evisa-single-entry',
-    destinationCountryCode: 'TR',
+    name: "Turkey e-Visa - Single Entry",
+    code: "TR_TOURIST_30_SINGLE",
+    slug: "turkey-evisa-single-entry",
+    destinationCountryCode: "TR",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 30,
     validityPeriod: 180,
-    description: 'Official Turkish e-Visa for tourism or business, single entry.',
-    notes: 'e-Visa must be printed or shown on mobile at entry. Valid for 180 days from issue.',
+    description:
+      "Official Turkish e-Visa for tourism or business, single entry.",
+    notes:
+      "e-Visa must be printed or shown on mobile at entry. Valid for 180 days from issue.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -166,16 +173,17 @@ export const visaTypesData: VisaTypeSeed[] = [
     sortOrder: 1,
   },
   {
-    name: 'Turkey e-Visa - Multiple Entry',
-    code: 'TR_TOURIST_90_MULTI',
-    slug: 'turkey-evisa-multiple-entry',
-    destinationCountryCode: 'TR',
+    name: "Turkey e-Visa - Multiple Entry",
+    code: "TR_TOURIST_90_MULTI",
+    slug: "turkey-evisa-multiple-entry",
+    destinationCountryCode: "TR",
     nationalityCountryCode: null,
-    entryType: 'MULTIPLE',
+    entryType: "MULTIPLE",
     stayDuration: 90,
     validityPeriod: 180,
-    description: 'Multiple-entry Turkish e-Visa, up to 90 days total stay within 180 days.',
-    notes: 'Not available for all nationalities. Check eligibility.',
+    description:
+      "Multiple-entry Turkish e-Visa, up to 90 days total stay within 180 days.",
+    notes: "Not available for all nationalities. Check eligibility.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -194,16 +202,17 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── India ───────────────
   {
-    name: 'India e-Tourist Visa - 30 Days',
-    code: 'IN_ETOURIST_30',
-    slug: 'india-e-tourist-visa-30-days',
-    destinationCountryCode: 'IN',
+    name: "India e-Tourist Visa - 30 Days",
+    code: "IN_ETOURIST_30",
+    slug: "india-e-tourist-visa-30-days",
+    destinationCountryCode: "IN",
     nationalityCountryCode: null,
-    entryType: 'DOUBLE',
+    entryType: "DOUBLE",
     stayDuration: 30,
     validityPeriod: 30,
-    description: 'India e-Tourist Visa for short tourism visits, double entry within 30 days.',
-    notes: 'Allows two entries within the 30-day validity period.',
+    description:
+      "India e-Tourist Visa for short tourism visits, double entry within 30 days.",
+    notes: "Allows two entries within the 30-day validity period.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -220,16 +229,17 @@ export const visaTypesData: VisaTypeSeed[] = [
     sortOrder: 1,
   },
   {
-    name: 'India e-Tourist Visa - 1 Year',
-    code: 'IN_ETOURIST_1Y',
-    slug: 'india-e-tourist-visa-1-year',
-    destinationCountryCode: 'IN',
+    name: "India e-Tourist Visa - 1 Year",
+    code: "IN_ETOURIST_1Y",
+    slug: "india-e-tourist-visa-1-year",
+    destinationCountryCode: "IN",
     nationalityCountryCode: null,
-    entryType: 'MULTIPLE',
+    entryType: "MULTIPLE",
     stayDuration: 90,
     validityPeriod: 365,
-    description: 'India e-Tourist Visa valid for 1 year with multiple entries, up to 90 days per visit.',
-    notes: 'Each stay must not exceed 90 consecutive days.',
+    description:
+      "India e-Tourist Visa valid for 1 year with multiple entries, up to 90 days per visit.",
+    notes: "Each stay must not exceed 90 consecutive days.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -246,16 +256,17 @@ export const visaTypesData: VisaTypeSeed[] = [
     sortOrder: 2,
   },
   {
-    name: 'India e-Business Visa',
-    code: 'IN_EBUSINESS_1Y',
-    slug: 'india-e-business-visa',
-    destinationCountryCode: 'IN',
+    name: "India e-Business Visa",
+    code: "IN_EBUSINESS_1Y",
+    slug: "india-e-business-visa",
+    destinationCountryCode: "IN",
     nationalityCountryCode: null,
-    entryType: 'MULTIPLE',
+    entryType: "MULTIPLE",
     stayDuration: 180,
     validityPeriod: 365,
-    description: 'India e-Business Visa for business meetings, trade fairs, and commercial activities.',
-    notes: 'Not valid for employment or journalism.',
+    description:
+      "India e-Business Visa for business meetings, trade fairs, and commercial activities.",
+    notes: "Not valid for employment or journalism.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -274,16 +285,17 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── Kenya ───────────────
   {
-    name: 'Kenya e-Visa - Single Entry',
-    code: 'KE_TOURIST_90_SINGLE',
-    slug: 'kenya-evisa-single-entry',
-    destinationCountryCode: 'KE',
+    name: "Kenya e-Visa - Single Entry",
+    code: "KE_TOURIST_90_SINGLE",
+    slug: "kenya-evisa-single-entry",
+    destinationCountryCode: "KE",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 90,
     validityPeriod: 90,
-    description: 'Kenya Electronic Travel Authorization (ETA) for tourism or business.',
-    notes: 'Kenya now issues an ETA instead of a traditional e-Visa.',
+    description:
+      "Kenya Electronic Travel Authorization (ETA) for tourism or business.",
+    notes: "Kenya now issues an ETA instead of a traditional e-Visa.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -302,16 +314,16 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── Egypt ───────────────
   {
-    name: 'Egypt e-Visa - Single Entry',
-    code: 'EG_TOURIST_30_SINGLE',
-    slug: 'egypt-evisa-single-entry',
-    destinationCountryCode: 'EG',
+    name: "Egypt e-Visa - Single Entry",
+    code: "EG_TOURIST_30_SINGLE",
+    slug: "egypt-evisa-single-entry",
+    destinationCountryCode: "EG",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 30,
     validityPeriod: 90,
-    description: 'Egyptian single-entry e-Visa for tourism.',
-    notes: 'Visa is valid for 90 days from issue; use within that window.',
+    description: "Egyptian single-entry e-Visa for tourism.",
+    notes: "Visa is valid for 90 days from issue; use within that window.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -328,16 +340,16 @@ export const visaTypesData: VisaTypeSeed[] = [
     sortOrder: 1,
   },
   {
-    name: 'Egypt e-Visa - Multiple Entry',
-    code: 'EG_TOURIST_30_MULTI',
-    slug: 'egypt-evisa-multiple-entry',
-    destinationCountryCode: 'EG',
+    name: "Egypt e-Visa - Multiple Entry",
+    code: "EG_TOURIST_30_MULTI",
+    slug: "egypt-evisa-multiple-entry",
+    destinationCountryCode: "EG",
     nationalityCountryCode: null,
-    entryType: 'MULTIPLE',
+    entryType: "MULTIPLE",
     stayDuration: 30,
     validityPeriod: 180,
-    description: 'Egyptian multiple-entry e-Visa for repeated tourist visits.',
-    notes: 'Each stay limited to 30 days.',
+    description: "Egyptian multiple-entry e-Visa for repeated tourist visits.",
+    notes: "Each stay limited to 30 days.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -356,16 +368,17 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── Sri Lanka ───────────────
   {
-    name: 'Sri Lanka ETA - Short Stay',
-    code: 'LK_ETA_30',
-    slug: 'sri-lanka-eta-short-stay',
-    destinationCountryCode: 'LK',
+    name: "Sri Lanka ETA - Short Stay",
+    code: "LK_ETA_30",
+    slug: "sri-lanka-eta-short-stay",
+    destinationCountryCode: "LK",
     nationalityCountryCode: null,
-    entryType: 'MULTIPLE',
+    entryType: "MULTIPLE",
     stayDuration: 30,
     validityPeriod: 180,
-    description: 'Sri Lanka Electronic Travel Authorization for tourism, short business, or transit.',
-    notes: 'Extendable once in-country for up to another 30 days.',
+    description:
+      "Sri Lanka Electronic Travel Authorization for tourism, short business, or transit.",
+    notes: "Extendable once in-country for up to another 30 days.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -384,16 +397,17 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── Cambodia ───────────────
   {
-    name: 'Cambodia e-Visa - Tourist',
-    code: 'KH_TOURIST_30',
-    slug: 'cambodia-evisa-tourist',
-    destinationCountryCode: 'KH',
+    name: "Cambodia e-Visa - Tourist",
+    code: "KH_TOURIST_30",
+    slug: "cambodia-evisa-tourist",
+    destinationCountryCode: "KH",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 30,
     validityPeriod: 90,
-    description: 'Official Cambodian e-Visa for tourism purposes.',
-    notes: 'Extendable inside Cambodia. Only valid at designated border crossings.',
+    description: "Official Cambodian e-Visa for tourism purposes.",
+    notes:
+      "Extendable inside Cambodia. Only valid at designated border crossings.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -412,16 +426,16 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── Ethiopia ───────────────
   {
-    name: 'Ethiopia e-Visa - Tourist',
-    code: 'ET_TOURIST_30',
-    slug: 'ethiopia-evisa-tourist',
-    destinationCountryCode: 'ET',
+    name: "Ethiopia e-Visa - Tourist",
+    code: "ET_TOURIST_30",
+    slug: "ethiopia-evisa-tourist",
+    destinationCountryCode: "ET",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 30,
     validityPeriod: 90,
-    description: 'Ethiopian single-entry tourist e-Visa.',
-    notes: 'Valid for Addis Ababa Bole International Airport entry only.',
+    description: "Ethiopian single-entry tourist e-Visa.",
+    notes: "Valid for Addis Ababa Bole International Airport entry only.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -440,16 +454,17 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── Azerbaijan ───────────────
   {
-    name: 'Azerbaijan ASAN e-Visa',
-    code: 'AZ_ASAN_30',
-    slug: 'azerbaijan-asan-evisa',
-    destinationCountryCode: 'AZ',
+    name: "Azerbaijan ASAN e-Visa",
+    code: "AZ_ASAN_30",
+    slug: "azerbaijan-asan-evisa",
+    destinationCountryCode: "AZ",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 30,
     validityPeriod: 90,
-    description: 'Azerbaijan ASAN single-entry e-Visa for tourism and business.',
-    notes: 'ASAN Visa is one of the fastest e-Visa systems in the world.',
+    description:
+      "Azerbaijan ASAN single-entry e-Visa for tourism and business.",
+    notes: "ASAN Visa is one of the fastest e-Visa systems in the world.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -468,16 +483,16 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── Bahrain ───────────────
   {
-    name: 'Bahrain e-Visa - 14 Days',
-    code: 'BH_TOURIST_14',
-    slug: 'bahrain-evisa-14-days',
-    destinationCountryCode: 'BH',
+    name: "Bahrain e-Visa - 14 Days",
+    code: "BH_TOURIST_14",
+    slug: "bahrain-evisa-14-days",
+    destinationCountryCode: "BH",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 14,
     validityPeriod: 30,
-    description: 'Bahrain single-entry tourist e-Visa for a 14-day stay.',
-    notes: 'Extendable once in-country.',
+    description: "Bahrain single-entry tourist e-Visa for a 14-day stay.",
+    notes: "Extendable once in-country.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -496,16 +511,17 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── Qatar ───────────────
   {
-    name: 'Qatar Hayya Visa - 30 Days',
-    code: 'QA_TOURIST_30',
-    slug: 'qatar-tourist-visa-30-days',
-    destinationCountryCode: 'QA',
+    name: "Qatar Hayya Visa - 30 Days",
+    code: "QA_TOURIST_30",
+    slug: "qatar-tourist-visa-30-days",
+    destinationCountryCode: "QA",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 30,
     validityPeriod: 60,
-    description: 'Qatar single-entry tourist visa for 30-day stays.',
-    notes: 'Many nationalities receive free visas on arrival. Check eligibility.',
+    description: "Qatar single-entry tourist visa for 30-day stays.",
+    notes:
+      "Many nationalities receive free visas on arrival. Check eligibility.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -524,16 +540,16 @@ export const visaTypesData: VisaTypeSeed[] = [
 
   // ─────────────── Vietnam ───────────────
   {
-    name: 'Vietnam e-Visa - 90 Days Single',
-    code: 'VN_TOURIST_90_SINGLE',
-    slug: 'vietnam-evisa-90-days-single',
-    destinationCountryCode: 'VN',
+    name: "Vietnam e-Visa - 90 Days Single",
+    code: "VN_TOURIST_90_SINGLE",
+    slug: "vietnam-evisa-90-days-single",
+    destinationCountryCode: "VN",
     nationalityCountryCode: null,
-    entryType: 'SINGLE',
+    entryType: "SINGLE",
     stayDuration: 90,
     validityPeriod: 90,
-    description: 'Vietnam single-entry e-Visa valid for 90 days.',
-    notes: 'Valid at all international border checkpoints.',
+    description: "Vietnam single-entry e-Visa valid for 90 days.",
+    notes: "Valid at all international border checkpoints.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -550,16 +566,16 @@ export const visaTypesData: VisaTypeSeed[] = [
     sortOrder: 1,
   },
   {
-    name: 'Vietnam e-Visa - 90 Days Multiple',
-    code: 'VN_TOURIST_90_MULTI',
-    slug: 'vietnam-evisa-90-days-multiple',
-    destinationCountryCode: 'VN',
+    name: "Vietnam e-Visa - 90 Days Multiple",
+    code: "VN_TOURIST_90_MULTI",
+    slug: "vietnam-evisa-90-days-multiple",
+    destinationCountryCode: "VN",
     nationalityCountryCode: null,
-    entryType: 'MULTIPLE',
+    entryType: "MULTIPLE",
     stayDuration: 90,
     validityPeriod: 90,
-    description: 'Vietnam multiple-entry e-Visa valid for 90 days.',
-    notes: 'Best option for travelers making multiple trips.',
+    description: "Vietnam multiple-entry e-Visa valid for 90 days.",
+    notes: "Best option for travelers making multiple trips.",
     isVisaRequired: true,
     isVisaOnArrival: false,
     isEVisa: true,
@@ -575,4 +591,129 @@ export const visaTypesData: VisaTypeSeed[] = [
     isPublished: true,
     sortOrder: 2,
   },
+];
+
+type CoreVisaCategorySeed = {
+  key: "TOURISM" | "STUDENT" | "WORK";
+  slug: string;
+  label: string;
+  entryType: VisaTypeSeed["entryType"];
+  stayDuration: number;
+  validityPeriod: number;
+  processingDaysMin: number;
+  processingDaysMax: number;
+  processingDaysExpedited: number;
+  processingDaysRush: number;
+  govFee: number;
+  serviceFee: number;
+  sortOrder: number;
+};
+
+export const coreVisaCategoriesData: CoreVisaCategorySeed[] = [
+  {
+    key: "TOURISM",
+    slug: "tourism",
+    label: "Tourism Visa",
+    entryType: "SINGLE",
+    stayDuration: 30,
+    validityPeriod: 90,
+    processingDaysMin: 3,
+    processingDaysMax: 10,
+    processingDaysExpedited: 2,
+    processingDaysRush: 1,
+    govFee: 6500,
+    serviceFee: 3500,
+    sortOrder: 100,
+  },
+  {
+    key: "STUDENT",
+    slug: "student",
+    label: "Student Visa",
+    entryType: "MULTIPLE",
+    stayDuration: 365,
+    validityPeriod: 365,
+    processingDaysMin: 10,
+    processingDaysMax: 30,
+    processingDaysExpedited: 7,
+    processingDaysRush: 5,
+    govFee: 16000,
+    serviceFee: 9000,
+    sortOrder: 200,
+  },
+  {
+    key: "WORK",
+    slug: "work",
+    label: "Work Visa",
+    entryType: "MULTIPLE",
+    stayDuration: 365,
+    validityPeriod: 365,
+    processingDaysMin: 15,
+    processingDaysMax: 45,
+    processingDaysExpedited: 10,
+    processingDaysRush: 7,
+    govFee: 22000,
+    serviceFee: 12000,
+    sortOrder: 300,
+  },
+];
+
+export function getCoreVisaTypeCode(
+  country: Pick<(typeof countriesData)[number], "code3">,
+  category: Pick<CoreVisaCategorySeed, "key">,
+) {
+  return `${country.code3}_${category.key}_STANDARD`;
+}
+
+const curatedVisaTypeCodes = new Set(
+  curatedVisaTypesData.map((visaType) => visaType.code),
+);
+const curatedVisaTypeSlugs = new Set(
+  curatedVisaTypesData.map((visaType) => visaType.slug),
+);
+
+const generatedVisaTypesData: VisaTypeSeed[] = countriesData.flatMap(
+  (country) =>
+    coreVisaCategoriesData
+      .map((category) => {
+        const code = getCoreVisaTypeCode(country, category);
+        const slug = `${country.slug}-${category.slug}-visa`;
+        const priceStandard = category.govFee + category.serviceFee;
+
+        return {
+          name: `${country.name} ${category.label}`,
+          code,
+          slug,
+          destinationCountryCode: country.code,
+          nationalityCountryCode: null,
+          entryType: category.entryType,
+          stayDuration: category.stayDuration,
+          validityPeriod: category.validityPeriod,
+          description: `${category.label} for travelers applying to visit ${country.name}.`,
+          notes: `Default VisaFlow seed record for ${country.name}; verify country-specific requirements before final submission.`,
+          isVisaRequired: true,
+          isVisaOnArrival: false,
+          isEVisa: true,
+          processingDaysMin: category.processingDaysMin,
+          processingDaysMax: category.processingDaysMax,
+          processingDaysExpedited: category.processingDaysExpedited,
+          processingDaysRush: category.processingDaysRush,
+          priceStandard,
+          priceExpedited: priceStandard + 4500,
+          priceRush: priceStandard + 8500,
+          govFee: category.govFee,
+          serviceFee: category.serviceFee,
+          isPublished: true,
+          sortOrder: category.sortOrder,
+        } satisfies VisaTypeSeed;
+      })
+      .filter(
+        (visaType) =>
+          !curatedVisaTypeCodes.has(visaType.code) &&
+          !curatedVisaTypeSlugs.has(visaType.slug),
+      ),
+);
+
+export const visaTypesData: VisaTypeSeed[] = [
+  ...curatedVisaTypesData,
+  ...generatedVisaTypesData,
 ];
