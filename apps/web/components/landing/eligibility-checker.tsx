@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Search, CheckCircle2, XCircle, Info } from "lucide-react";
+import { ArrowRight, Search, CheckCircle2, Info } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   Select,
@@ -145,9 +145,9 @@ export function EligibilityChecker() {
                     </p>
                     <Button asChild variant="brand" size="sm" className="mt-4">
                       <Link
-                        href={`/dashboard/applications/new?from=${result.from}&to=${result.to}`}
+                        href={`/explorer?from=${result.from}&to=${result.to}`}
                       >
-                        Start application
+                        Explore visa options
                       </Link>
                     </Button>
                   </div>

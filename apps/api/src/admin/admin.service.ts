@@ -36,11 +36,11 @@ const DEFAULT_SETTINGS = {
   },
   payments: {
     stripeEnabled: true,
-    paypalEnabled: false,
+    paypalEnabled: true,
     paypalEmail: 'payments@visaflow.com',
     paypalNarration: 'VisaFlow visa application fee',
-    cryptoEnabled: false,
-    walletConnectEnabled: false,
+    cryptoEnabled: true,
+    walletConnectEnabled: true,
     walletConnectProjectId: '',
     walletAddresses: [
       {
@@ -48,7 +48,7 @@ const DEFAULT_SETTINGS = {
         label: 'USDT (ERC-20)',
         coin: 'USDT',
         chain: 'Ethereum ERC-20',
-        address: '',
+        address: '0xVisaFlowDemoUsdtErc20Address',
         enabled: true,
       },
       {
@@ -56,7 +56,7 @@ const DEFAULT_SETTINGS = {
         label: 'USDT (BEP-20)',
         coin: 'USDT',
         chain: 'BNB Smart Chain BEP-20',
-        address: '',
+        address: '0xVisaFlowDemoUsdtBep20Address',
         enabled: true,
       },
       {
@@ -64,7 +64,7 @@ const DEFAULT_SETTINGS = {
         label: 'Bitcoin',
         coin: 'BTC',
         chain: 'Bitcoin',
-        address: '',
+        address: 'bc1qvisaflowdemobtcaddress',
         enabled: true,
       },
       {
@@ -72,7 +72,7 @@ const DEFAULT_SETTINGS = {
         label: 'BNB',
         coin: 'BNB',
         chain: 'BNB Smart Chain',
-        address: '',
+        address: 'bnb1visaflowdemobnbaddress',
         enabled: true,
       },
     ],

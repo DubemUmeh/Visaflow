@@ -15,6 +15,11 @@ export class MarkNotificationsReadDto {
   notificationIds!: string[];
 }
 
+export class DeleteNotificationsDto {
+  @IsArray()
+  notificationIds!: string[];
+}
+
 export class CreateNotificationDto {
   @IsUUID()
   userId!: string;

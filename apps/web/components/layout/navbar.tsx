@@ -7,6 +7,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../ui/alert-dialog';
 import { useAuthStore } from '@/store/auth.store';
 import { getInitials } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -22,7 +33,7 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const pathname = usePathname();
+  usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuthStore();
 
@@ -116,10 +127,24 @@ export function Navbar() {
                           <User className="h-4 w-4 text-muted-foreground" />
                           Profile
                         </Link>
-                        <button onClick={handleLogout} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10">
-                          <LogOut className="h-4 w-4" />
-                          Sign Out
-                        </button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10">
+                              <LogOut className="h-4 w-4" />
+                              Sign Out
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Sign out?</AlertDialogTitle>
+                              <AlertDialogDescription>Confirm that you want to end your VisaFlow session.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleLogout}>Sign Out</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -173,7 +198,21 @@ export function Navbar() {
                     <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
                       <Button variant="outline" className="w-full">Dashboard</Button>
                     </Link>
-                    <Button variant="ghost" className="w-full text-destructive" onClick={handleLogout}>Sign Out</Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" className="w-full text-destructive">Sign Out</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Sign out?</AlertDialogTitle>
+                          <AlertDialogDescription>Confirm that you want to end your VisaFlow session.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleLogout}>Sign Out</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </>
                 ) : (
                   <>
