@@ -28,270 +28,6 @@ type SeedCountryRow = {
   slug: string;
 };
 
-type CoreVisaCategory = {
-  key: "TOURISM" | "STUDENT" | "WORK";
-  slug: string;
-  label: string;
-  entryType: "SINGLE" | "MULTIPLE";
-  stayDuration: number;
-  validityPeriod: number;
-  processingDaysMin: number;
-  processingDaysMax: number;
-  processingDaysExpedited: number;
-  processingDaysRush: number;
-  govFee: number;
-  serviceFee: number;
-  sortOrder: number;
-};
-
-const coreVisaCategories: CoreVisaCategory[] = [
-  {
-    key: "TOURISM",
-    slug: "tourism",
-    label: "Tourism Visa",
-    entryType: "SINGLE",
-    stayDuration: 30,
-    validityPeriod: 90,
-    processingDaysMin: 3,
-    processingDaysMax: 10,
-    processingDaysExpedited: 2,
-    processingDaysRush: 1,
-    govFee: 6500,
-    serviceFee: 3500,
-    sortOrder: 100,
-  },
-  {
-    key: "STUDENT",
-    slug: "student",
-    label: "Student Visa",
-    entryType: "MULTIPLE",
-    stayDuration: 365,
-    validityPeriod: 365,
-    processingDaysMin: 10,
-    processingDaysMax: 30,
-    processingDaysExpedited: 7,
-    processingDaysRush: 5,
-    govFee: 16000,
-    serviceFee: 9000,
-    sortOrder: 200,
-  },
-  {
-    key: "WORK",
-    slug: "work",
-    label: "Work Visa",
-    entryType: "MULTIPLE",
-    stayDuration: 365,
-    validityPeriod: 365,
-    processingDaysMin: 15,
-    processingDaysMax: 45,
-    processingDaysExpedited: 10,
-    processingDaysRush: 7,
-    govFee: 22000,
-    serviceFee: 12000,
-    sortOrder: 300,
-  },
-];
-
-const defaultEligibilityNationalityCodes = [
-  "US",
-  "GB",
-  "CA",
-  "AU",
-  "IN",
-  "CN",
-  "NG",
-  "BR",
-];
-
-const generatedRequirementTemplates: Record<
-  CoreVisaCategory["key"],
-  Array<{
-    documentType: string;
-    name: string;
-    description: string;
-    isRequired: boolean;
-    isOptional: boolean;
-    helpText: string;
-    maxFileSizeMB: number;
-    allowedFormats: string[];
-  }>
-> = {
-  TOURISM: [
-    {
-      documentType: "PASSPORT_COPY",
-      name: "Passport Bio-data Page",
-      description: "Clear scanned copy of the passport biographical page.",
-      isRequired: true,
-      isOptional: false,
-      helpText:
-        "Passport should be valid for at least 6 months beyond the intended stay.",
-      maxFileSizeMB: 5,
-      allowedFormats: ["pdf", "jpg", "jpeg", "png"],
-    },
-    {
-      documentType: "PASSPORT_PHOTO",
-      name: "Recent Passport Photo",
-      description: "Recent passport-style photo on a plain background.",
-      isRequired: true,
-      isOptional: false,
-      helpText: "Use a clear color photo taken within the last 6 months.",
-      maxFileSizeMB: 3,
-      allowedFormats: ["jpg", "jpeg", "png"],
-    },
-    {
-      documentType: "FLIGHT_ITINERARY",
-      name: "Flight Itinerary",
-      description:
-        "Round-trip or onward travel itinerary showing planned arrival and departure.",
-      isRequired: true,
-      isOptional: false,
-      helpText:
-        "A reservation or itinerary is acceptable unless official instructions require a paid ticket.",
-      maxFileSizeMB: 5,
-      allowedFormats: ["pdf", "jpg", "jpeg", "png"],
-    },
-    {
-      documentType: "HOTEL_BOOKING",
-      name: "Accommodation Proof",
-      description:
-        "Hotel booking, invitation from host, or other proof of accommodation.",
-      isRequired: true,
-      isOptional: false,
-      helpText: "The accommodation proof should cover the intended stay.",
-      maxFileSizeMB: 5,
-      allowedFormats: ["pdf", "jpg", "jpeg", "png"],
-    },
-    {
-      documentType: "BANK_STATEMENT",
-      name: "Bank Statement",
-      description:
-        "Recent bank statement demonstrating sufficient funds for travel.",
-      isRequired: true,
-      isOptional: false,
-      helpText:
-        "Upload statements covering the most recent 3 months where available.",
-      maxFileSizeMB: 10,
-      allowedFormats: ["pdf"],
-    },
-  ],
-  STUDENT: [
-    {
-      documentType: "PASSPORT_COPY",
-      name: "Passport Bio-data Page",
-      description: "Clear scanned copy of the passport biographical page.",
-      isRequired: true,
-      isOptional: false,
-      helpText: "Passport should be valid beyond the planned study period.",
-      maxFileSizeMB: 5,
-      allowedFormats: ["pdf", "jpg", "jpeg", "png"],
-    },
-    {
-      documentType: "PASSPORT_PHOTO",
-      name: "Recent Passport Photo",
-      description: "Recent passport-style photo on a plain background.",
-      isRequired: true,
-      isOptional: false,
-      helpText: "Use a clear color photo taken within the last 6 months.",
-      maxFileSizeMB: 3,
-      allowedFormats: ["jpg", "jpeg", "png"],
-    },
-    {
-      documentType: "INVITATION_LETTER",
-      name: "Admission or Enrollment Letter",
-      description:
-        "Official admission, enrollment, or acceptance letter from the education provider.",
-      isRequired: true,
-      isOptional: false,
-      helpText:
-        "The letter should show the applicant name, program, institution, and study dates.",
-      maxFileSizeMB: 5,
-      allowedFormats: ["pdf"],
-    },
-    {
-      documentType: "FINANCIAL_PROOF",
-      name: "Proof of Financial Support",
-      description:
-        "Evidence of funds or sponsorship for tuition and living costs.",
-      isRequired: true,
-      isOptional: false,
-      helpText:
-        "Upload scholarship letters, sponsor letters, or financial statements.",
-      maxFileSizeMB: 10,
-      allowedFormats: ["pdf", "jpg", "jpeg", "png"],
-    },
-    {
-      documentType: "TRAVEL_INSURANCE",
-      name: "Health or Travel Insurance",
-      description:
-        "Insurance coverage for the intended study period where required.",
-      isRequired: false,
-      isOptional: true,
-      helpText:
-        "Recommended for all student travelers and mandatory for some destinations.",
-      maxFileSizeMB: 5,
-      allowedFormats: ["pdf"],
-    },
-  ],
-  WORK: [
-    {
-      documentType: "PASSPORT_COPY",
-      name: "Passport Bio-data Page",
-      description: "Clear scanned copy of the passport biographical page.",
-      isRequired: true,
-      isOptional: false,
-      helpText:
-        "Passport should be valid beyond the planned work authorization period.",
-      maxFileSizeMB: 5,
-      allowedFormats: ["pdf", "jpg", "jpeg", "png"],
-    },
-    {
-      documentType: "PASSPORT_PHOTO",
-      name: "Recent Passport Photo",
-      description: "Recent passport-style photo on a plain background.",
-      isRequired: true,
-      isOptional: false,
-      helpText: "Use a clear color photo taken within the last 6 months.",
-      maxFileSizeMB: 3,
-      allowedFormats: ["jpg", "jpeg", "png"],
-    },
-    {
-      documentType: "EMPLOYMENT_LETTER",
-      name: "Employment Offer or Contract",
-      description:
-        "Signed employment offer, contract, or assignment letter from the sponsoring employer.",
-      isRequired: true,
-      isOptional: false,
-      helpText:
-        "The document should include role, employer, salary, and expected start date.",
-      maxFileSizeMB: 5,
-      allowedFormats: ["pdf"],
-    },
-    {
-      documentType: "BUSINESS_REGISTRATION",
-      name: "Employer Registration Document",
-      description:
-        "Business registration or sponsor license document for the employer where applicable.",
-      isRequired: false,
-      isOptional: true,
-      helpText:
-        "Upload this if requested by the destination country or sponsor.",
-      maxFileSizeMB: 5,
-      allowedFormats: ["pdf", "jpg", "jpeg", "png"],
-    },
-    {
-      documentType: "BANK_STATEMENT",
-      name: "Bank Statement",
-      description: "Recent bank statement or financial support evidence.",
-      isRequired: true,
-      isOptional: false,
-      helpText:
-        "Upload statements covering the most recent 3 months where available.",
-      maxFileSizeMB: 10,
-      allowedFormats: ["pdf"],
-    },
-  ],
-};
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Build a code→id lookup map from inserted/existing countries */
@@ -321,14 +57,6 @@ async function buildCountryRows(
     })
     .from(countries)
     .where(sql`${countries.deletedAt} is null`);
-}
-
-function getVisaCode(country: SeedCountryRow, category: CoreVisaCategory) {
-  return `${country.code3}_${category.key}_STANDARD`;
-}
-
-function getVisaSlug(country: SeedCountryRow, category: CoreVisaCategory) {
-  return `${country.slug}-${category.slug}-visa`;
 }
 
 async function publishAllCountries(db: ReturnType<typeof drizzle>) {
@@ -748,26 +476,37 @@ async function seedVisaRequirements(
       continue;
     }
 
-    const result = await db
-      .insert(visaRequirements)
-      .values({
-        visaTypeId: vtId,
-        // Cast to your documentTypeEnum — adjust the enum values to match yours
-        documentType: req.documentType as any,
-        name: req.name,
-        description: req.description,
-        isRequired: req.isRequired,
-        isOptional: req.isOptional,
-        sortOrder: req.sortOrder,
-        helpText: req.helpText,
-        maxFileSizeMB: req.maxFileSizeMB,
-        allowedFormats: req.allowedFormats,
-      })
-      .onConflictDoNothing()
-      .returning({ id: visaRequirements.id });
+    const [existing] = await db
+      .select({ id: visaRequirements.id })
+      .from(visaRequirements)
+      .where(
+        and(
+          eq(visaRequirements.visaTypeId, vtId),
+          eq(visaRequirements.documentType, req.documentType as any),
+          eq(visaRequirements.name, req.name),
+        ),
+      )
+      .limit(1);
 
-    if (result.length > 0) inserted++;
-    else skipped++;
+    if (existing) {
+      skipped++;
+      continue;
+    }
+
+    await db.insert(visaRequirements).values({
+      visaTypeId: vtId,
+      // Cast to your documentTypeEnum — adjust the enum values to match yours
+      documentType: req.documentType as any,
+      name: req.name,
+      description: req.description,
+      isRequired: req.isRequired,
+      isOptional: req.isOptional,
+      sortOrder: req.sortOrder,
+      helpText: req.helpText,
+      maxFileSizeMB: req.maxFileSizeMB,
+      allowedFormats: req.allowedFormats,
+    });
+    inserted++;
   }
 
   console.log(
@@ -830,27 +569,13 @@ async function seed() {
     // 4. Curated eligibility rules (depends on countries)
     await seedEligibilityRules(db, countryMap);
 
-    // 5. Curated visa types (depends on countries)
+    // 5. Visa types, including generated work/student/tourism baselines (depends on countries)
     const visaTypeCodeToId = await seedVisaTypes(db, countryMap);
 
-    // 6. Curated visa requirements (depends on visa types)
+    // 6. Visa requirements, including generated baseline requirements (depends on visa types)
     await seedVisaRequirements(db, visaTypeCodeToId);
 
-    // 7. Guaranteed baseline coverage: every country gets published tourism/student/work visas
-    const generatedVisaTypeCodeToId = await ensureCoreVisaTypesForAllCountries(
-      db,
-      countryRows,
-    );
-
-    // 8. Generated visa requirements and default eligibility coverage
-    await ensureGeneratedVisaRequirements(
-      db,
-      generatedVisaTypeCodeToId,
-      countryRows,
-    );
-    await ensureDefaultEligibilityRules(db, countryRows, countryMap);
-
-    // 9. Denormalized counts
+    // 7. Denormalized counts
     await updateVisaTypesCount(db, countryRows);
 
     console.log("\n🎉 Seed complete!\n");
@@ -859,19 +584,13 @@ async function seed() {
       `    Countries:                         ${countriesData.length} seeded / ${countryRows.length} total published`,
     );
     console.log(
-      `    Curated eligibility rules:          ${eligibilityRulesData.length}`,
+      `    Eligibility rules:                  ${eligibilityRulesData.length}`,
     );
     console.log(
-      `    Curated visa types:                 ${visaTypesData.length}`,
+      `    Visa types:                        ${visaTypesData.length}`,
     );
     console.log(
-      `    Curated visa requirements:          ${visaRequirementsData.length}`,
-    );
-    console.log(
-      `    Generated baseline visa types:      ${countryRows.length * coreVisaCategories.length}`,
-    );
-    console.log(
-      `    Generated baseline visa categories: ${coreVisaCategories.map((category) => category.key.toLowerCase()).join(", ")}`,
+      `    Visa requirements:                 ${visaRequirementsData.length}`,
     );
   } catch (error) {
     console.error("\n❌ Seed failed:", error);
