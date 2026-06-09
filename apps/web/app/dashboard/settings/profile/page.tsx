@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,6 +15,7 @@ import {
   Camera,
   Loader2,
   CheckCircle2,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,17 @@ import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/store/auth.store";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const profileSchema = z.object({
   firstName: z.string().min(2, "First name required"),
@@ -54,9 +67,11 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
 export default function ProfilePage() {
-  const { user, refreshUser } = useAuthStore();
+  const router = useRouter();
+  const { user, refreshUser, logout } = useAuthStore();
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "personal" | "security" | "notifications"
   >("personal");
@@ -105,6 +120,20 @@ export default function ProfilePage() {
       toast.error("Failed to change password. Check your current password.");
     } finally {
       setSavingPassword(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      await api.delete("/users/account");
+      await logout();
+      toast.success("Your account has been deleted.");
+      router.push("/");
+    } catch {
+      toast.error("Could not delete your account. Please contact support.");
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -367,9 +396,27 @@ export default function ProfilePage() {
                     Permanently delete your account and all data.
                   </p>
                 </div>
-                <Button variant="destructive" size="sm">
-                  Delete Account
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="gap-2">
+                      <Trash2 className="h-4 w-4" /> Delete Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This permanently disables your VisaFlow account, anonymizes your login email, and signs you out. This action cannot be undone from the dashboard.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={deletingAccount}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={deleteAccount} disabled={deletingAccount}>
+                        {deletingAccount ? "Deleting…" : "Delete Account"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>

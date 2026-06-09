@@ -11,6 +11,7 @@ import type {
   CreateNotificationDto,
   ListNotificationsDto,
   MarkNotificationsReadDto,
+  DeleteNotificationsDto,
 } from './dto/notification.dto';
 
 type NotificationRow = InferModel<typeof notifications>;
@@ -97,6 +98,20 @@ export class NotificationsService {
       .where(and(eq(notifications.userId, userId), isNull(notifications.readAt)));
 
     return { count: Number(row?.count ?? 0) };
+  }
+
+
+  async delete(userId: string, role: string | undefined, dto: DeleteNotificationsDto) {
+    const baseConditions = [
+      this.isAdmin(role) ? undefined : eq(notifications.userId, userId),
+      dto.notificationIds.length ? inArray(notifications.id, dto.notificationIds) : undefined,
+    ].filter(Boolean) as Parameters<typeof and>[0][];
+
+    await this.dbClient.db
+      .delete(notifications)
+      .where(baseConditions.length ? and(...baseConditions) : eq(notifications.userId, userId));
+
+    return this.unreadCount(userId);
   }
 
   async markRead(userId: string, role: string | undefined, dto: MarkNotificationsReadDto) {

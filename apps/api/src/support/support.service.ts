@@ -65,6 +65,43 @@ export class SupportService {
     };
   }
 
+  private async requester(userId: string | null) {
+    if (!userId) return null;
+    const [requester] = await this.dbClient.db
+      .select({
+        id: users.id,
+        email: users.email,
+        emailVerified: users.emailVerified,
+        phone: users.phone,
+        phoneVerified: users.phoneVerified,
+        role: users.role,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        avatarUrl: users.avatarUrl,
+        dateOfBirth: users.dateOfBirth,
+        nationality: users.nationality,
+        passportNumber: users.passportNumber,
+        preferredLocale: users.preferredLocale,
+        timezone: users.timezone,
+        isActive: users.isActive,
+        twoFactorEnabled: users.twoFactorEnabled,
+        lastLoginAt: users.lastLoginAt,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    if (!requester) return null;
+    return {
+      ...requester,
+      dateOfBirth: this.toIso(requester.dateOfBirth),
+      lastLoginAt: this.toIso(requester.lastLoginAt),
+      createdAt: this.toIso(requester.createdAt) ?? '',
+      updatedAt: this.toIso(requester.updatedAt) ?? '',
+    };
+  }
+
   private async toEntity(ticket: TicketRow, includeInternal: boolean): Promise<SupportTicketEntity> {
     const messageRows = await this.dbClient.db
       .select()
@@ -87,6 +124,7 @@ export class SupportService {
       category: ticket.category,
       resolvedAt: this.toIso(ticket.resolvedAt),
       createdAt: this.toIso(ticket.createdAt) ?? '',
+      requester: includeInternal ? await this.requester(ticket.userId) : undefined,
       messages: await Promise.all(visibleMessages.map((message) => this.toMessage(message))),
     };
   }

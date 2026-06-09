@@ -77,6 +77,7 @@ export default function AdminDashboardPage() {
         setStats({
           totalApplications:
             analytics.overview?.totalApplications ??
+            appRes.data.data?.meta?.total ??
             appRes.data.data?.total ??
             apps.length,
           pendingReview: analytics.pendingReview ?? 0,
@@ -136,7 +137,7 @@ export default function AdminDashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
         <p className="text-muted-foreground mt-1">
-          Overview of all applications and system activity.
+          Overview of all applications and system activity. Admin access is granted by a SUPER_ADMIN or authorized database role update, then enforced by JWT role guards.
         </p>
       </div>
 

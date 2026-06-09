@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -6,6 +6,7 @@ import {
   CreateNotificationDto,
   ListNotificationsDto,
   MarkNotificationsReadDto,
+  DeleteNotificationsDto,
 } from './dto/notification.dto';
 import { NotificationsService } from './notifications.service';
 
@@ -37,6 +38,15 @@ export class NotificationsController {
     @Body() dto: MarkNotificationsReadDto,
   ) {
     return this.notificationsService.markRead(user.id, user.role, dto);
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Delete notifications' })
+  async delete(
+    @CurrentUser() user: CurrentUserShape,
+    @Body() dto: DeleteNotificationsDto,
+  ) {
+    return this.notificationsService.delete(user.id, user.role, dto);
   }
 
   @Post()
