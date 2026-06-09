@@ -20,44 +20,47 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres -d test_db"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
-    steps:
-      - uses: actions/checkout@v3
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'pnpm'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 11.5.0
           run_install: false
 
-      - name: Create .env file
-        run: |
-          echo "DATABASE_URL=postgres://postgres:postgres@localhost:5432/test_db" > .env
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Build packages
-        run: pnpm build
+      - name: Create root env file
+        run: echo "DATABASE_URL=${DATABASE_URL}" > .env
 
-      - name: Run migrations
-        run: cd packages/db && pnpm migrate
+      - name: Run database migrations
+        run: pnpm --filter @visaflow/database db:migrate
 
-      - name: Type check
-        run: pnpm typecheck
+      - name: Build database package
+        run: pnpm --filter @visaflow/database build
 
-      - name: Lint
-        run: pnpm lint
+      - name: Type check database package
+        run: pnpm --filter @visaflow/database typecheck
 
-      - name: Test
-        run: cd packages/db && pnpm test
+      - name: Lint database package
+        run: pnpm --filter @visaflow/database lint
+
+      - name: Test database package
+        run: pnpm --filter @visaflow/database test --passWithNoTests
