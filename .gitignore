@@ -39,3 +39,6 @@ yarn-error.log*
 
 # agent
 agent/
+
+## unwanted
+packages/database/src/seeds/new-run.ts

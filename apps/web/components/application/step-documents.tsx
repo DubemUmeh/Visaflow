@@ -11,7 +11,7 @@ import api from '@/lib/api';
 
 // All type values must match the API's RequestUploadUrlDto enum exactly
 const REQUIRED_DOCS = [
-  { type: 'PASSPORT_COPY',    label: 'Passport Scan',      desc: 'Data page of your passport',              required: true  },
+  { type: 'PASSPORT_COPY',    label: 'Passport Copy',      desc: 'Data page of your passport',              required: true  },
   { type: 'PASSPORT_PHOTO',   label: 'Passport Photo',     desc: '2x2 inch white background photo',         required: true  },
   { type: 'BANK_STATEMENT',   label: 'Bank Statement',     desc: 'Last 3 months, showing sufficient funds', required: true  },
   { type: 'TRAVEL_INSURANCE', label: 'Travel Insurance',   desc: 'Valid for the entire trip duration',       required: false },
