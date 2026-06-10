@@ -52,7 +52,7 @@ const schemaConnectionConfig = databaseConnection.schema
   : {};
 
 // Client for migrations
-export const migrationClient = postgres(databaseConnection.url, { 
+export const migrationClient = postgres(databaseConnection.url, {
   max: 1,
   ssl: config.database.ssl,
   ...schemaConnectionConfig,
@@ -70,16 +70,37 @@ export const queryClient = postgres(databaseConnection.url, {
 export const db = drizzle(queryClient);
 
 // Migration function
+function resolveMigrationsFolder() {
+  const candidates = [
+    path.resolve(cwd, "drizzle"),
+    path.resolve(cwd, "packages/database/drizzle"),
+    path.resolve(cwd, "../database/drizzle"),
+    path.resolve(cwd, "../../packages/database/drizzle"),
+  ];
+
+  const migrationsFolder = candidates.find((candidate) =>
+    existsSync(candidate),
+  );
+
+  if (!migrationsFolder) {
+    throw new Error(
+      `Could not locate database migrations folder. Checked: ${candidates.join(", ")}`,
+    );
+  }
+
+  return migrationsFolder;
+}
+
 export async function runMigrations() {
   try {
     console.log("Running migrations...");
-    
+
     const migrationDb = drizzle(migrationClient);
-    
+
     await migrate(migrationDb, {
-      migrationsFolder: "./drizzle",
+      migrationsFolder: resolveMigrationsFolder(),
     });
-    
+
     console.log("Migrations completed successfully");
   } catch (error) {
     console.error("Migration failed:", error);
