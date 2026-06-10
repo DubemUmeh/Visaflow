@@ -19,8 +19,8 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1781006661667,
-      "tag": "0002_nice_loa",
+      "when": 1781098342952,
+      "tag": "0002_ensure_crypto_payment_provider",
       "breakpoints": true
     }
   ]
