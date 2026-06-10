@@ -44,6 +44,9 @@ type PaymentOptions = {
   cryptoEnabled: boolean;
   walletConnectEnabled: boolean;
   walletConnectProjectId: string;
+  walletConnectReady?: boolean;
+  walletConnectError?: string;
+  walletConnectActiveSessions?: number;
   walletAddresses: WalletAddress[];
 };
 
@@ -157,7 +160,11 @@ export default function PaymentPage() {
       if (card.provider === "stripe") return options.stripeEnabled;
       if (card.provider === "paypal") return options.paypalEnabled;
       if (card.provider === "crypto_wallet_connect")
-        return options.cryptoEnabled && options.walletConnectEnabled;
+        return (
+          options.cryptoEnabled &&
+          options.walletConnectEnabled &&
+          options.walletConnectReady
+        );
       return options.cryptoEnabled && options.walletAddresses.length > 0;
     });
   }, [options]);
@@ -191,11 +198,9 @@ export default function PaymentPage() {
             : undefined,
       });
       if (selectedProvider === "crypto_wallet_connect") {
-        toast.info(
-          "WalletConnect session recorded. Connect-wallet SDK handoff can be attached here.",
-        );
+        toast.success("WalletConnect payment intent is ready.");
       }
-      window.location.href = data.data.checkoutUrl;
+      window.location.assign(data.data.checkoutUrl);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
@@ -354,13 +359,23 @@ export default function PaymentPage() {
 
               {selectedProvider === "crypto_wallet_connect" && (
                 <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
-                  <p className="font-medium">WalletConnect ready</p>
-                  <p className="mt-1">
-                    This records the payment intent and hands off to the
-                    configured WalletConnect project ID. Attach the production
-                    WalletConnect SDK in this page when live chain details are
-                    finalized.
+                  <p className="font-medium">
+                    {options.walletConnectReady
+                      ? "WalletConnect ready"
+                      : "WalletConnect unavailable"}
                   </p>
+                  <p className="mt-1">
+                    {options.walletConnectReady
+                      ? "A WalletKit client is initialized for VisaFlow crypto payment intents. Continue to create a payment reference and approve the matching wallet request."
+                      : (options.walletConnectError ??
+                        "WalletConnect is not configured yet. Add a WalletConnect project ID before accepting connected-wallet payments.")}
+                  </p>
+                  {options.walletConnectReady && (
+                    <p className="mt-2 text-xs">
+                      Active sessions:{" "}
+                      {options.walletConnectActiveSessions ?? 0}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -369,7 +384,11 @@ export default function PaymentPage() {
                 size="lg"
                 onClick={createCheckout}
                 isLoading={paying}
-                disabled={enabledProviders.length === 0}
+                disabled={
+                  enabledProviders.length === 0 ||
+                  (selectedProvider === "crypto_wallet_connect" &&
+                    !options.walletConnectReady)
+                }
                 className="w-full gap-2"
               >
                 <CreditCard className="h-4 w-4" /> Continue with selected method
