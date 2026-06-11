@@ -1,4 +1,11 @@
-import { IsIn, IsOptional, IsString, IsUrl, IsUUID } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+  Matches,
+} from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
 export class CreateCheckoutSessionDto {
@@ -41,4 +48,9 @@ export class MarkPaymentPaidDto {
   @IsOptional()
   @IsString()
   providerPaymentId?: string;
+}
+
+export class VerifyCryptoPaymentDto {
+  @Matches(/^0x[a-fA-F0-9]{64}$/)
+  txHash!: string;
 }
