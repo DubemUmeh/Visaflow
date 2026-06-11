@@ -339,6 +339,17 @@ export class PaymentsService {
         'WalletConnect payments are not enabled.',
       );
     }
+    if (
+      (requestedProvider === 'crypto_wallet_address' ||
+        requestedProvider === 'crypto_wallet_connect') &&
+      !settings.walletAddresses.some(
+        (wallet) => wallet.enabled && wallet.address.trim().length > 0,
+      )
+    ) {
+      throw new ServiceUnavailableException(
+        'Crypto wallet addresses are not configured.',
+      );
+    }
 
     const payment = await this.createPendingPayment({
       userId,
@@ -405,7 +416,6 @@ export class PaymentsService {
         checkoutUrl: `${paymentPageUrl}?payment_id=${payment.id}&provider=${method}`,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         instructions: {
-          walletConnectProjectId: settings.walletConnectProjectId,
           walletAddresses: settings.walletAddresses.filter(
             (wallet) => wallet.enabled && wallet.address.trim().length > 0,
           ),

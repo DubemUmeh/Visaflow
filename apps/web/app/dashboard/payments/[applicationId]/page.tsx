@@ -67,8 +67,9 @@ const providerCards: Array<{
   },
   {
     provider: "crypto_wallet_connect",
-    title: "WalletConnect",
-    description: "Connect a wallet and approve a crypto payment request.",
+    title: "WalletConnect (manual fallback)",
+    description:
+      "Use the same configured crypto wallet addresses until the frontend wallet modal is implemented.",
     icon: Wallet,
   },
   {
@@ -137,12 +138,24 @@ export default function PaymentPage() {
         const firstWallet =
           optionsRes.data.data?.walletAddresses?.[0]?.id ?? "";
         setSelectedWalletId(firstWallet);
-        if (!optionsRes.data.data?.stripeEnabled) {
-          if (optionsRes.data.data?.paypalEnabled)
-            setSelectedProvider("paypal");
-          else if (optionsRes.data.data?.cryptoEnabled)
-            setSelectedProvider("crypto_wallet_address");
-        }
+        const loadedOptions = optionsRes.data.data as PaymentOptions;
+        const firstEnabledProvider = providerCards.find((card) => {
+          if (card.provider === "stripe") return loadedOptions.stripeEnabled;
+          if (card.provider === "paypal") return loadedOptions.paypalEnabled;
+          if (card.provider === "crypto_wallet_connect") {
+            return (
+              loadedOptions.cryptoEnabled &&
+              loadedOptions.walletConnectEnabled &&
+              loadedOptions.walletAddresses.length > 0
+            );
+          }
+          return (
+            loadedOptions.cryptoEnabled &&
+            loadedOptions.walletAddresses.length > 0
+          );
+        });
+        if (firstEnabledProvider)
+          setSelectedProvider(firstEnabledProvider.provider);
       })
       .catch(() => {
         toast.error("Unable to load payment details");
@@ -156,8 +169,13 @@ export default function PaymentPage() {
     return providerCards.filter((card) => {
       if (card.provider === "stripe") return options.stripeEnabled;
       if (card.provider === "paypal") return options.paypalEnabled;
-      if (card.provider === "crypto_wallet_connect")
-        return options.cryptoEnabled && options.walletConnectEnabled;
+      if (card.provider === "crypto_wallet_connect") {
+        return (
+          options.cryptoEnabled &&
+          options.walletConnectEnabled &&
+          options.walletAddresses.length > 0
+        );
+      }
       return options.cryptoEnabled && options.walletAddresses.length > 0;
     });
   }, [options]);
@@ -186,16 +204,17 @@ export default function PaymentPage() {
         cancelUrl: `${origin}/dashboard/payments/${applicationId}?tier=${tier}`,
         provider: selectedProvider,
         walletId:
-          selectedProvider === "crypto_wallet_address"
+          selectedProvider === "crypto_wallet_address" ||
+          selectedProvider === "crypto_wallet_connect"
             ? selectedWalletId
             : undefined,
       });
       if (selectedProvider === "crypto_wallet_connect") {
         toast.info(
-          "WalletConnect session recorded. Connect-wallet SDK handoff can be attached here.",
+          "WalletConnect is using the manual wallet address fallback until the frontend wallet modal is implemented.",
         );
       }
-      window.location.href = data.data.checkoutUrl;
+      window.location.assign(data.data.checkoutUrl);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
@@ -309,7 +328,8 @@ export default function PaymentPage() {
                 </div>
               )}
 
-              {selectedProvider === "crypto_wallet_address" && (
+              {(selectedProvider === "crypto_wallet_address" ||
+                selectedProvider === "crypto_wallet_connect") && (
                 <div className="space-y-3 rounded-xl bg-sand/60 p-4 text-sm">
                   <label className="font-medium text-foreground">
                     Choose coin / chain
@@ -353,13 +373,13 @@ export default function PaymentPage() {
               )}
 
               {selectedProvider === "crypto_wallet_connect" && (
-                <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
-                  <p className="font-medium">WalletConnect ready</p>
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                  <p className="font-medium">Manual crypto fallback</p>
                   <p className="mt-1">
-                    This records the payment intent and hands off to the
-                    configured WalletConnect project ID. Attach the production
-                    WalletConnect SDK in this page when live chain details are
-                    finalized.
+                    VisaFlow does not start WalletConnect sessions from the
+                    backend. Until AppKit is wired into this page, use the
+                    selected wallet address above and upload proof for admin
+                    review.
                   </p>
                 </div>
               )}
