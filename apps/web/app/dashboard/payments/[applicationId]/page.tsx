@@ -21,6 +21,16 @@ import api from "@/lib/api";
 import { toast } from "sonner";
 import type { ApplicationEntity, PaymentEntity } from "@visaflow/shared-types";
 
+type Eip1193Provider = {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+};
+
+declare global {
+  interface Window {
+    ethereum?: Eip1193Provider;
+  }
+}
+
 type PaymentProvider =
   | "stripe"
   | "paypal"
@@ -68,7 +78,8 @@ const providerCards: Array<{
   {
     provider: "crypto_wallet_connect",
     title: "WalletConnect",
-    description: "Connect a wallet and approve a crypto payment request.",
+    description:
+      "Connect your wallet, approve a USDT transfer, and verify it on-chain.",
     icon: Wallet,
   },
   {
@@ -102,6 +113,62 @@ function amountForTier(
   return application.visaType.priceStandard;
 }
 
+const walletConnectNetworks = [
+  {
+    chainMatcher: "erc-20",
+    chainId: 1,
+    chainHex: "0x1",
+    tokenSymbol: "USDT",
+    tokenContract: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    decimals: 6,
+  },
+  {
+    chainMatcher: "bep-20",
+    chainId: 56,
+    chainHex: "0x38",
+    tokenSymbol: "USDT",
+    tokenContract: "0x55d398326f99059ff775485246999027b3197955",
+    decimals: 18,
+  },
+] as const;
+
+type WalletConnectNetwork = (typeof walletConnectNetworks)[number];
+
+function isEvmAddress(value: string) {
+  return /^0x[a-fA-F0-9]{40}$/.test(value);
+}
+
+function walletConnectNetworkFor(wallet?: WalletAddress) {
+  if (!wallet || !isEvmAddress(wallet.address)) return undefined;
+  const coin = wallet.coin.toUpperCase();
+  const chain = wallet.chain.toLowerCase();
+  return walletConnectNetworks.find(
+    (network) =>
+      coin === network.tokenSymbol && chain.includes(network.chainMatcher),
+  );
+}
+
+function stablecoinAmountFromCents(cents: number, decimals: number) {
+  return (BigInt(cents) * 10n ** BigInt(decimals)) / 100n;
+}
+
+function padHex(value: string) {
+  return value.toLowerCase().replace(/^0x/, "").padStart(64, "0");
+}
+
+function buildErc20TransferData(to: string, amount: bigint) {
+  return `0xa9059cbb${padHex(to)}${padHex(amount.toString(16))}`;
+}
+
+async function getBrowserWalletProvider() {
+  if (!window.ethereum) {
+    throw new Error(
+      "No browser wallet found. Install a wallet or initialize AppKit/WalletConnect before paying.",
+    );
+  }
+  return window.ethereum;
+}
+
 export default function PaymentPage() {
   const { applicationId } = useParams<{ applicationId: string }>();
   const search = useSearchParams();
@@ -121,6 +188,8 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [walletPaymentNetwork, setWalletPaymentNetwork] =
+    useState<WalletConnectNetwork>();
 
   useEffect(() => {
     Promise.all([
@@ -134,14 +203,38 @@ export default function PaymentPage() {
         setPayments(
           paymentsRes.data.data?.data ?? paymentsRes.data.data?.items ?? [],
         );
-        const firstWallet =
-          optionsRes.data.data?.walletAddresses?.[0]?.id ?? "";
+        const loadedOptions = optionsRes.data.data as PaymentOptions;
+        const firstWallet = loadedOptions.walletAddresses[0]?.id ?? "";
+        const firstWalletConnectWallet = loadedOptions.walletAddresses.find(
+          (wallet) => walletConnectNetworkFor(wallet),
+        );
         setSelectedWalletId(firstWallet);
-        if (!optionsRes.data.data?.stripeEnabled) {
-          if (optionsRes.data.data?.paypalEnabled)
-            setSelectedProvider("paypal");
-          else if (optionsRes.data.data?.cryptoEnabled)
-            setSelectedProvider("crypto_wallet_address");
+        const firstEnabledProvider = providerCards.find((card) => {
+          if (card.provider === "stripe") return loadedOptions.stripeEnabled;
+          if (card.provider === "paypal") return loadedOptions.paypalEnabled;
+          if (card.provider === "crypto_wallet_connect") {
+            return (
+              loadedOptions.cryptoEnabled &&
+              loadedOptions.walletConnectEnabled &&
+              Boolean(loadedOptions.walletConnectProjectId) &&
+              loadedOptions.walletAddresses.some((wallet) =>
+                Boolean(walletConnectNetworkFor(wallet)),
+              )
+            );
+          }
+          return (
+            loadedOptions.cryptoEnabled &&
+            loadedOptions.walletAddresses.length > 0
+          );
+        });
+        if (firstEnabledProvider) {
+          setSelectedProvider(firstEnabledProvider.provider);
+          if (
+            firstEnabledProvider.provider === "crypto_wallet_connect" &&
+            firstWalletConnectWallet
+          ) {
+            setSelectedWalletId(firstWalletConnectWallet.id);
+          }
         }
       })
       .catch(() => {
@@ -156,8 +249,16 @@ export default function PaymentPage() {
     return providerCards.filter((card) => {
       if (card.provider === "stripe") return options.stripeEnabled;
       if (card.provider === "paypal") return options.paypalEnabled;
-      if (card.provider === "crypto_wallet_connect")
-        return options.cryptoEnabled && options.walletConnectEnabled;
+      if (card.provider === "crypto_wallet_connect") {
+        return (
+          options.cryptoEnabled &&
+          options.walletConnectEnabled &&
+          Boolean(options.walletConnectProjectId) &&
+          options.walletAddresses.some((wallet) =>
+            Boolean(walletConnectNetworkFor(wallet)),
+          )
+        );
+      }
       return options.cryptoEnabled && options.walletAddresses.length > 0;
     });
   }, [options]);
@@ -165,6 +266,14 @@ export default function PaymentPage() {
   const selectedWallet = options?.walletAddresses.find(
     (wallet) => wallet.id === selectedWalletId,
   );
+  const walletConnectWallets = useMemo(
+    () =>
+      options?.walletAddresses.filter((wallet) =>
+        walletConnectNetworkFor(wallet),
+      ) ?? [],
+    [options],
+  );
+  const walletConnectNetwork = walletConnectNetworkFor(selectedWallet);
   const amount = application ? amountForTier(application, tier) : 0;
   const latestPayment = payments[0];
 
@@ -173,7 +282,102 @@ export default function PaymentPage() {
     toast.success(`${label} copied`);
   };
 
+  const payWithWalletConnect = async () => {
+    if (!application || !selectedWallet || !walletConnectNetwork) {
+      toast.error("Choose a supported EVM USDT wallet before connecting.");
+      return;
+    }
+    if (!options?.walletConnectProjectId) {
+      toast.error("WalletConnect project ID is not configured.");
+      return;
+    }
+
+    setPaying(true);
+    try {
+      const origin = window.location.origin;
+      const checkout = await api.post("/payments/checkout", {
+        applicationId,
+        processingTier: tier,
+        currency: "USD",
+        successUrl: `${origin}/dashboard/applications/${applicationId}`,
+        cancelUrl: `${origin}/dashboard/payments/${applicationId}?tier=${tier}`,
+        provider: "crypto_wallet_connect",
+        walletId: selectedWallet.id,
+      });
+      const checkoutData = checkout.data.data as {
+        paymentId: string;
+        instructions: { amount: number; walletAddresses: WalletAddress[] };
+      };
+      const paymentId = checkoutData.paymentId;
+      const checkoutWallet = checkoutData.instructions.walletAddresses.find(
+        (wallet) => wallet.id === selectedWallet.id,
+      );
+      if (!checkoutWallet) {
+        throw new Error("Backend did not return the selected payment wallet.");
+      }
+      const provider = await getBrowserWalletProvider();
+      const accounts = (await provider.request({
+        method: "eth_requestAccounts",
+      })) as string[];
+      const from = accounts[0];
+      if (!from) throw new Error("Wallet did not return an account.");
+
+      try {
+        await provider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: walletConnectNetwork.chainHex }],
+        });
+      } catch (switchError) {
+        const code = (switchError as { code?: number }).code;
+        if (code === 4902) {
+          throw new Error(
+            `Add chain ID ${walletConnectNetwork.chainId} to your wallet before paying.`,
+          );
+        }
+        throw switchError;
+      }
+
+      setWalletPaymentNetwork(walletConnectNetwork);
+      const tokenAmount = stablecoinAmountFromCents(
+        checkoutData.instructions.amount,
+        walletConnectNetwork.decimals,
+      );
+      const txHash = (await provider.request({
+        method: "eth_sendTransaction",
+        params: [
+          {
+            from,
+            to: walletConnectNetwork.tokenContract,
+            value: "0x0",
+            data: buildErc20TransferData(checkoutWallet.address, tokenAmount),
+          },
+        ],
+      })) as string;
+
+      await api.post(`/payments/${paymentId}/crypto-verification`, { txHash });
+      toast.success("Wallet payment verified on-chain");
+      router.push(`/dashboard/applications/${applicationId}`);
+    } catch (err: unknown) {
+      const msg =
+        (
+          err as {
+            response?: { data?: { message?: string } };
+            message?: string;
+          }
+        )?.response?.data?.message ??
+        (err as { message?: string })?.message ??
+        "Wallet payment could not be completed";
+      toast.error(Array.isArray(msg) ? msg[0] : msg);
+    } finally {
+      setPaying(false);
+    }
+  };
+
   const createCheckout = async () => {
+    if (selectedProvider === "crypto_wallet_connect") {
+      await payWithWalletConnect();
+      return;
+    }
     if (!application) return;
     setPaying(true);
     try {
@@ -190,12 +394,7 @@ export default function PaymentPage() {
             ? selectedWalletId
             : undefined,
       });
-      if (selectedProvider === "crypto_wallet_connect") {
-        toast.info(
-          "WalletConnect session recorded. Connect-wallet SDK handoff can be attached here.",
-        );
-      }
-      window.location.href = data.data.checkoutUrl;
+      window.location.assign(data.data.checkoutUrl);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
@@ -271,7 +470,16 @@ export default function PaymentPage() {
                   <button
                     type="button"
                     key={card.provider}
-                    onClick={() => setSelectedProvider(card.provider)}
+                    onClick={() => {
+                      setSelectedProvider(card.provider);
+                      if (card.provider === "crypto_wallet_connect") {
+                        const firstWalletConnectWallet =
+                          walletConnectWallets[0];
+                        if (firstWalletConnectWallet) {
+                          setSelectedWalletId(firstWalletConnectWallet.id);
+                        }
+                      }
+                    }}
                     className={`w-full rounded-2xl border p-4 text-left transition ${selectedProvider === card.provider ? "border-brand bg-brand-soft" : "border-border hover:border-brand/50"}`}
                   >
                     <div className="flex items-start gap-3">
@@ -353,14 +561,44 @@ export default function PaymentPage() {
               )}
 
               {selectedProvider === "crypto_wallet_connect" && (
-                <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
-                  <p className="font-medium">WalletConnect ready</p>
-                  <p className="mt-1">
-                    This records the payment intent and hands off to the
-                    configured WalletConnect project ID. Attach the production
-                    WalletConnect SDK in this page when live chain details are
-                    finalized.
-                  </p>
+                <div className="space-y-3 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
+                  <div>
+                    <p className="font-medium">Connect wallet and pay USDT</p>
+                    <p className="mt-1">
+                      Select an EVM stablecoin wallet, connect your wallet,
+                      approve the transfer, then VisaFlow verifies the
+                      transaction on-chain before marking the payment complete.
+                    </p>
+                  </div>
+                  <label className="font-medium text-foreground">
+                    Choose USDT network
+                  </label>
+                  <select
+                    value={selectedWalletId}
+                    onChange={(e) => setSelectedWalletId(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground"
+                  >
+                    {walletConnectWallets.map((wallet) => (
+                      <option key={wallet.id} value={wallet.id}>
+                        {wallet.label} · {wallet.chain}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedWallet && walletConnectNetwork && (
+                    <div className="rounded-lg bg-card p-3 text-xs text-muted-foreground">
+                      <p>
+                        You will approve a {formatMoney(amount, "USD")} USDT
+                        transfer to {selectedWallet.address} on chain ID{" "}
+                        {walletConnectNetwork.chainId}.
+                      </p>
+                      {walletPaymentNetwork && (
+                        <p className="mt-2">
+                          Last requested network: chain ID{" "}
+                          {walletPaymentNetwork.chainId}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -369,10 +607,17 @@ export default function PaymentPage() {
                 size="lg"
                 onClick={createCheckout}
                 isLoading={paying}
-                disabled={enabledProviders.length === 0}
+                disabled={
+                  enabledProviders.length === 0 ||
+                  (selectedProvider === "crypto_wallet_connect" &&
+                    !walletConnectNetwork)
+                }
                 className="w-full gap-2"
               >
-                <CreditCard className="h-4 w-4" /> Continue with selected method
+                <CreditCard className="h-4 w-4" />
+                {selectedProvider === "crypto_wallet_connect"
+                  ? "Connect wallet & pay"
+                  : "Continue with selected method"}
               </Button>
             </CardContent>
           </Card>
