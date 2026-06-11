@@ -34,6 +34,7 @@ import type {
   MarkPaymentPaidDto,
   VerifyCryptoPaymentDto,
 } from './dto/payment.dto';
+import { WalletConnectService } from './walletconnect.service';
 
 type PaymentRow = InferModel<typeof payments>;
 type LineItemRow = InferModel<typeof paymentLineItems>;
@@ -164,6 +165,7 @@ export class PaymentsService {
   constructor(
     private readonly dbClient: DatabaseService,
     private readonly configService: ConfigService,
+    private readonly walletConnectService: WalletConnectService,
   ) {}
 
   private isAdmin(role?: string) {
@@ -252,6 +254,9 @@ export class PaymentsService {
 
   async getOptions() {
     const settings = await this.getPaymentSettings();
+    const walletConnect = await this.walletConnectService.getStatus(
+      settings.walletConnectProjectId,
+    );
 
     return {
       stripeEnabled: settings.stripeEnabled,
@@ -261,7 +266,10 @@ export class PaymentsService {
       cryptoEnabled: settings.cryptoEnabled,
       walletConnectEnabled:
         settings.cryptoEnabled && settings.walletConnectEnabled,
-      walletConnectProjectId: settings.walletConnectProjectId,
+      walletConnectProjectId: walletConnect.projectId,
+      walletConnectReady: walletConnect.ready,
+      walletConnectError: walletConnect.error,
+      walletConnectActiveSessions: walletConnect.activeSessions,
       walletAddresses: settings.walletAddresses.filter(
         (wallet) => wallet.enabled && wallet.address.trim().length > 0,
       ),
@@ -388,7 +396,12 @@ export class PaymentsService {
     }
     if (
       requestedProvider === 'crypto_wallet_connect' &&
-      !settings.walletConnectEnabled
+      (!settings.walletConnectEnabled ||
+        !(
+          await this.walletConnectService.getStatus(
+            settings.walletConnectProjectId,
+          )
+        ).ready)
     ) {
       throw new ServiceUnavailableException(
         'WalletConnect payments are not enabled.',
@@ -464,6 +477,29 @@ export class PaymentsService {
 
     if (provider === 'CRYPTO') {
       const method = requestedProvider;
+      const walletConnectIntent =
+        method === 'crypto_wallet_connect'
+          ? await this.walletConnectService.buildPaymentIntent(
+              settings.walletConnectProjectId,
+              {
+                paymentId: payment.id,
+                applicationId: application.id,
+                referenceNumber: application.referenceNumber,
+                amount: amountTotal,
+                currency,
+                successUrl: dto.successUrl,
+                cancelUrl: dto.cancelUrl,
+              },
+            )
+          : undefined;
+
+      if (walletConnectIntent) {
+        await this.dbClient.db
+          .update(payments)
+          .set({ providerSessionId: payment.id })
+          .where(eq(payments.id, payment.id));
+      }
+
       return {
         sessionId: payment.id,
         paymentId: payment.id,
@@ -471,13 +507,15 @@ export class PaymentsService {
         checkoutUrl: `${paymentPageUrl}?payment_id=${payment.id}&provider=${method}`,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         instructions: {
-          walletConnectProjectId: settings.walletConnectProjectId,
+          walletConnectProjectId:
+            walletConnectIntent?.projectId ?? settings.walletConnectProjectId,
           walletAddresses: settings.walletAddresses.filter(
             (wallet) => wallet.enabled && wallet.address.trim().length > 0,
           ),
           amount: amountTotal,
           currency,
           referenceNumber: application.referenceNumber,
+          walletConnect: walletConnectIntent,
         },
       };
     }

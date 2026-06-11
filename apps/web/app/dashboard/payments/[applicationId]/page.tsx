@@ -54,6 +54,9 @@ type PaymentOptions = {
   cryptoEnabled: boolean;
   walletConnectEnabled: boolean;
   walletConnectProjectId: string;
+  walletConnectReady?: boolean;
+  walletConnectError?: string;
+  walletConnectActiveSessions?: number;
   walletAddresses: WalletAddress[];
 };
 
