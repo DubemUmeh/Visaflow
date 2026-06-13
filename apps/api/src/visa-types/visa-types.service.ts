@@ -11,7 +11,7 @@ import {
   eq,
   gt,
   inArray,
-  InferModel,
+  InferSelectModel,
   isNull,
   isNotNull,
   ne,
@@ -28,8 +28,8 @@ import {
   VisaTypeEntity,
 } from '@visaflow/shared-types';
 
-type VisaTypeCreateInput = InferModel<typeof visaTypes, 'insert'>;
-type VisaTypeUpdateInput = Partial<InferModel<typeof visaTypes, 'insert'>>;
+type VisaTypeCreateInput = InferSelectModel<typeof visaTypes>;
+type VisaTypeUpdateInput = Partial<InferSelectModel<typeof visaTypes>>;
 
 @Injectable()
 export class VisaTypesService {
@@ -123,7 +123,7 @@ export class VisaTypesService {
   }
 
   private toVisaTypeEntity(
-    row: InferModel<typeof visaTypes>,
+    row: InferSelectModel<typeof visaTypes>,
     destinationCountry: CountrySummary,
     nationalityCountry: CountrySummary | null,
     requirementsList: VisaRequirementEntity[],
@@ -163,18 +163,31 @@ export class VisaTypesService {
   }
 
   private async hydrateVisaTypes(
-    rows: InferModel<typeof visaTypes>[],
+    rows: InferSelectModel<typeof visaTypes>[],
   ): Promise<VisaTypeEntity[]> {
+    if (rows.length === 0) return [];
+
     const visaTypeIds = rows.map((row) => row.id);
     const requirementsByVisaType = await this.loadRequirements(visaTypeIds);
 
-    const countryIds = rows.flatMap((row) => [
-      row.destinationCountryId,
-      row.nationalityCountryId,
-    ]).filter((id): id is string => !!id);
+    const countryIds = rows
+      .flatMap((row) => [row.destinationCountryId, row.nationalityCountryId])
+      .filter((id): id is string => !!id);
     const uniqueCountryIds = Array.from(new Set(countryIds));
 
-    const countryRows = await this.dbClient.db
+    if (uniqueCountryIds.length === 0) return [];
+
+    // Explicit type annotation works around drizzle-orm 0.45.x inferring {}[]
+    // when inArray receives a string[] whose emptiness isn't known at compile time.
+    const countryRows: Array<{
+      id: string;
+      name: string;
+      code: string;
+      flagEmoji: string | null;
+      slug: string;
+      visaTypesCount: number;
+      avgProcessingDays: number | null;
+    }> = await this.dbClient.db
       .select({
         id: countries.id,
         name: countries.name,
@@ -244,7 +257,9 @@ export class VisaTypesService {
     let nationalityCountryFilter = nationalityCountryId;
 
     if (params.destinationCountryCode) {
-      const country = await this.getCountryByCode(params.destinationCountryCode);
+      const country = await this.getCountryByCode(
+        params.destinationCountryCode,
+      );
       if (!country) {
         return { data: [], meta: buildPaginationMeta(0, page, limit) };
       }
@@ -252,7 +267,9 @@ export class VisaTypesService {
     }
 
     if (params.nationalityCountryCode) {
-      const country = await this.getCountryByCode(params.nationalityCountryCode);
+      const country = await this.getCountryByCode(
+        params.nationalityCountryCode,
+      );
       if (!country) {
         return { data: [], meta: buildPaginationMeta(0, page, limit) };
       }
@@ -269,9 +286,9 @@ export class VisaTypesService {
         : undefined,
       nationalityCountryFilter
         ? or(
-          eq(visaTypes.nationalityCountryId, nationalityCountryFilter),
-          isNull(visaTypes.nationalityCountryId),
-        )
+            eq(visaTypes.nationalityCountryId, nationalityCountryFilter),
+            isNull(visaTypes.nationalityCountryId),
+          )
         : undefined,
     ].filter(Boolean) as Parameters<typeof and>[0][];
 
