@@ -19,13 +19,11 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "typescript": "^5.9.3",
-
     "tailwindcss": "^4",
     "tailwindcss-animate": "^1.0.7",
     "tailwind-merge": "^3.6.0",
     "postcss": "^8.5.15",
     "autoprefixer": "^10.5.0",
-
     "framer-motion": "^12.40.0",
     "react-hook-form": "^7.76.1",
     "zod": "^4.4.3",
@@ -34,7 +32,6 @@
     "@tanstack/react-query-devtools": "^5.100.14",
     "zustand": "^5.0.13",
     "immer": "^11.1.8",
-
     "lucide-react": "^1.16.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -57,14 +54,16 @@
     "cmdk": "^1.1.1",
     "sonner": "^2.0.7",
     "next-themes": "^0.4.6",
-
     "axios": "^1.16.1",
     "dayjs": "^1.11.20",
     "react-international-phone": "^4.8.0",
     "react-dropzone": "^15.0.0",
     "react-countup": "^6.5.3",
     "use-debounce": "^10.1.1",
-    "cookie": "^1.1.1"
+    "cookie": "^1.1.1",
+    "@reown/walletkit": "^1.5.5",
+    "@walletconnect/core": "^2.23.9",
+    "@walletconnect/utils": "^2.23.9"
   },
   "devDependencies": {
     "@visaflow/eslint-config": "workspace:*",

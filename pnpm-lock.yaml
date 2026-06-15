@@ -74,9 +74,6 @@ importers:
       '@paypal/paypal-server-sdk':
         specifier: ^2.3.0
         version: 2.3.0
-      '@reown/walletkit':
-        specifier: ^1.5.5
-        version: 1.5.5(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
       '@visaflow/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -89,12 +86,6 @@ importers:
       '@visaflow/validators':
         specifier: workspace:*
         version: link:../../packages/validators
-      '@walletconnect/core':
-        specifier: ^2.23.9
-        version: 2.23.9(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
-      '@walletconnect/utils':
-        specifier: ^2.23.9
-        version: 2.23.9(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
       bcryptjs:
         specifier: 3.0.3
         version: 3.0.3
@@ -339,6 +330,15 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: ^5.100.14
         version: 5.100.14(@tanstack/react-query@5.100.14(react@19.2.6))(react@19.2.6)
+      '@reown/walletkit':
+        specifier: ^1.5.5
+        version: 1.5.5(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
+      '@walletconnect/core':
+        specifier: ^2.23.9
+        version: 2.23.9(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
+      '@walletconnect/utils':
+        specifier: ^2.23.9
+        version: 2.23.9(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
       '@visaflow/config':
         specifier: workspace:*
         version: link:../../packages/config
