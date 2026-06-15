@@ -8,6 +8,7 @@ import { and, desc, eq, isNull, sql, type InferModel } from 'drizzle-orm';
 import { applications, uploadedDocuments } from '@visaflow/database';
 import type { UploadedDocumentEntity } from '@visaflow/shared-types';
 import { DatabaseService } from '../common/database/database.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   buildPaginationMeta,
   buildPaginationSkipTake,
@@ -26,6 +27,7 @@ export class DocumentsService {
   constructor(
     private readonly dbClient: DatabaseService,
     private readonly configService: ConfigService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private isAdmin(role?: string) {
@@ -62,20 +64,32 @@ export class DocumentsService {
     };
   }
 
-  private async assertApplicationAccess(applicationId: string, userId: string, role?: string) {
+  private async assertApplicationAccess(
+    applicationId: string,
+    userId: string,
+    role?: string,
+  ) {
     const [application] = await this.dbClient.db
       .select({ id: applications.id, userId: applications.userId })
       .from(applications)
-      .where(and(eq(applications.id, applicationId), isNull(applications.deletedAt)))
+      .where(
+        and(eq(applications.id, applicationId), isNull(applications.deletedAt)),
+      )
       .limit(1);
 
     if (!application) throw new NotFoundException('Application not found');
     if (!this.isAdmin(role) && application.userId !== userId) {
-      throw new ForbiddenException('You do not have access to this application');
+      throw new ForbiddenException(
+        'You do not have access to this application',
+      );
     }
   }
 
-  async requestUploadUrl(userId: string, role: string | undefined, dto: RequestUploadUrlDto) {
+  async requestUploadUrl(
+    userId: string,
+    role: string | undefined,
+    dto: RequestUploadUrlDto,
+  ) {
     if (dto.applicationId) {
       await this.assertApplicationAccess(dto.applicationId, userId, role);
     }
@@ -86,7 +100,10 @@ export class DocumentsService {
       dto.applicationId ?? 'profile',
       `${dto.documentType}-${Date.now()}-${safeName}`,
     ].join('/');
-    const bucket = this.configService.get<string>('AWS_S3_BUCKET', 'visaflow-documents');
+    const bucket = this.configService.get<string>(
+      'AWS_S3_BUCKET',
+      'visaflow-documents',
+    );
     const region = this.configService.get<string>('AWS_REGION', 'us-east-1');
 
     const [document] = await this.dbClient.db
@@ -116,8 +133,21 @@ export class DocumentsService {
     };
   }
 
-  async confirmUpload(userId: string, role: string | undefined, dto: ConfirmUploadDto) {
+  async confirmUpload(
+    userId: string,
+    role: string | undefined,
+    dto: ConfirmUploadDto,
+  ) {
     const document = await this.findRow(dto.documentId, userId, role);
+
+    await this.notificationsService.createSystemNotification({
+      userId: document.userId,
+      applicationId: document.applicationId ?? undefined,
+      channel: 'IN_APP',
+      subject: 'Document upload received',
+      body: `Your ${document.documentType.replace(/_/g, ' ').toLowerCase()} document (${document.originalFileName}) was uploaded successfully and is now processing. We will notify you when review is complete or if more information is needed.`,
+      recipient: document.userId,
+    });
 
     await this.dbClient.db
       .update(uploadedDocuments)
@@ -131,13 +161,24 @@ export class DocumentsService {
     return this.findById(document.id, userId, role);
   }
 
-  async findAll(userId: string, role: string | undefined, query: ListDocumentsDto) {
-    const { skip, take } = buildPaginationSkipTake(query.page ?? 1, query.limit ?? 20);
+  async findAll(
+    userId: string,
+    role: string | undefined,
+    query: ListDocumentsDto,
+  ) {
+    const { skip, take } = buildPaginationSkipTake(
+      query.page ?? 1,
+      query.limit ?? 20,
+    );
     const conditions = [
       isNull(uploadedDocuments.deletedAt),
       this.isAdmin(role) ? undefined : eq(uploadedDocuments.userId, userId),
-      query.applicationId ? eq(uploadedDocuments.applicationId, query.applicationId) : undefined,
-      query.documentType ? eq(uploadedDocuments.documentType, query.documentType) : undefined,
+      query.applicationId
+        ? eq(uploadedDocuments.applicationId, query.applicationId)
+        : undefined,
+      query.documentType
+        ? eq(uploadedDocuments.documentType, query.documentType)
+        : undefined,
       query.status ? eq(uploadedDocuments.status, query.status) : undefined,
     ].filter(Boolean) as Parameters<typeof and>[0][];
     const where = and(...conditions);
@@ -158,7 +199,11 @@ export class DocumentsService {
 
     return {
       data: rows.map((row) => this.toEntity(row)),
-      meta: buildPaginationMeta(Number(countRows[0]?.count ?? 0), query.page ?? 1, query.limit ?? 20),
+      meta: buildPaginationMeta(
+        Number(countRows[0]?.count ?? 0),
+        query.page ?? 1,
+        query.limit ?? 20,
+      ),
     };
   }
 
@@ -166,7 +211,9 @@ export class DocumentsService {
     const [document] = await this.dbClient.db
       .select()
       .from(uploadedDocuments)
-      .where(and(eq(uploadedDocuments.id, id), isNull(uploadedDocuments.deletedAt)))
+      .where(
+        and(eq(uploadedDocuments.id, id), isNull(uploadedDocuments.deletedAt)),
+      )
       .limit(1);
 
     if (!document) throw new NotFoundException('Document not found');
@@ -180,9 +227,15 @@ export class DocumentsService {
     return this.toEntity(await this.findRow(id, userId, role));
   }
 
-  async review(id: string, userId: string, role: string | undefined, dto: ReviewDocumentDto) {
-    if (!this.isAdmin(role)) throw new ForbiddenException('Only admins can review documents');
-    await this.findRow(id, userId, role);
+  async review(
+    id: string,
+    userId: string,
+    role: string | undefined,
+    dto: ReviewDocumentDto,
+  ) {
+    if (!this.isAdmin(role))
+      throw new ForbiddenException('Only admins can review documents');
+    const document = await this.findRow(id, userId, role);
 
     await this.dbClient.db
       .update(uploadedDocuments)
@@ -193,6 +246,18 @@ export class DocumentsService {
         reviewedAt: new Date(),
       })
       .where(eq(uploadedDocuments.id, id));
+
+    await this.notificationsService.createSystemNotification({
+      userId: document.userId,
+      applicationId: document.applicationId ?? undefined,
+      channel: 'IN_APP',
+      subject: `Document ${dto.status.toLowerCase()}`,
+      body:
+        dto.status === 'REJECTED'
+          ? `Your ${document.documentType.replace(/_/g, ' ').toLowerCase()} document was rejected. Reason: ${dto.rejectionReason ?? 'No rejection reason was provided.'}`
+          : `Your ${document.documentType.replace(/_/g, ' ').toLowerCase()} document was verified successfully. This helps move your application to the next review stage.`,
+      recipient: document.userId,
+    });
 
     return this.findById(id, userId, role);
   }
