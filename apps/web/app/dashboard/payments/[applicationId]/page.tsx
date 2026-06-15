@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import api from "@/lib/api";
+import { getWalletKit, pairWalletConnectUri } from "@/lib/walletconnect-walletkit";
 import { toast } from "sonner";
 import type { ApplicationEntity, PaymentEntity } from "@visaflow/shared-types";
 
@@ -194,6 +195,7 @@ export default function PaymentPage() {
   const [uploading, setUploading] = useState(false);
   const [walletPaymentNetwork, setWalletPaymentNetwork] =
     useState<WalletConnectNetwork>();
+  const [walletConnectUri, setWalletConnectUri] = useState("");
   const proofModalStorageKey = `visaflow-payment-proof-modal:${applicationId}`;
   const [proofModalPayment, setProofModalPayment] = useState<{
     paymentId: string;
@@ -238,6 +240,7 @@ export default function PaymentPage() {
       .then(([appRes, optionsRes, paymentsRes]) => {
         setApplication(appRes.data.data);
         setOptions(optionsRes.data.data);
+        void getWalletKit().catch(() => undefined);
         setPayments(
           paymentsRes.data.data?.data ?? paymentsRes.data.data?.items ?? [],
         );
@@ -406,6 +409,52 @@ export default function PaymentPage() {
         (err as { message?: string })?.message ??
         "Wallet payment could not be completed";
       toast.error(Array.isArray(msg) ? msg[0] : msg);
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const pairWithDapp = async () => {
+    if (!application) return;
+    if (!walletConnectUri.trim()) {
+      toast.error("Paste a WalletConnect URI first.");
+      return;
+    }
+    if (!selectedWallet || !walletConnectNetwork) {
+      toast.error("Choose a supported EVM receiving wallet before pairing.");
+      return;
+    }
+
+    setPaying(true);
+    try {
+      const origin = window.location.origin;
+      const checkout = await api.post("/payments/checkout", {
+        applicationId,
+        processingTier: tier,
+        currency: "USD",
+        successUrl: `${origin}/dashboard/applications/${applicationId}`,
+        cancelUrl: `${origin}/dashboard/payments/${applicationId}?tier=${tier}`,
+        provider: "crypto_wallet_connect",
+        walletId: selectedWallet.id,
+      });
+      const paymentId = (checkout.data.data as { paymentId: string }).paymentId;
+      const account = `eip155:${walletConnectNetwork.chainId}:${selectedWallet.address}`;
+      await pairWalletConnectUri(walletConnectUri.trim(), {
+        chains: [`eip155:${walletConnectNetwork.chainId}`],
+        accounts: [account],
+        onTransactionHash: async (txHash) => {
+          await api.post(`/payments/${paymentId}/crypto-verification`, { txHash });
+          rememberProofModal(paymentId, "crypto_wallet_connect");
+        },
+      });
+      toast.success(
+        "WalletConnect pairing started. Approve the proposal in your wallet.",
+      );
+      setWalletConnectUri("");
+    } catch (err: unknown) {
+      toast.error(
+        (err as { message?: string })?.message ?? "WalletConnect pairing failed",
+      );
     } finally {
       setPaying(false);
     }
@@ -639,6 +688,27 @@ export default function PaymentPage() {
                       )}
                     </div>
                   )}
+                  <div className="space-y-2 rounded-lg bg-card p-3">
+                    <label className="text-xs font-medium text-foreground">
+                      WalletConnect URI from a dApp QR code
+                    </label>
+                    <textarea
+                      value={walletConnectUri}
+                      onChange={(e) => setWalletConnectUri(e.target.value)}
+                      rows={2}
+                      placeholder="wc:..."
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs text-foreground"
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={pairWithDapp}
+                      disabled={!walletConnectUri.trim() || paying}
+                      className="w-full"
+                    >
+                      Pair WalletConnect URI
+                    </Button>
+                  </div>
                 </div>
               )}
 
