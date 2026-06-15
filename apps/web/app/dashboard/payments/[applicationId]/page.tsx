@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import * as Dialog from "@radix-ui/react-dialog";
 import {
   AlertCircle,
   ArrowLeft,
@@ -193,6 +194,40 @@ export default function PaymentPage() {
   const [uploading, setUploading] = useState(false);
   const [walletPaymentNetwork, setWalletPaymentNetwork] =
     useState<WalletConnectNetwork>();
+  const proofModalStorageKey = `visaflow-payment-proof-modal:${applicationId}`;
+  const [proofModalPayment, setProofModalPayment] = useState<{
+    paymentId: string;
+    provider: PaymentProvider;
+  } | null>(() => {
+    const stored = sessionStorage.getItem(proofModalStorageKey);
+    if (!stored) return null;
+    try {
+      const payment = JSON.parse(stored) as {
+        paymentId: string;
+        provider: PaymentProvider;
+      };
+      return payment.paymentId && payment.provider ? payment : null;
+    } catch {
+      sessionStorage.removeItem(proofModalStorageKey);
+      return null;
+    }
+  });
+  const [proofModalOpen, setProofModalOpen] = useState(() =>
+    Boolean(proofModalPayment),
+  );
+
+  const rememberProofModal = (paymentId: string, provider: PaymentProvider) => {
+    const payment = { paymentId, provider };
+    setProofModalPayment(payment);
+    setProofModalOpen(true);
+    sessionStorage.setItem(proofModalStorageKey, JSON.stringify(payment));
+  };
+
+  const dismissProofModal = () => {
+    setProofModalOpen(false);
+    setProofModalPayment(null);
+    sessionStorage.removeItem(proofModalStorageKey);
+  };
 
   useEffect(() => {
     Promise.all([
@@ -359,7 +394,7 @@ export default function PaymentPage() {
 
       await api.post(`/payments/${paymentId}/crypto-verification`, { txHash });
       toast.success("Wallet payment verified on-chain");
-      router.push(`/dashboard/applications/${applicationId}`);
+      rememberProofModal(paymentId, "crypto_wallet_connect");
     } catch (err: unknown) {
       const msg =
         (
@@ -397,6 +432,7 @@ export default function PaymentPage() {
             ? selectedWalletId
             : undefined,
       });
+      rememberProofModal(data.data.paymentId, selectedProvider);
       window.location.assign(data.data.checkoutUrl);
     } catch (err: unknown) {
       const msg =
@@ -423,6 +459,7 @@ export default function PaymentPage() {
         storageKey: upload.data.data.fields?.storageKey,
       });
       toast.success("Payment proof uploaded for admin review");
+      dismissProofModal();
     } catch {
       toast.error("Could not upload payment proof");
     } finally {
@@ -717,6 +754,84 @@ export default function PaymentPage() {
           </Card>
         </aside>
       </div>
+
+      <Dialog.Root
+        open={proofModalOpen}
+        onOpenChange={(open) => {
+          if (!open) dismissProofModal();
+          else setProofModalOpen(true);
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-3xl border border-border bg-card p-6 shadow-2xl focus:outline-none">
+            <Dialog.Title className="text-xl font-bold text-foreground">
+              Payment proof is optional
+            </Dialog.Title>
+            <Dialog.Description className="mt-2 text-sm leading-6 text-muted-foreground">
+              If you have completed the payment, you can click{" "}
+              <span className="font-medium text-foreground">I have paid</span>{" "}
+              now. Uploading a receipt or screenshot is optional, but it can
+              help admins review manual PayPal and crypto payments faster.
+            </Dialog.Description>
+
+            <div className="mt-4 rounded-2xl bg-sand/60 p-4 text-sm">
+              <div className="flex justify-between gap-3">
+                <span className="text-muted-foreground">Application</span>
+                <span className="font-mono">{application.referenceNumber}</span>
+              </div>
+              <div className="mt-2 flex justify-between gap-3">
+                <span className="text-muted-foreground">Payment method</span>
+                <span className="font-medium">
+                  {proofModalPayment?.provider?.replaceAll("_", " ") ??
+                    selectedProvider.replaceAll("_", " ")}
+                </span>
+              </div>
+              {proofModalPayment?.paymentId && (
+                <div className="mt-2 flex justify-between gap-3">
+                  <span className="text-muted-foreground">Payment ID</span>
+                  <span className="truncate font-mono text-xs">
+                    {proofModalPayment.paymentId}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <label className="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-border p-6 text-center hover:border-brand/60">
+              <Upload className="mb-3 h-7 w-7 text-muted-foreground" />
+              <span className="font-medium text-foreground">
+                {uploading ? "Uploading…" : "Upload payment proof (optional)"}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                PDF, image, or receipt screenshot
+              </span>
+              <input
+                type="file"
+                className="hidden"
+                disabled={uploading}
+                onChange={(e) =>
+                  e.target.files?.[0] && uploadProof(e.target.files[0])
+                }
+              />
+            </label>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Dialog.Close asChild>
+                <Button variant="outline" disabled={uploading}>
+                  Close
+                </Button>
+              </Dialog.Close>
+              <Button
+                variant="brand"
+                onClick={dismissProofModal}
+                disabled={uploading}
+              >
+                I have paid
+              </Button>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }
