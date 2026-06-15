@@ -1,5 +1,14 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { and, desc, eq, inArray, isNotNull, isNull, sql, type InferModel } from 'drizzle-orm';
+import {
+  and,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  sql,
+  type InferModel,
+} from 'drizzle-orm';
 import { notifications } from '@visaflow/database';
 import type { NotificationEntity } from '@visaflow/shared-types';
 import { DatabaseService } from '../common/database/database.service';
@@ -45,8 +54,13 @@ export class NotificationsService {
   }
 
   async create(role: string | undefined, dto: CreateNotificationDto) {
-    if (!this.isAdmin(role)) throw new ForbiddenException('Only admins can create notifications');
+    if (!this.isAdmin(role))
+      throw new ForbiddenException('Only admins can create notifications');
 
+    return this.createSystemNotification(dto);
+  }
+
+  async createSystemNotification(dto: CreateNotificationDto) {
     const [notification] = await this.dbClient.db
       .insert(notifications)
       .values({
@@ -64,8 +78,15 @@ export class NotificationsService {
     return notification ? this.toEntity(notification) : null;
   }
 
-  async findAll(userId: string, role: string | undefined, query: ListNotificationsDto) {
-    const { skip, take } = buildPaginationSkipTake(query.page ?? 1, query.limit ?? 20);
+  async findAll(
+    userId: string,
+    role: string | undefined,
+    query: ListNotificationsDto,
+  ) {
+    const { skip, take } = buildPaginationSkipTake(
+      query.page ?? 1,
+      query.limit ?? 20,
+    );
     const conditions = [
       this.isAdmin(role) ? undefined : eq(notifications.userId, userId),
       query.channel ? eq(notifications.channel, query.channel) : undefined,
@@ -82,12 +103,19 @@ export class NotificationsService {
         .orderBy(desc(notifications.createdAt))
         .limit(take)
         .offset(skip),
-      this.dbClient.db.select({ count: sql`count(*)` }).from(notifications).where(where),
+      this.dbClient.db
+        .select({ count: sql`count(*)` })
+        .from(notifications)
+        .where(where),
     ]);
 
     return {
       data: rows.map((row) => this.toEntity(row)),
-      meta: buildPaginationMeta(Number(countRows[0]?.count ?? 0), query.page ?? 1, query.limit ?? 20),
+      meta: buildPaginationMeta(
+        Number(countRows[0]?.count ?? 0),
+        query.page ?? 1,
+        query.limit ?? 20,
+      ),
     };
   }
 
@@ -95,35 +123,56 @@ export class NotificationsService {
     const [row] = await this.dbClient.db
       .select({ count: sql`count(*)` })
       .from(notifications)
-      .where(and(eq(notifications.userId, userId), isNull(notifications.readAt)));
+      .where(
+        and(eq(notifications.userId, userId), isNull(notifications.readAt)),
+      );
 
     return { count: Number(row?.count ?? 0) };
   }
 
-
-  async delete(userId: string, role: string | undefined, dto: DeleteNotificationsDto) {
+  async delete(
+    userId: string,
+    role: string | undefined,
+    dto: DeleteNotificationsDto,
+  ) {
     const baseConditions = [
       this.isAdmin(role) ? undefined : eq(notifications.userId, userId),
-      dto.notificationIds.length ? inArray(notifications.id, dto.notificationIds) : undefined,
+      dto.notificationIds.length
+        ? inArray(notifications.id, dto.notificationIds)
+        : undefined,
     ].filter(Boolean) as Parameters<typeof and>[0][];
 
     await this.dbClient.db
       .delete(notifications)
-      .where(baseConditions.length ? and(...baseConditions) : eq(notifications.userId, userId));
+      .where(
+        baseConditions.length
+          ? and(...baseConditions)
+          : eq(notifications.userId, userId),
+      );
 
     return this.unreadCount(userId);
   }
 
-  async markRead(userId: string, role: string | undefined, dto: MarkNotificationsReadDto) {
+  async markRead(
+    userId: string,
+    role: string | undefined,
+    dto: MarkNotificationsReadDto,
+  ) {
     const baseConditions = [
       this.isAdmin(role) ? undefined : eq(notifications.userId, userId),
-      dto.notificationIds.length ? inArray(notifications.id, dto.notificationIds) : undefined,
+      dto.notificationIds.length
+        ? inArray(notifications.id, dto.notificationIds)
+        : undefined,
     ].filter(Boolean) as Parameters<typeof and>[0][];
 
     await this.dbClient.db
       .update(notifications)
       .set({ readAt: new Date(), status: 'READ' })
-      .where(baseConditions.length ? and(...baseConditions) : eq(notifications.userId, userId));
+      .where(
+        baseConditions.length
+          ? and(...baseConditions)
+          : eq(notifications.userId, userId),
+      );
 
     return this.unreadCount(userId);
   }
