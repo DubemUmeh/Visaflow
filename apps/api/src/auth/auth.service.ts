@@ -21,6 +21,7 @@ import {
 import { generateSecureToken, sha256 } from '../common/utils/hash';
 import { and, eq, gt, isNull, like, sql } from 'drizzle-orm';
 import { auditLogs, userSessions, users } from '@visaflow/database';
+import { NotificationsService } from '../notifications/notifications.service';
 import { type JwtPayload } from './strategies/jwt.strategy';
 
 const BCRYPT_ROUNDS = 12;
@@ -70,6 +71,7 @@ export class AuthService {
     private readonly dbClient: DatabaseService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private cleanInput<T extends Record<string, unknown>>(data: T) {
@@ -136,6 +138,14 @@ export class AuthService {
 
     this.logger.log(`New user registered: ${user.email} (${user.id})`);
 
+    await this.notificationsService.createSystemNotification({
+      userId: user.id,
+      channel: 'IN_APP',
+      subject: 'Welcome to VisaFlow',
+      body: `Hi ${user.firstName}, your VisaFlow account was created successfully. You can now start a visa application, upload documents, make payments, and track every status update from this notification center.`,
+      recipient: user.email,
+    });
+
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
@@ -168,9 +178,7 @@ export class AuthService {
     if (!passwordValid) {
       const failedCount = user.failedLoginCount + 1;
       const lockUntil =
-        failedCount >= 5
-          ? new Date(Date.now() + 15 * 60 * 1000)
-          : null;
+        failedCount >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null;
 
       await this.dbClient.db
         .update(users)
@@ -200,6 +208,14 @@ export class AuthService {
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     await this.saveRefreshToken(user.id, tokens.refreshToken, dto.rememberMe);
+
+    await this.notificationsService.createSystemNotification({
+      userId: user.id,
+      channel: 'IN_APP',
+      subject: 'New sign-in detected',
+      body: `Your VisaFlow account was signed in successfully${ipAddress ? ` from IP ${ipAddress}` : ''}. If this was you, no action is needed. If you do not recognize this activity, change your password and contact support immediately.`,
+      recipient: user.email,
+    });
 
     await this.dbClient.db
       .insert(auditLogs)
@@ -239,7 +255,13 @@ export class AuthService {
     const user = await this.dbClient.db
       .select(USER_SELECT)
       .from(users)
-      .where(and(eq(users.id, userId), eq(users.isActive, true), isNull(users.deletedAt)))
+      .where(
+        and(
+          eq(users.id, userId),
+          eq(users.isActive, true),
+          isNull(users.deletedAt),
+        ),
+      )
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -274,7 +296,9 @@ export class AuthService {
       await this.dbClient.db
         .update(userSessions)
         .set({ revokedAt: new Date() })
-        .where(and(eq(userSessions.userId, userId), isNull(userSessions.revokedAt)));
+        .where(
+          and(eq(userSessions.userId, userId), isNull(userSessions.revokedAt)),
+        );
     }
   }
 
@@ -315,14 +339,7 @@ export class AuthService {
     const user = await this.dbClient.db
       .select(USER_SELECT)
       .from(users)
-      .where(
-        and(
-          like(
-            users.currentRefreshTokenHash,
-            `reset:${tokenHash}:%`,
-          ),
-        ),
-      )
+      .where(and(like(users.currentRefreshTokenHash, `reset:${tokenHash}:%`)))
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -332,7 +349,11 @@ export class AuthService {
 
     const expiresAtValue = user.currentRefreshTokenHash?.split(':')[2];
     const expiresAt = expiresAtValue ? new Date(expiresAtValue) : null;
-    if (!expiresAt || Number.isNaN(expiresAt.getTime()) || expiresAt < new Date()) {
+    if (
+      !expiresAt ||
+      Number.isNaN(expiresAt.getTime()) ||
+      expiresAt < new Date()
+    ) {
       throw new BadRequestException('Reset token has expired');
     }
 
@@ -370,7 +391,10 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const currentValid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    const currentValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.passwordHash,
+    );
     if (!currentValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
@@ -400,7 +424,9 @@ export class AuthService {
       .then((rows) => rows[0]);
 
     if (!user) {
-      throw new BadRequestException('Invalid or already used verification token');
+      throw new BadRequestException(
+        'Invalid or already used verification token',
+      );
     }
 
     await this.dbClient.db

@@ -22,6 +22,7 @@ import type {
   VisaTypeSummary,
 } from '@visaflow/shared-types';
 import { DatabaseService } from '../common/database/database.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   buildPaginationMeta,
   buildPaginationSkipTake,
@@ -51,7 +52,10 @@ type StatusHistoryRow = InferModel<typeof applicationStatusHistory>;
 
 @Injectable()
 export class ApplicationService {
-  constructor(private readonly dbClient: DatabaseService) {}
+  constructor(
+    private readonly dbClient: DatabaseService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   private toIso(value: Date | string | null | undefined) {
     if (value instanceof Date) return value.toISOString();
@@ -329,6 +333,15 @@ export class ApplicationService {
       isSystemChange: true,
     });
 
+    await this.notificationsService.createSystemNotification({
+      userId,
+      applicationId: created.id,
+      channel: 'IN_APP',
+      subject: 'Application draft completed',
+      body: 'Your visa application draft has been saved with all required steps completed. It remains in Draft status until payment is completed, after which it can move into submission and review.',
+      recipient: dto.applicantEmail,
+    });
+
     return this.findById(created.id, userId);
   }
 
@@ -483,6 +496,20 @@ export class ApplicationService {
       changedById: userId,
       note: dto.note ?? null,
       isSystemChange: false,
+    });
+
+    const reason =
+      dto.rejectionReason ??
+      dto.missingDocumentsNote ??
+      dto.note ??
+      'No additional note was added by the review team.';
+    await this.notificationsService.createSystemNotification({
+      userId: existing.userId,
+      applicationId: id,
+      channel: 'IN_APP',
+      subject: `Application status changed to ${dto.status.replace(/_/g, ' ')}`,
+      body: `Your application moved from ${existing.status.replace(/_/g, ' ')} to ${dto.status.replace(/_/g, ' ')}. Reason: ${reason}`,
+      recipient: existing.applicantEmail,
     });
 
     return this.findById(id, userId, role);
