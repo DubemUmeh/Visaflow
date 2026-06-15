@@ -324,6 +324,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      '@reown/walletkit':
+        specifier: ^1.5.5
+        version: 1.5.5(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
       '@tanstack/react-query':
         specifier: ^5.100.14
         version: 5.100.14(react@19.2.6)
@@ -351,6 +354,12 @@ importers:
       '@visaflow/validators':
         specifier: workspace:*
         version: link:../../packages/validators
+      '@walletconnect/core':
+        specifier: ^2.23.9
+        version: 2.23.9(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
+      '@walletconnect/utils':
+        specifier: ^2.23.9
+        version: 2.23.9(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
       autoprefixer:
         specifier: ^10.5.0
         version: 10.5.0(postcss@8.5.15)
