@@ -109,9 +109,9 @@ function stablecoinAmountFromCents(cents: number, decimals: number) {
 function getStablecoinConfig(wallet: PaymentWalletAddress) {
   const coin = wallet.coin.toUpperCase();
   const chain = wallet.chain.toLowerCase();
-  return EVM_STABLECOIN_CONFIGS.find(
-    (config) =>
-      coin === config.tokenSymbol && chain.includes(config.chainMatcher),
+  return EVM_STABLECOIN_CONFIGS.find((config) =>
+    //   coin === config.tokenSymbol && chain.includes(config.chainMatcher),
+    chain.includes(config.chainMatcher),
   );
 }
 
@@ -129,7 +129,7 @@ const DEFAULT_PAYMENT_SETTINGS: PaymentSettings = {
       label: 'USDT (ERC-20)',
       coin: 'USDT',
       chain: 'Ethereum ERC-20',
-      address: '0xVisaFlowDemoUsdtErc20Address',
+      address: '0xabcdef1234567890abcdef1234567890abcdef12',
       enabled: true,
     },
     {
@@ -137,7 +137,7 @@ const DEFAULT_PAYMENT_SETTINGS: PaymentSettings = {
       label: 'USDT (BEP-20)',
       coin: 'USDT',
       chain: 'BNB Smart Chain BEP-20',
-      address: '0xVisaFlowDemoUsdtBep20Address',
+      address: '0xabcdef1234567890abcdef1234567890abcdef12',
       enabled: true,
     },
     {
@@ -153,7 +153,7 @@ const DEFAULT_PAYMENT_SETTINGS: PaymentSettings = {
       label: 'BNB',
       coin: 'BNB',
       chain: 'BNB Smart Chain',
-      address: 'bnb1visaflowdemobnbaddress',
+      address: '0xabcdef1234567890abcdef1234567890abcdef12',
       enabled: true,
     },
   ],
