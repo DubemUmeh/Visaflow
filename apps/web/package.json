@@ -59,7 +59,11 @@
     "use-debounce": "^10.1.1",
     "@reown/walletkit": "^1.5.5",
     "@walletconnect/core": "^2.23.9",
-    "@walletconnect/utils": "^2.23.9"
+    "@walletconnect/utils": "^2.23.9",
+    "@reown/appkit": "^1.8.20",
+    "@reown/appkit-universal-connector": "^1.8.20",
+    "@reown/appkit-common": "^1.8.20",
+    "ethers": "^6.16.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

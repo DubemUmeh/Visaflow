@@ -19,19 +19,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import api from "@/lib/api";
-import { getWalletKit, pairWalletConnectUri } from "@/lib/walletconnect-walletkit";
+import { WalletConnectPaymentFlow } from "@/components/payments/walletconnect-payment-flow";
 import { toast } from "sonner";
 import type { ApplicationEntity, PaymentEntity } from "@visaflow/shared-types";
-
-type Eip1193Provider = {
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-};
-
-declare global {
-  interface Window {
-    ethereum?: Eip1193Provider;
-  }
-}
 
 type PaymentProvider =
   | "stripe"
@@ -122,18 +112,12 @@ const walletConnectNetworks = [
   {
     chainMatcher: "erc-20",
     chainId: 1,
-    chainHex: "0x1",
     tokenSymbol: "USDT",
-    tokenContract: "0xdac17f958d2ee523a2206206994597c13d831ec7",
-    decimals: 6,
   },
   {
     chainMatcher: "bep-20",
     chainId: 56,
-    chainHex: "0x38",
     tokenSymbol: "USDT",
-    tokenContract: "0x55d398326f99059ff775485246999027b3197955",
-    decimals: 18,
   },
 ] as const;
 
@@ -151,38 +135,6 @@ function walletConnectNetworkFor(wallet?: WalletAddress) {
     (network) =>
       coin === network.tokenSymbol && chain.includes(network.chainMatcher),
   );
-}
-
-
-// For showing the option — only needs chain/coin match, not address validity
-function canUseAsWalletConnectNetwork(wallet: WalletAddress): boolean {
-  const coin = wallet.coin.toUpperCase();
-  const chain = wallet.chain.toLowerCase();
-  return walletConnectNetworks.some(
-    (n) => coin === n.tokenSymbol && chain.includes(n.chainMatcher),
-  );
-}
-
-
-function stablecoinAmountFromCents(cents: number, decimals: number) {
-  return (BigInt(cents) * 10n ** BigInt(decimals)) / 100n;
-}
-
-function padHex(value: string) {
-  return value.toLowerCase().replace(/^0x/, "").padStart(64, "0");
-}
-
-function buildErc20TransferData(to: string, amount: bigint) {
-  return `0xa9059cbb${padHex(to)}${padHex(amount.toString(16))}`;
-}
-
-async function getBrowserWalletProvider() {
-  if (!window.ethereum) {
-    throw new Error(
-      "No browser wallet found. Install a wallet or initialize AppKit/WalletConnect before paying.",
-    );
-  }
-  return window.ethereum;
 }
 
 export default function PaymentPage() {
@@ -204,9 +156,6 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [walletPaymentNetwork, setWalletPaymentNetwork] =
-    useState<WalletConnectNetwork>();
-  const [walletConnectUri, setWalletConnectUri] = useState("");
   const proofModalStorageKey = `visaflow-payment-proof-modal:${applicationId}`;
   const [proofModalPayment, setProofModalPayment] = useState<{
     paymentId: string;
@@ -251,7 +200,6 @@ export default function PaymentPage() {
       .then(([appRes, optionsRes, paymentsRes]) => {
         setApplication(appRes.data.data);
         setOptions(optionsRes.data.data);
-        void getWalletKit().catch(() => undefined);
         setPayments(
           paymentsRes.data.data?.data ?? paymentsRes.data.data?.items ?? [],
         );
@@ -343,148 +291,7 @@ export default function PaymentPage() {
     toast.success(`${label} copied`);
   };
 
-  const payWithWalletConnect = async () => {
-    if (!application || !selectedWallet || !walletConnectNetwork) {
-      toast.error("Choose a supported EVM USDT wallet before connecting.");
-      return;
-    }
-    if (!options?.walletConnectProjectId) {
-      toast.error("WalletConnect project ID is not configured.");
-      return;
-    }
-
-    setPaying(true);
-    try {
-      const origin = window.location.origin;
-      const checkout = await api.post("/payments/checkout", {
-        applicationId,
-        processingTier: tier,
-        currency: "USD",
-        successUrl: `${origin}/dashboard/applications/${applicationId}`,
-        cancelUrl: `${origin}/dashboard/payments/${applicationId}?tier=${tier}`,
-        provider: "crypto_wallet_connect",
-        walletId: selectedWallet.id,
-      });
-      const checkoutData = checkout.data.data as {
-        paymentId: string;
-        instructions: { amount: number; walletAddresses: WalletAddress[] };
-      };
-      const paymentId = checkoutData.paymentId;
-      const checkoutWallet = checkoutData.instructions.walletAddresses.find(
-        (wallet) => wallet.id === selectedWallet.id,
-      );
-      if (!checkoutWallet) {
-        throw new Error("Backend did not return the selected payment wallet.");
-      }
-      const provider = await getBrowserWalletProvider();
-      const accounts = (await provider.request({
-        method: "eth_requestAccounts",
-      })) as string[];
-      const from = accounts[0];
-      if (!from) throw new Error("Wallet did not return an account.");
-
-      try {
-        await provider.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: walletConnectNetwork.chainHex }],
-        });
-      } catch (switchError) {
-        const code = (switchError as { code?: number }).code;
-        if (code === 4902) {
-          throw new Error(
-            `Add chain ID ${walletConnectNetwork.chainId} to your wallet before paying.`,
-          );
-        }
-        throw switchError;
-      }
-
-      setWalletPaymentNetwork(walletConnectNetwork);
-      const tokenAmount = stablecoinAmountFromCents(
-        checkoutData.instructions.amount,
-        walletConnectNetwork.decimals,
-      );
-      const txHash = (await provider.request({
-        method: "eth_sendTransaction",
-        params: [
-          {
-            from,
-            to: walletConnectNetwork.tokenContract,
-            value: "0x0",
-            data: buildErc20TransferData(checkoutWallet.address, tokenAmount),
-          },
-        ],
-      })) as string;
-
-      await api.post(`/payments/${paymentId}/crypto-verification`, { txHash });
-      toast.success("Wallet payment verified on-chain");
-      rememberProofModal(paymentId, "crypto_wallet_connect");
-    } catch (err: unknown) {
-      const msg =
-        (
-          err as {
-            response?: { data?: { message?: string } };
-            message?: string;
-          }
-        )?.response?.data?.message ??
-        (err as { message?: string })?.message ??
-        "Wallet payment could not be completed";
-      toast.error(Array.isArray(msg) ? msg[0] : msg);
-    } finally {
-      setPaying(false);
-    }
-  };
-
-  const pairWithDapp = async () => {
-    if (!application) return;
-    if (!walletConnectUri.trim()) {
-      toast.error("Paste a WalletConnect URI first.");
-      return;
-    }
-    if (!selectedWallet || !walletConnectNetwork) {
-      toast.error("Choose a supported EVM receiving wallet before pairing.");
-      return;
-    }
-
-    setPaying(true);
-    try {
-      const origin = window.location.origin;
-      const checkout = await api.post("/payments/checkout", {
-        applicationId,
-        processingTier: tier,
-        currency: "USD",
-        successUrl: `${origin}/dashboard/applications/${applicationId}`,
-        cancelUrl: `${origin}/dashboard/payments/${applicationId}?tier=${tier}`,
-        provider: "crypto_wallet_connect",
-        walletId: selectedWallet.id,
-      });
-      const paymentId = (checkout.data.data as { paymentId: string }).paymentId;
-      const account = `eip155:${walletConnectNetwork.chainId}:${selectedWallet.address}`;
-      await pairWalletConnectUri(walletConnectUri.trim(), {
-        chains: [`eip155:${walletConnectNetwork.chainId}`],
-        accounts: [account],
-        onTransactionHash: async (txHash) => {
-          await api.post(`/payments/${paymentId}/crypto-verification`, { txHash });
-          rememberProofModal(paymentId, "crypto_wallet_connect");
-        },
-      });
-      toast.success(
-        "WalletConnect pairing started. Approve the proposal in your wallet.",
-      );
-      setWalletConnectUri("");
-    } catch (err: unknown) {
-      toast.error(
-        (err as { message?: string })?.message ?? "WalletConnect pairing failed",
-      );
-    } finally {
-      setPaying(false);
-    }
-  };
-
   const createCheckout = async () => {
-    if (selectedProvider === "crypto_wallet_connect") {
-      await payWithWalletConnect();
-      return;
-    }
     if (!application) return;
     setPaying(true);
     try {
@@ -700,55 +507,51 @@ export default function PaymentPage() {
                         transfer to {selectedWallet.address} on chain ID{" "}
                         {walletConnectNetwork.chainId}.
                       </p>
-                      {walletPaymentNetwork && (
-                        <p className="mt-2">
-                          Last requested network: chain ID{" "}
-                          {walletPaymentNetwork.chainId}
-                        </p>
-                      )}
                     </div>
                   )}
-                  <div className="space-y-2 rounded-lg bg-card p-3">
-                    <label className="text-xs font-medium text-foreground">
-                      WalletConnect URI from a dApp QR code
-                    </label>
-                    <textarea
-                      value={walletConnectUri}
-                      onChange={(e) => setWalletConnectUri(e.target.value)}
-                      rows={2}
-                      placeholder="wc:..."
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs text-foreground"
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={pairWithDapp}
-                      disabled={!walletConnectUri.trim() || paying}
-                      className="w-full"
-                    >
-                      Pair WalletConnect URI
-                    </Button>
-                  </div>
+                  <WalletConnectPaymentFlow
+                    recipientAddress={
+                      selectedWallet?.address ??
+                      "0x000000000000000000000000000000000000dEaD"
+                    }
+                    amountEth="0.001"
+                    onTransactionHash={async (txHash) => {
+                      const origin = window.location.origin;
+                      const checkout = await api.post("/payments/checkout", {
+                        applicationId,
+                        processingTier: tier,
+                        currency: "USD",
+                        successUrl: `${origin}/dashboard/applications/${applicationId}`,
+                        cancelUrl: `${origin}/dashboard/payments/${applicationId}?tier=${tier}`,
+                        provider: "crypto_wallet_connect",
+                        walletId: selectedWallet?.id,
+                      });
+                      const paymentId = (
+                        checkout.data.data as { paymentId: string }
+                      ).paymentId;
+                      await api.post(
+                        `/payments/${paymentId}/crypto-verification`,
+                        { txHash },
+                      );
+                      rememberProofModal(paymentId, "crypto_wallet_connect");
+                    }}
+                  />
                 </div>
               )}
 
-              <Button
-                variant="brand"
-                size="lg"
-                onClick={createCheckout}
-                isLoading={paying}
-                disabled={
-                  enabledProviders.length === 0 ||
-                  (selectedProvider === "crypto_wallet_connect" &&
-                    !walletConnectNetwork)
-                }
-                className="w-full gap-2"
-              >
-                <CreditCard className="h-4 w-4" />
-                {selectedProvider === "crypto_wallet_connect"
-                  ? "Connect wallet & pay"
-                  : "Continue with selected method"}
-              </Button>
+              {selectedProvider !== "crypto_wallet_connect" && (
+                <Button
+                  variant="brand"
+                  size="lg"
+                  onClick={createCheckout}
+                  isLoading={paying}
+                  disabled={enabledProviders.length === 0}
+                  className="w-full gap-2"
+                >
+                  <CreditCard className="h-4 w-4" />
+                  Continue with selected method
+                </Button>
+              )}
             </CardContent>
           </Card>
 
