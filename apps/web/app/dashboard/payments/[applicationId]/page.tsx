@@ -153,6 +153,17 @@ function walletConnectNetworkFor(wallet?: WalletAddress) {
   );
 }
 
+
+// For showing the option — only needs chain/coin match, not address validity
+function canUseAsWalletConnectNetwork(wallet: WalletAddress): boolean {
+  const coin = wallet.coin.toUpperCase();
+  const chain = wallet.chain.toLowerCase();
+  return walletConnectNetworks.some(
+    (n) => coin === n.tokenSymbol && chain.includes(n.chainMatcher),
+  );
+}
+
+
 function stablecoinAmountFromCents(cents: number, decimals: number) {
   return (BigInt(cents) * 10n ** BigInt(decimals)) / 100n;
 }
@@ -290,14 +301,23 @@ export default function PaymentPage() {
     return providerCards.filter((card) => {
       if (card.provider === "stripe") return options.stripeEnabled;
       if (card.provider === "paypal") return options.paypalEnabled;
+      // if (card.provider === "crypto_wallet_connect") {
+      //   return (
+      //     options.cryptoEnabled &&
+      //     options.walletConnectEnabled &&
+      //     Boolean(options.walletConnectProjectId) &&
+      //     options.walletAddresses.some((wallet) =>
+      //       Boolean(walletConnectNetworkFor(wallet)),
+      //     )
+      //   );
+      // }
+
       if (card.provider === "crypto_wallet_connect") {
         return (
           options.cryptoEnabled &&
           options.walletConnectEnabled &&
           Boolean(options.walletConnectProjectId) &&
-          options.walletAddresses.some((wallet) =>
-            Boolean(walletConnectNetworkFor(wallet)),
-          )
+          options.walletAddresses.some(canUseAsWalletConnectNetwork)
         );
       }
       return options.cryptoEnabled && options.walletAddresses.length > 0;

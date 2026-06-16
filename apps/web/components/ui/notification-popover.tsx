@@ -73,7 +73,7 @@ export default function NotificationPopover() {
           align="end"
           sideOffset={10}
           className={cn(
-            'z-50 w-[23rem] rounded-2xl border border-gray-100 bg-white shadow-[0_20px_60px_-12px_rgba(0,0,0,0.18)]',
+            'z-50 w-92 rounded-2xl border border-gray-100 bg-white shadow-[0_20px_60px_-12px_rgba(0,0,0,0.18)]',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0',
             'data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95',
@@ -106,7 +106,7 @@ export default function NotificationPopover() {
           </div>
 
           {/* Body */}
-          <div className="max-h-[26rem] overflow-y-auto overscroll-contain">
+          <div className="max-h-104 overflow-y-auto overscroll-contain">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 gap-2">
                 <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
