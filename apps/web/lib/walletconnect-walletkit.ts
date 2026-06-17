@@ -11,12 +11,15 @@ type Eip1193Provider = {
 
 declare global {
   interface Window {
-    ethereum?: Eip1193Provider;
+    ethereum?: Record<string, unknown>;
   }
 }
 
 type WalletKitClient = Awaited<ReturnType<typeof WalletKit.init>>;
-type SessionProposal = { id: number; params: Parameters<typeof buildApprovedNamespaces>[0]["proposal"] };
+type SessionProposal = {
+  id: number;
+  params: Parameters<typeof buildApprovedNamespaces>[0]["proposal"];
+};
 type SessionRequest = {
   id: number;
   topic: string;
@@ -30,7 +33,9 @@ type WalletKitPaymentConfig = {
   events?: string[];
   verifyPaymentPath?: (txHash: string) => string;
   onTransactionHash?: (txHash: string) => Promise<void> | void;
-  onSessionApproved?: (session: { peer: { metadata: { url?: string } } }) => void;
+  onSessionApproved?: (session: {
+    peer: { metadata: { url?: string } };
+  }) => void;
 };
 
 const DEFAULT_CHAINS = ["eip155:1"];
@@ -51,7 +56,9 @@ function getProjectId() {
 
 function getBrowserWallet() {
   if (!window.ethereum) {
-    throw new Error("No browser wallet found to approve WalletConnect requests.");
+    throw new Error(
+      "No browser wallet found to approve WalletConnect requests.",
+    );
   }
   return window.ethereum;
 }
@@ -76,13 +83,18 @@ async function sendTransactionHash(txHash: string) {
   }
 }
 
-async function approveSession(walletKit: WalletKitClient, proposal: SessionProposal) {
+async function approveSession(
+  walletKit: WalletKitClient,
+  proposal: SessionProposal,
+) {
   if (!activeConfig?.accounts.length) {
     await walletKit.rejectSession({
       id: proposal.id,
       reason: getSdkError("USER_REJECTED"),
     });
-    throw new Error("Select a receiving wallet before approving WalletConnect.");
+    throw new Error(
+      "Select a receiving wallet before approving WalletConnect.",
+    );
   }
 
   const approvedNamespaces = buildApprovedNamespaces({
@@ -105,10 +117,13 @@ async function approveSession(walletKit: WalletKitClient, proposal: SessionPropo
   handleRedirect(session);
 }
 
-async function respondToRequest(walletKit: WalletKitClient, event: SessionRequest) {
+async function respondToRequest(
+  walletKit: WalletKitClient,
+  event: SessionRequest,
+) {
   const { topic, params, id } = event;
   const { request } = params;
-  const wallet = getBrowserWallet() as Eip1193Provider;
+  const wallet = window.ethereum as Eip1193Provider;
 
   try {
     const result = await wallet.request({
@@ -121,7 +136,10 @@ async function respondToRequest(walletKit: WalletKitClient, event: SessionReques
       response: { id, result, jsonrpc: "2.0" },
     });
 
-    if (request.method === "eth_sendTransaction" && typeof result === "string") {
+    if (
+      request.method === "eth_sendTransaction" &&
+      typeof result === "string"
+    ) {
       await sendTransactionHash(result);
     }
   } catch (error) {
@@ -132,7 +150,8 @@ async function respondToRequest(walletKit: WalletKitClient, event: SessionReques
         jsonrpc: "2.0",
         error: {
           code: 5000,
-          message: error instanceof Error ? error.message : "Wallet request failed",
+          message:
+            error instanceof Error ? error.message : "Wallet request failed",
         },
       },
     });
@@ -171,7 +190,10 @@ export async function getWalletKit(config?: WalletKitPaymentConfig) {
   return walletKit;
 }
 
-export async function pairWalletConnectUri(uri: string, config: WalletKitPaymentConfig) {
+export async function pairWalletConnectUri(
+  uri: string,
+  config: WalletKitPaymentConfig,
+) {
   const walletKit = await getWalletKit(config);
   await walletKit.pair({ uri });
 }

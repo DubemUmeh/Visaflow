@@ -3,6 +3,7 @@ packages:
   - "packages/*"
 allowBuilds:
   '@nestjs/core': true
+  '@reown/appkit': true
   '@scarf/scarf': true
   cpu-features: true
   esbuild: true

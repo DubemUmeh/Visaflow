@@ -137,6 +137,15 @@ function walletConnectNetworkFor(wallet?: WalletAddress) {
   );
 }
 
+// For showing the option — only needs chain/coin match, not address validity
+function canUseAsWalletConnectNetwork(wallet: WalletAddress): boolean {
+  const coin = wallet.coin.toUpperCase();
+  const chain = wallet.chain.toLowerCase();
+  return walletConnectNetworks.some(
+    (n) => coin === n.tokenSymbol && chain.includes(n.chainMatcher),
+  );
+}
+
 export default function PaymentPage() {
   const { applicationId } = useParams<{ applicationId: string }>();
   const search = useSearchParams();
