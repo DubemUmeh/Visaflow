@@ -1,6 +1,3 @@
-"use client";
-
-import type { AppKitNetwork } from "@reown/appkit/networks";
 import { mainnet } from "@reown/appkit/networks";
 import { UniversalConnector } from "@reown/appkit-universal-connector";
 import type { CustomCaipNetwork } from "@reown/appkit-common";
@@ -8,10 +5,17 @@ import type { CustomCaipNetwork } from "@reown/appkit-common";
 export const walletConnectProjectId =
   process.env.NEXT_PUBLIC_PROJECT_ID?.trim() ?? "";
 
-export const walletConnectChain = mainnet as AppKitNetwork;
 export const walletConnectChainId = "eip155:1";
 
 let universalConnectorPromise: Promise<UniversalConnector> | undefined;
+
+// Explicitly set caipNetworkId and chainNamespace so the library can
+// extract a valid CAIP-2 chain ID from this object during init().
+const caipMainnet = {
+  ...mainnet,
+  chainNamespace: "eip155",
+  caipNetworkId: "eip155:1",
+} as unknown as CustomCaipNetwork;
 
 export function getWalletConnectProjectId() {
   if (!walletConnectProjectId) {
@@ -36,7 +40,7 @@ export async function getUniversalConnector() {
       networks: [
         {
           namespace: "eip155",
-          chains: [walletConnectChain as CustomCaipNetwork],
+          chains: [caipMainnet],
           methods: [
             "eth_sendTransaction",
             "personal_sign",
