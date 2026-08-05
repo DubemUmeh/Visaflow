@@ -1,21 +1,11 @@
-import { mainnet } from "@reown/appkit/networks";
-import { UniversalConnector } from "@reown/appkit-universal-connector";
-import type { CustomCaipNetwork } from "@reown/appkit-common";
+import { createAppKit } from "@reown/appkit/react";
+import { mainnet, bsc } from "@reown/appkit/networks";
+import { EthersAdapter } from "@reown/appkit-adapter-ethers";
 
 export const walletConnectProjectId =
   process.env.NEXT_PUBLIC_PROJECT_ID?.trim() ?? "";
 
 export const walletConnectChainId = "eip155:1";
-
-let universalConnectorPromise: Promise<UniversalConnector> | undefined;
-
-// Explicitly set caipNetworkId and chainNamespace so the library can
-// extract a valid CAIP-2 chain ID from this object during init().
-const caipMainnet = {
-  ...mainnet,
-  chainNamespace: "eip155",
-  caipNetworkId: "eip155:1",
-} as unknown as CustomCaipNetwork;
 
 export function getWalletConnectProjectId() {
   if (!walletConnectProjectId) {
@@ -24,34 +14,26 @@ export function getWalletConnectProjectId() {
   return walletConnectProjectId;
 }
 
-export async function getUniversalConnector() {
-  if (!universalConnectorPromise) {
-    universalConnectorPromise = UniversalConnector.init({
-      projectId: getWalletConnectProjectId(),
-      metadata: {
-        name: "VisaFlow",
-        description: "VisaFlow WalletConnect payment checkout",
-        url:
-          typeof window === "undefined"
-            ? "https://visaflow.app"
-            : window.location.origin,
-        icons: [],
-      },
-      networks: [
-        {
-          namespace: "eip155",
-          chains: [caipMainnet],
-          methods: [
-            "eth_sendTransaction",
-            "personal_sign",
-            "eth_signTypedData",
-            "eth_signTypedData_v4",
-          ],
-          events: ["accountsChanged", "chainChanged", "disconnect"],
-        },
-      ],
-    });
-  }
+// Module-level singleton flag — survives across re-renders/imports within
+// the same client bundle instance.
+let initialized = false;
 
-  return universalConnectorPromise;
+if (typeof window !== "undefined" && !initialized) {
+  initialized = true;
+  createAppKit({
+    adapters: [new EthersAdapter()],
+    networks: [mainnet, bsc],
+    projectId: getWalletConnectProjectId(),
+    metadata: {
+      name: "VisaFlow",
+      description: "VisaFlow WalletConnect payment checkout",
+      url: window.location.origin,
+      icons: [],
+    },
+    features: {
+      analytics: false,
+      socials: false,
+      email: false,
+    },
+  });
 }

@@ -7,6 +7,7 @@ import { Toaster } from 'sonner';
 import { createQueryClient } from '../lib/query-client';
 import { AuthInitializer } from './auth-initializer';
 import { useAuthStore } from '../store/auth.store';
+import { AppKitProvider } from '@/lib/appkit-provider';
 
 /**
  * Waits for Zustand's persist middleware to finish reading from sessionStorage
@@ -55,7 +56,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <AuthInitializer />
         <AuthHydrationGate>
-          {children}
+          <AppKitProvider>
+            {children}
+          </AppKitProvider>
         </AuthHydrationGate>
         <Toaster richColors position="top-right" />
       </ThemeProvider>
