@@ -15,7 +15,6 @@ import {
   CreateCheckoutSessionDto,
   ListPaymentsDto,
   MarkPaymentPaidDto,
-  VerifyCryptoPaymentDto,
 } from './dto/payment.dto';
 import { PaymentsService } from './payments.service';
 
@@ -58,20 +57,6 @@ export class PaymentsController {
     });
   }
 
-  @Post(':id/crypto-verification')
-  @ApiOperation({ summary: 'Verify an on-chain crypto payment transaction' })
-  async verifyCryptoPayment(
-    @CurrentUser() user: CurrentUserShape,
-    @Param('id') id: string,
-    @Body() dto: VerifyCryptoPaymentDto,
-  ) {
-    return this.paymentsService.verifyCryptoPayment(
-      id,
-      user.id,
-      user.role,
-      dto,
-    );
-  }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get payment by ID' })

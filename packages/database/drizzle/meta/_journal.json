@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1780143270245,
+      "when": 1780046343137,
       "tag": "0000_eager_yellow_claw",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1780932713532,
-      "tag": "0001_add_crypto_payment_provider",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1781098342952,
-      "tag": "0002_ensure_crypto_payment_provider",
+      "when": 1785940455000,
+      "tag": "0003_internal_wallet",
       "breakpoints": true
     }
   ]

@@ -2225,7 +2225,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'STRIPE'"
+          "default": "'WALLET'"
         },
         "amount_total": {
           "name": "amount_total",
@@ -4231,7 +4231,7 @@
       "name": "PaymentProvider",
       "schema": "public",
       "values": [
-        "STRIPE",
+        "WALLET",
         "PAYPAL"
       ]
     },

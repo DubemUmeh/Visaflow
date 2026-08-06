@@ -1,1 +1,0 @@
-ALTER TYPE "PaymentProvider" ADD VALUE IF NOT EXISTS 'CRYPTO';

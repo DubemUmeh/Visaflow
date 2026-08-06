@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import type { PaymentEntity } from "@visaflow/shared-types";
 
 type WalletAddress = { id: string; label: string; coin: string; chain: string; address: string; memo?: string; enabled: boolean };
-type PaymentSettings = { stripeEnabled: boolean; paypalEnabled: boolean; paypalEmail: string; paypalNarration: string; cryptoEnabled: boolean; walletConnectEnabled: boolean; walletConnectProjectId: string; walletAddresses: WalletAddress[] };
+type PaymentSettings = { walletEnabled: boolean; paypalEnabled: boolean; paypalEmail: string; paypalNarration: string; walletNetwork: string; walletAddresses: WalletAddress[] };
 
 function formatMoney(cents: number, currency: string) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(cents / 100);
@@ -72,7 +72,7 @@ export default function AdminPaymentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div><h1 className="text-2xl font-bold text-foreground">Payments</h1><p className="mt-1 text-muted-foreground">Enable, disable, and edit Stripe, PayPal, WalletConnect, and manual crypto wallet payment details.</p></div>
+        <div><h1 className="text-2xl font-bold text-foreground">Payments</h1><p className="mt-1 text-muted-foreground">Enable, disable, and edit Wallet and PayPal payment details.</p></div>
         <Button variant="outline" onClick={load} className="gap-2"><RefreshCw className="h-4 w-4" /> Refresh</Button>
       </div>
 
@@ -82,24 +82,22 @@ export default function AdminPaymentsPage() {
           {!settings ? <div className="py-8 text-center text-sm text-muted-foreground">No payment settings loaded.</div> : (
             <div className="space-y-5">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {[
-                  ["stripeEnabled", "Stripe checkout"],
+                {([
+                  ["walletEnabled", "Wallet"],
                   ["paypalEnabled", "PayPal"],
-                  ["cryptoEnabled", "Crypto payments"],
-                  ["walletConnectEnabled", "WalletConnect"],
-                ].map(([key, label]) => (
+                ] as const).map(([key, label]) => (
                   <label key={key} className="flex items-center gap-3 rounded-2xl border border-border/70 p-4 text-sm font-medium">
-                    <Checkbox checked={Boolean(settings[key as keyof Pick<PaymentSettings, "stripeEnabled" | "paypalEnabled" | "cryptoEnabled" | "walletConnectEnabled">])} onCheckedChange={(value) => setSettings({ ...settings, [key as keyof Pick<PaymentSettings, "stripeEnabled" | "paypalEnabled" | "cryptoEnabled" | "walletConnectEnabled">]: Boolean(value) })} /> {label}
+                    <Checkbox checked={Boolean(settings[key])} onCheckedChange={(value) => setSettings({ ...settings, [key]: Boolean(value) })} /> {label}
                   </label>
                 ))}
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <Input label="PayPal email" value={settings.paypalEmail} onChange={(e) => setSettings({ ...settings, paypalEmail: e.target.value })} />
                 <Input label="PayPal narration" value={settings.paypalNarration} onChange={(e) => setSettings({ ...settings, paypalNarration: e.target.value })} />
-                <Input label="WalletConnect project ID" value={settings.walletConnectProjectId} onChange={(e) => setSettings({ ...settings, walletConnectProjectId: e.target.value })} />
+                <Input label="Internal wallet network" value={settings.walletNetwork ?? "ethereum-sepolia"} onChange={(e) => setSettings({ ...settings, walletNetwork: e.target.value })} />
               </div>
               <div className="space-y-3">
-                <p className="text-sm font-semibold text-foreground">Manual wallet addresses</p>
+                <p className="text-sm font-semibold text-foreground">Internal deposit settings</p>
                 {settings.walletAddresses.map((wallet) => (
                   <div key={wallet.id} className="grid gap-3 rounded-2xl border border-border/70 p-4 md:grid-cols-[0.7fr_0.7fr_1.4fr_auto]">
                     <Input label="Label" value={wallet.label} onChange={(e) => updateWallet(wallet.id, { label: e.target.value })} />

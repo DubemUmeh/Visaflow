@@ -5,7 +5,7 @@ CREATE TYPE "public"."DocumentStatus" AS ENUM('PENDING', 'UPLOADING', 'PROCESSIN
 CREATE TYPE "public"."DocumentType" AS ENUM('PASSPORT_PHOTO', 'PASSPORT_COPY', 'BANK_STATEMENT', 'INVITATION_LETTER', 'TRAVEL_ITINERARY', 'HOTEL_BOOKING', 'FLIGHT_ITINERARY', 'EMPLOYMENT_LETTER', 'FINANCIAL_PROOF', 'BIRTH_CERTIFICATE', 'MARRIAGE_CERTIFICATE', 'TRAVEL_INSURANCE', 'YELLOW_FEVER_CERT', 'BUSINESS_REGISTRATION', 'VISA_FOR_DESTINATION', 'OTHER');--> statement-breakpoint
 CREATE TYPE "public"."NotificationChannel" AS ENUM('EMAIL', 'SMS', 'IN_APP', 'PUSH');--> statement-breakpoint
 CREATE TYPE "public"."NotificationStatus" AS ENUM('QUEUED', 'SENT', 'DELIVERED', 'FAILED', 'READ');--> statement-breakpoint
-CREATE TYPE "public"."PaymentProvider" AS ENUM('STRIPE', 'PAYPAL');--> statement-breakpoint
+CREATE TYPE "public"."PaymentProvider" AS ENUM('WALLET', 'PAYPAL');--> statement-breakpoint
 CREATE TYPE "public"."PaymentStatus" AS ENUM('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'REFUNDED', 'PARTIALLY_REFUNDED');--> statement-breakpoint
 CREATE TYPE "public"."ProcessingTier" AS ENUM('STANDARD', 'EXPEDITED', 'RUSH');--> statement-breakpoint
 CREATE TYPE "public"."SupportTicketPriority" AS ENUM('LOW', 'MEDIUM', 'HIGH', 'URGENT');--> statement-breakpoint
@@ -264,7 +264,7 @@ CREATE TABLE "payments" (
 	"user_id" uuid NOT NULL,
 	"application_id" uuid NOT NULL,
 	"status" "PaymentStatus" DEFAULT 'PENDING' NOT NULL,
-	"provider" "PaymentProvider" DEFAULT 'STRIPE' NOT NULL,
+	"provider" "PaymentProvider" DEFAULT 'WALLET' NOT NULL,
 	"amount_total" integer NOT NULL,
 	"amount_gov_fee" integer DEFAULT 0 NOT NULL,
 	"amount_service_fee" integer NOT NULL,

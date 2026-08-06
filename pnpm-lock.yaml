@@ -312,18 +312,6 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.4
         version: 1.2.4(@types/react@19.2.15)(react@19.2.6)
-      '@reown/appkit':
-        specifier: ^1.8.20
-        version: 1.8.20(@types/react@19.2.15)(immer@11.1.8)(ioredis@5.10.1)(react@19.2.6)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.6))(zod@4.4.3)
-      '@reown/appkit-common':
-        specifier: ^1.8.20
-        version: 1.8.20(typescript@5.9.3)(zod@4.4.3)
-      '@reown/appkit-universal-connector':
-        specifier: ^1.8.20
-        version: 1.8.20(@types/react@19.2.15)(immer@11.1.8)(ioredis@5.10.1)(react@19.2.6)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.6))(zod@4.4.3)
-      '@reown/walletkit':
-        specifier: ^1.5.5
-        version: 1.5.5(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
       '@tanstack/react-query':
         specifier: ^5.100.14
         version: 5.100.14(react@19.2.6)
@@ -342,12 +330,6 @@ importers:
       '@visaflow/validators':
         specifier: workspace:*
         version: link:../../packages/validators
-      '@walletconnect/core':
-        specifier: ^2.23.9
-        version: 2.23.9(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
-      '@walletconnect/utils':
-        specifier: ^2.23.9
-        version: 2.23.9(ioredis@5.10.1)(typescript@5.9.3)(zod@4.4.3)
       autoprefixer:
         specifier: ^10.5.0
         version: 10.5.0(postcss@8.5.15)
@@ -369,9 +351,6 @@ importers:
       dayjs:
         specifier: ^1.11.20
         version: 1.11.20
-      ethers:
-        specifier: ^6.16.0
-        version: 6.16.0
       framer-motion:
         specifier: ^12.40.0
         version: 12.40.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)

@@ -6,6 +6,7 @@ import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { createQueryClient } from '../lib/query-client';
 import { AuthInitializer } from './auth-initializer';
+import { RealtimeStatusProvider } from './realtime/realtime-status-provider';
 import { useAuthStore } from '../store/auth.store';
 
 /**
@@ -55,7 +56,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <AuthInitializer />
         <AuthHydrationGate>
-          {children}
+          <RealtimeStatusProvider>{children}</RealtimeStatusProvider>
         </AuthHydrationGate>
         <Toaster richColors position="top-right" />
       </ThemeProvider>

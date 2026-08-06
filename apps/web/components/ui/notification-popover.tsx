@@ -9,12 +9,14 @@ import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Link from "next/link";
+import { useRealtimeEvents } from "@/components/realtime/realtime-status-provider";
 
 dayjs.extend(relativeTime);
 
 
 export default function NotificationPopover() {
   const [open, setOpen] = useState(false);
+  const { events } = useRealtimeEvents();
   const [notifications, setNotifications] = useState<NotificationEntity[]>([]);
   const [loading, setLoading] = useState(false);
   const [marking, setMarking] = useState(false);
@@ -38,6 +40,11 @@ export default function NotificationPopover() {
   useEffect(() => {
     if (open) load();
   }, [open]);
+
+  useEffect(() => {
+    if (events.length === 0) return;
+    load();
+  }, [events.length]);
 
   const markAllRead = async () => {
     setMarking(true);

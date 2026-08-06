@@ -340,12 +340,7 @@ export interface CreateCheckoutSessionRequest {
   promoCode?: string;
   successUrl: string;
   cancelUrl: string;
-  provider?:
-    | "stripe"
-    | "paypal"
-    | "crypto_wallet_connect"
-    | "crypto_wallet_address";
-  walletId?: string;
+  provider?: "wallet" | "paypal";
 }
 
 export interface CreatePayPalOrderRequest {

@@ -26,24 +26,20 @@ type PaymentWalletAddress = {
 };
 
 type PaymentSettings = {
-  stripeEnabled: boolean;
+  walletEnabled: boolean;
   paypalEnabled: boolean;
   paypalEmail: string;
   paypalNarration: string;
-  cryptoEnabled: boolean;
-  walletConnectEnabled: boolean;
-  walletConnectProjectId: string;
+  walletNetwork: string;
   walletAddresses: PaymentWalletAddress[];
 };
 
 const defaultPaymentSettings: PaymentSettings = {
-  stripeEnabled: true,
+  walletEnabled: true,
   paypalEnabled: false,
   paypalEmail: "payments@visaflow.com",
   paypalNarration: "VisaFlow visa application fee",
-  cryptoEnabled: false,
-  walletConnectEnabled: false,
-  walletConnectProjectId: "",
+  walletNetwork: "ethereum-sepolia",
   walletAddresses: [
     {
       id: "usdt-erc20",
@@ -236,44 +232,16 @@ export default function AdminSettingsPage() {
       icon: WalletCards,
       content: (
         <div className="space-y-6">
-          {[
-            {
-              key: "stripeEnabled",
-              label: "Stripe checkout",
-              desc: "Keep card checkout available.",
-            },
-            {
-              key: "paypalEnabled",
-              label: "PayPal payment link",
-              desc: "Show PayPal as a hosted payment option.",
-            },
-            {
-              key: "cryptoEnabled",
-              label: "Crypto payments",
-              desc: "Enable wallet address and WalletConnect flows.",
-            },
-            {
-              key: "walletConnectEnabled",
-              label: "WalletConnect",
-              desc: "Allow connected wallets once a project ID is configured.",
-            },
-          ].map((item) => (
-            <div
-              key={item.key}
-              className="flex items-center justify-between gap-4"
-            >
+          {([
+            { key: "walletEnabled", label: "Wallet", desc: "Enable internal wallet balance payments." },
+            { key: "paypalEnabled", label: "PayPal payment link", desc: "Show PayPal as a hosted payment option." },
+          ] as const).map((item) => (
+            <div key={item.key} className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-foreground">
-                  {item.label}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {item.desc}
-                </p>
+                <p className="text-sm font-medium text-foreground">{item.label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
               </div>
-              <Toggle
-                checked={Boolean(payments[item.key as keyof typeof payments])}
-                onChange={(v) => setPayments((p) => ({ ...p, [item.key]: v }))}
-              />
+              <Toggle checked={Boolean(payments[item.key])} onChange={(v) => setPayments((p) => ({ ...p, [item.key]: v }))} />
             </div>
           ))}
 
@@ -293,14 +261,14 @@ export default function AdminSettingsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground/80 mb-1.5">
-                WalletConnect project ID
+                Internal wallet network
               </label>
               <input
-                value={payments.walletConnectProjectId}
+                value={payments.walletNetwork}
                 onChange={(e) =>
                   setPayments((p) => ({
                     ...p,
-                    walletConnectProjectId: e.target.value,
+                    walletNetwork: e.target.value,
                   }))
                 }
                 className="w-full px-3 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-card"

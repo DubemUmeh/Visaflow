@@ -38,6 +38,8 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { SupportModule } from './support/support.module';
 import { AiModule } from './ai/ai.module';
 import { AdminModule } from './admin/admin.module';
+import { WalletModule } from './wallet/wallet.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 for (const envFile of ['apps/api/.env', '.env.local', '.env']) {
   if (existsSync(envFile)) {
@@ -169,6 +171,7 @@ const redisEnabled = process.env.REDIS_ENABLED !== 'false';
 
     // ── Feature Modules ───────────────────────────────────────────────────────
     DatabaseModule,
+    RealtimeModule,
     AuthModule,
     UsersModule,
     CountriesModule,
@@ -177,6 +180,7 @@ const redisEnabled = process.env.REDIS_ENABLED !== 'false';
     ApplicationModule,
     DocumentsModule,
     PaymentsModule,
+    WalletModule,
     NotificationsModule,
     SupportModule,
     AiModule,

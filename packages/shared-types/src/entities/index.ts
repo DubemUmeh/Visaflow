@@ -47,7 +47,7 @@ export type PaymentStatus =
   | "FAILED"
   | "REFUNDED"
   | "PARTIALLY_REFUNDED";
-export type PaymentProvider = "STRIPE" | "PAYPAL" | "CRYPTO";
+export type PaymentProvider = "WALLET" | "PAYPAL";
 export type NotificationChannel = "EMAIL" | "SMS" | "IN_APP" | "PUSH";
 export type SupportTicketStatus =
   | "OPEN"
@@ -349,14 +349,44 @@ export interface PaymentLineItemEntity {
 export interface CheckoutSessionResponse {
   sessionId: string;
   paymentId?: string;
-  provider?:
-    | "stripe"
-    | "paypal"
-    | "crypto_wallet_connect"
-    | "crypto_wallet_address";
+  provider?: "wallet" | "paypal";
   checkoutUrl: string;
   expiresAt: string;
   instructions?: Record<string, unknown>;
+}
+
+
+export interface WalletEntity {
+  id: string;
+  userId: string;
+  balance: number;
+  currency: string;
+  depositAddress?: WalletAddressEntity;
+}
+
+export interface WalletAddressEntity {
+  id: string;
+  walletId: string;
+  userId: string;
+  network: string;
+  asset: string;
+  address: string;
+  provider: string;
+  createdAt: string;
+}
+
+export type WalletTransactionType = "DEPOSIT" | "PAYMENT" | "REFUND" | "ADJUSTMENT";
+
+export interface WalletTransactionEntity {
+  id: string;
+  walletId: string;
+  userId: string;
+  type: WalletTransactionType;
+  amount: number;
+  balanceAfter: number;
+  currency: string;
+  description: string;
+  createdAt: string;
 }
 
 // ── Notification ────────────────────────────────────────────────────────────

@@ -10,7 +10,7 @@ export const payments = pgTable(
     userId: uuid("user_id").notNull(),
     applicationId: uuid("application_id").notNull(),
     status: paymentStatusEnum("status").notNull().default("PENDING"),
-    provider: paymentProviderEnum("provider").notNull().default("STRIPE"),
+    provider: paymentProviderEnum("provider").notNull().default("WALLET"),
 
     // Amounts (in smallest currency unit, e.g., cents)
     amountTotal: integer("amount_total").notNull(),
@@ -21,9 +21,9 @@ export const payments = pgTable(
     currency: text("currency").notNull().default("USD"),
 
     // Provider-specific
-    providerPaymentId: text("provider_payment_id").unique(), // Stripe PaymentIntent ID or PayPal Order ID
-    providerCustomerId: text("provider_customer_id"), // Stripe Customer ID
-    providerSessionId: text("provider_session_id"), // Stripe Checkout Session ID
+    providerPaymentId: text("provider_payment_id").unique(), // Wallet transaction ID or PayPal Order ID
+    providerCustomerId: text("provider_customer_id"), // Payment provider customer ID
+    providerSessionId: text("provider_session_id"), // Payment provider session ID
     providerRefundId: text("provider_refund_id"),
 
     // Metadata
