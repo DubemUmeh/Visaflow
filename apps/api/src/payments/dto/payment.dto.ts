@@ -1,11 +1,4 @@
-import {
-  IsIn,
-  IsOptional,
-  IsString,
-  IsUrl,
-  IsUUID,
-  Matches,
-} from 'class-validator';
+import { IsIn, IsOptional, IsString, IsUrl, IsUUID } from 'class-validator';
 import { PaginationDto } from '../../common/dto/pagination.dto';
 
 export class CreateCheckoutSessionDto {
@@ -26,16 +19,8 @@ export class CreateCheckoutSessionDto {
   cancelUrl!: string;
 
   @IsOptional()
-  @IsIn(['stripe', 'paypal', 'crypto_wallet_connect', 'crypto_wallet_address'])
-  provider?:
-    | 'stripe'
-    | 'paypal'
-    | 'crypto_wallet_connect'
-    | 'crypto_wallet_address';
-
-  @IsOptional()
-  @IsString()
-  walletId?: string;
+  @IsIn(['wallet', 'paypal'])
+  provider?: 'wallet' | 'paypal';
 }
 
 export class ListPaymentsDto extends PaginationDto {
@@ -50,7 +35,3 @@ export class MarkPaymentPaidDto {
   providerPaymentId?: string;
 }
 
-export class VerifyCryptoPaymentDto {
-  @Matches(/^0x[a-fA-F0-9]{64}$/)
-  txHash!: string;
-}

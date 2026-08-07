@@ -16,6 +16,8 @@ export * from './enums/notification-channel';
 export * from './enums/notification-status';
 export * from './enums/payment-provider';
 export * from './enums/payment-status';
+export * from './enums/wallet-transaction-type';
+export * from './enums/deposit-status';
 export * from './enums/processing-tier';
 export * from './enums/support-ticket-priority';
 export * from './enums/support-ticket-status';
@@ -58,6 +60,11 @@ export * from './tables/upload-documents';
 
 export * from './tables/payment-line-items';
 export * from './tables/payments';
+export * from './tables/wallets';
+export * from './tables/wallet-addresses';
+export * from './tables/wallet-transactions';
+export * from './tables/deposits';
+export * from './tables/payment-events';
 
 // ============================================================
 // NOTIFICATIONS

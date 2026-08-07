@@ -39,9 +39,7 @@ const DEFAULT_SETTINGS = {
     paypalEnabled: true,
     paypalEmail: 'payments@visaflow.com',
     paypalNarration: 'VisaFlow visa application fee',
-    cryptoEnabled: true,
-    walletConnectEnabled: true,
-    walletConnectProjectId: '',
+    walletEnabled: true,
     walletAddresses: [
       {
         id: 'usdt-erc20',

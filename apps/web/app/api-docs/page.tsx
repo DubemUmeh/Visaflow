@@ -7,7 +7,7 @@ const endpoints = [
   { method: "GET", path: "/api/v1/eligibility", desc: "Check travel eligibility by nationality and destination." },
   { method: "POST", path: "/api/v1/applications", desc: "Start a visa application after authentication." },
   { method: "GET", path: "/api/v1/notifications", desc: "Read account, payment, and application status notifications." },
-  { method: "POST", path: "/api/v1/payments/checkout", desc: "Create Stripe, PayPal, WalletConnect, or wallet-address payment intents." },
+  { method: "POST", path: "/api/v1/payments/checkout", desc: "Create Wallet or PayPal payment sessions." },
 ];
 
 export default function ApiDocsPage() {

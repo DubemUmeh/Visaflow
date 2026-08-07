@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   LifeBuoy,
+  Wallet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
@@ -40,6 +41,7 @@ dayjs.extend(relativeTime);
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/applications", label: "Applications", icon: FileText },
+  { href: "/dashboard/wallet", label: "Wallet", icon: Wallet },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
   { href: "/dashboard/explore", label: "Explore Visas", icon: Globe },

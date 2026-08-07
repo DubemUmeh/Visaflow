@@ -10,8 +10,10 @@ import { cn } from "@/lib/utils";
 import type { NotificationEntity } from "@visaflow/shared-types";
 import dayjs from "dayjs";
 import { toast } from "sonner";
+import { useRealtimeEvents } from "@/components/realtime/realtime-status-provider";
 
 export default function NotificationsPage() {
+  const { events } = useRealtimeEvents();
   const [items, setItems] = useState<NotificationEntity[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +31,10 @@ export default function NotificationsPage() {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    if (events.length > 0) load();
+  }, [events.length]);
 
   const sorted = useMemo(
     () =>
