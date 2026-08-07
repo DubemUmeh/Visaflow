@@ -91,6 +91,7 @@ export class AdminService {
       pendingApps,
       approvedApps,
       rejectedApps,
+      statusRows,
       totalUsers,
       revenue,
       openTickets,
@@ -127,6 +128,11 @@ export class AdminService {
           ),
         ),
       this.dbClient.db
+        .select({ status: applications.status, count: sql`count(*)` })
+        .from(applications)
+        .where(isNull(applications.deletedAt))
+        .groupBy(applications.status),
+      this.dbClient.db
         .select({ count: sql`count(*)` })
         .from(users)
         .where(isNull(users.deletedAt)),
@@ -152,6 +158,9 @@ export class AdminService {
 
     const totalApplications = Number(totalApps[0]?.count ?? 0);
     const approved = Number(approvedApps[0]?.count ?? 0);
+    const applicationsByStatus = Object.fromEntries(
+      statusRows.map((row) => [row.status, Number(row.count ?? 0)]),
+    );
 
     return {
       overview: {
@@ -169,6 +178,7 @@ export class AdminService {
       rejectedApplications: Number(rejectedApps[0]?.count ?? 0),
       openTickets: Number(openTickets[0]?.count ?? 0),
       revenueThisMonth: Number(revenue[0]?.cents ?? 0),
+      applicationsByStatus,
     };
   }
 
