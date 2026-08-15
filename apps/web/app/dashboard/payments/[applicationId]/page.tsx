@@ -17,6 +17,14 @@ type PaymentOptions = {
   methods: Provider[];
 };
 
+type WalletResponse = {
+  data: {
+    balance: number;
+    currency: string;
+  };
+  timestamp: string;
+};
+
 export default function PaymentPage() {
   const params = useParams<{ applicationId: string }>();
   const router = useRouter();
@@ -24,8 +32,19 @@ export default function PaymentPage() {
   const [selectedProvider, setSelectedProvider] = useState<Provider>("wallet");
   const processingTier = (searchParams.get("tier") ?? "STANDARD") as "STANDARD" | "EXPEDITED" | "RUSH";
 
-  const options = useQuery({ queryKey: ["payment-options"], queryFn: async () => (await api.get<PaymentOptions>("/payments/options")).data });
-  const wallet = useQuery({ queryKey: ["wallet"], queryFn: async () => (await api.get<{ balance: number; currency: string }>("/wallet/balance")).data });
+  const options = useQuery({
+    queryKey: ["payment-options"],
+    queryFn: async () => (await api.get<PaymentOptions>("/payments/options")).data
+  });
+
+  const wallet = useQuery({
+    queryKey: ["wallet"],
+    queryFn: async () => {
+      const res = await api.get<WalletResponse>("/wallet/balance");
+      return res.data.data;
+    },
+  });
+  // console.log(wallet.data, "wallet data");
 
   const checkout = useMutation({
     mutationFn: async () => {

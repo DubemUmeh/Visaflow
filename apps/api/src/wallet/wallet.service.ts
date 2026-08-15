@@ -296,6 +296,7 @@ export class WalletService {
             Math.round(visaType.priceStandard * 1.5))
           : visaType.priceStandard;
     const wallet = await this.getOrCreateWallet(application.userId);
+<<<<<<< Updated upstream
     if (wallet.balance < amountTotal)
       throw new BadRequestException('Insufficient wallet balance');
     const [payment] = await this.dbClient.db
@@ -317,6 +318,27 @@ export class WalletService {
         metadata: { source: 'internal_wallet' },
       })
       .returning();
+=======
+    console.log({
+      walletBalance: wallet.balance,
+      amountTotal,
+      processingTier: dto.processingTier,
+      walletCurrency: wallet.currency,
+      applicationId: application.id,
+      applicationUserId: application.userId,
+      currentUserId: userId,
+      visaType: {
+        id: visaType.id,
+        name: visaType.name,
+        priceStandard: visaType.priceStandard,
+        priceExpedited: visaType.priceExpedited,
+        priceRush: visaType.priceRush,
+        govFee: visaType.govFee,
+      },
+    });
+    if (wallet.balance < amountTotal) throw new BadRequestException('Insufficient wallet balance');
+    const [payment] = await this.dbClient.db.insert(payments).values({ userId: application.userId, applicationId: application.id, status: 'COMPLETED', provider: 'WALLET', amountTotal, amountGovFee: visaType.govFee, amountServiceFee: Math.max(0, amountTotal - visaType.govFee), amountTax: 0, amountRefunded: 0, currency: wallet.currency, processingTier: dto.processingTier, description: `${visaType.name} application ${application.referenceNumber}`, paidAt: new Date(), metadata: { source: 'internal_wallet' } }).returning();
+>>>>>>> Stashed changes
     if (!payment) throw new NotFoundException('Payment could not be created');
     await this.dbClient.db
       .insert(paymentLineItems)
