@@ -3,7 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { and, desc, eq, isNull, sql, type InferModel } from 'drizzle-orm';
+import {
+  and,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  sql,
+  type InferModel,
+} from 'drizzle-orm';
 import {
   applicationStatusHistory,
   applications,
@@ -11,6 +19,7 @@ import {
   payments,
   uploadedDocuments,
   visaTypes,
+  visaRequirements,
 } from '@visaflow/database';
 import type {
   ApplicationEntity,
@@ -456,6 +465,51 @@ export class ApplicationService {
     return this.findById(id, userId, role);
   }
 
+  async assertRequiredDocumentsUploaded(applicationId: string) {
+    const [application] = await this.dbClient.db
+      .select({ visaTypeId: applications.visaTypeId })
+      .from(applications)
+      .where(
+        and(eq(applications.id, applicationId), isNull(applications.deletedAt)),
+      )
+      .limit(1);
+
+    if (!application) throw new NotFoundException('Application not found');
+
+    const [requirements, documents] = await Promise.all([
+      this.dbClient.db
+        .select({ documentType: visaRequirements.documentType })
+        .from(visaRequirements)
+        .where(
+          and(
+            eq(visaRequirements.visaTypeId, application.visaTypeId),
+            eq(visaRequirements.isRequired, true),
+          ),
+        ),
+      this.dbClient.db
+        .select({ documentType: uploadedDocuments.documentType })
+        .from(uploadedDocuments)
+        .where(
+          and(
+            eq(uploadedDocuments.applicationId, applicationId),
+            inArray(uploadedDocuments.status, ['PROCESSING', 'VERIFIED']),
+            isNull(uploadedDocuments.deletedAt),
+          ),
+        ),
+    ]);
+
+    const uploadedTypes = new Set(documents.map((doc) => doc.documentType));
+    const missing = requirements
+      .map((requirement) => requirement.documentType)
+      .filter((documentType) => !uploadedTypes.has(documentType));
+
+    if (missing.length > 0) {
+      throw new ForbiddenException(
+        `Required documents are missing: ${missing.join(', ')}`,
+      );
+    }
+  }
+
   async updateStatus(
     id: string,
     userId: string,
@@ -464,6 +518,10 @@ export class ApplicationService {
   ) {
     if (!this.isAdmin(role)) {
       throw new ForbiddenException('Only admins can update application status');
+    }
+
+    if (dto.status === 'SUBMITTED') {
+      await this.assertRequiredDocumentsUploaded(id);
     }
 
     const existing = await this.findById(id, userId, role);

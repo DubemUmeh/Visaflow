@@ -34,12 +34,7 @@ export type DocumentType =
   | "VISA_FOR_DESTINATION"
   | "OTHER";
 export type DocumentStatus =
-  | "PENDING"
-  | "UPLOADING"
-  | "PROCESSING"
-  | "VERIFIED"
-  | "REJECTED"
-  | "EXPIRED";
+  "PENDING" | "UPLOADING" | "PROCESSING" | "VERIFIED" | "REJECTED" | "EXPIRED";
 export type PaymentStatus =
   | "PENDING"
   | "PROCESSING"
@@ -50,11 +45,7 @@ export type PaymentStatus =
 export type PaymentProvider = "WALLET" | "PAYPAL";
 export type NotificationChannel = "EMAIL" | "SMS" | "IN_APP" | "PUSH";
 export type SupportTicketStatus =
-  | "OPEN"
-  | "IN_PROGRESS"
-  | "WAITING_ON_CUSTOMER"
-  | "RESOLVED"
-  | "CLOSED";
+  "OPEN" | "IN_PROGRESS" | "WAITING_ON_CUSTOMER" | "RESOLVED" | "CLOSED";
 export type SupportTicketPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 // ── User ─────────────────────────────────────────────────────────────────────
@@ -286,6 +277,7 @@ export interface UploadedDocumentEntity {
   mimeType: string;
   sizeBytes: number;
   cdnUrl: string | null;
+  // R2 object keys stay server-side and are intentionally omitted from public entities.
   thumbnailUrl: string | null;
   ocrProcessed: boolean;
   ocrData: Record<string, unknown> | null;
@@ -301,7 +293,15 @@ export interface UploadUrlResponse {
   uploadUrl: string; // Pre-signed S3 URL
   documentId: string;
   expiresAt: string;
-  fields: Record<string, string>; // S3 form fields
+  fields: Record<string, string>; // Legacy form fields
+  objectKey: string;
+  expiresIn: number;
+  headers: Record<string, string>;
+}
+
+export interface DocumentDownloadUrlResponse {
+  url: string;
+  expiresIn: number;
 }
 
 // ── Payment ────────────────────────────────────────────────────────────────
@@ -355,7 +355,6 @@ export interface CheckoutSessionResponse {
   instructions?: Record<string, unknown>;
 }
 
-
 export interface WalletEntity {
   id: string;
   userId: string;
@@ -375,7 +374,8 @@ export interface WalletAddressEntity {
   createdAt: string;
 }
 
-export type WalletTransactionType = "DEPOSIT" | "PAYMENT" | "REFUND" | "ADJUSTMENT";
+export type WalletTransactionType =
+  "DEPOSIT" | "PAYMENT" | "REFUND" | "ADJUSTMENT";
 
 export interface WalletTransactionEntity {
   id: string;

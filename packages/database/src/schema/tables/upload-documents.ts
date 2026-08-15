@@ -1,13 +1,26 @@
-import { boolean, index, integer, json, pgTable, real, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  json,
+  pgTable,
+  real,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { documentStatusEnum } from "../enums/document-status";
 import { documentTypeEnum } from "../enums/document-type";
+import { applications } from "./applications";
 
 export const uploadedDocuments = pgTable(
   "uploaded_documents",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id").notNull(),
-    applicationId: uuid("application_id"),
+    applicationId: uuid("application_id")
+      .notNull()
+      .references(() => applications.id, { onDelete: "cascade" }),
     documentType: documentTypeEnum("document_type").notNull(),
     status: documentStatusEnum("status").notNull().default("PENDING"),
 
@@ -60,5 +73,5 @@ export const uploadedDocuments = pgTable(
     index("uploaded_docs_status_idx").on(t.status),
     index("uploaded_docs_virus_scan_status_idx").on(t.virusScanStatus),
     index("uploaded_docs_deleted_at_idx").on(t.deletedAt),
-  ]
+  ],
 );
