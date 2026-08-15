@@ -1,7 +1,6 @@
 import {
   IsIn,
   IsInt,
-  IsMimeType,
   IsOptional,
   IsString,
   IsUUID,
@@ -27,7 +26,7 @@ const documentTypes = [
   'YELLOW_FEVER_CERT',
   'BUSINESS_REGISTRATION',
   'VISA_FOR_DESTINATION',
-  'OTHER'
+  'OTHER',
 ] as const;
 
 const documentStatuses = [
@@ -51,7 +50,7 @@ export class RequestUploadUrlDto {
   @MaxLength(255)
   fileName!: string;
 
-  @IsMimeType()
+  @IsIn(['application/pdf', 'image/jpeg', 'image/png', 'image/webp'])
   mimeType!: string;
 
   @IsInt()

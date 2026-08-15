@@ -24,6 +24,7 @@ import {
 } from '@visaflow/database';
 import type { PaymentEntity, PaymentSummary } from '@visaflow/shared-types';
 import { DatabaseService } from '../common/database/database.service';
+import { ApplicationService } from '../application/application.service';
 import {
   buildPaginationMeta,
   buildPaginationSkipTake,
@@ -55,6 +56,7 @@ export class PaymentsService {
   constructor(
     private readonly dbClient: DatabaseService,
     private readonly configService: ConfigService,
+    private readonly applicationService: ApplicationService,
   ) {}
 
   private isAdmin(role?: string) {
@@ -314,7 +316,11 @@ export class PaymentsService {
       provider: 'wallet',
       checkoutUrl: `${paymentPageUrl}?payment_id=${payment.id}&provider=wallet`,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      instructions: { amount: amountTotal, currency, referenceNumber: application.referenceNumber },
+      instructions: {
+        amount: amountTotal,
+        currency,
+        referenceNumber: application.referenceNumber,
+      },
     };
   }
 
@@ -412,6 +418,10 @@ export class PaymentsService {
     if (!this.isAdmin(role))
       throw new ForbiddenException('Only admins can mark payments as paid');
     const payment = await this.findRow(id, userId, role);
+
+    await this.applicationService.assertRequiredDocumentsUploaded(
+      payment.applicationId,
+    );
 
     await this.dbClient.db
       .update(payments)

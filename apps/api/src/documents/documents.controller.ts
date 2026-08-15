@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -20,7 +30,7 @@ export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
   @Post('upload-url')
-  @ApiOperation({ summary: 'Create document metadata and upload URL' })
+  @ApiOperation({ summary: 'Create private R2 presigned document upload URL' })
   async requestUploadUrl(
     @CurrentUser() user: CurrentUserShape,
     @Body() dto: RequestUploadUrlDto,
@@ -29,20 +39,61 @@ export class DocumentsController {
   }
 
   @Post('confirm')
-  @ApiOperation({ summary: 'Confirm a document upload' })
-  async confirmUpload(@CurrentUser() user: CurrentUserShape, @Body() dto: ConfirmUploadDto) {
+  @ApiOperation({ summary: 'Confirm a direct R2 document upload' })
+  async confirmUpload(
+    @CurrentUser() user: CurrentUserShape,
+    @Body() dto: ConfirmUploadDto,
+  ) {
     return this.documentsService.confirmUpload(user.id, user.role, dto);
   }
 
   @Get()
   @ApiOperation({ summary: 'List documents' })
-  async listDocuments(@CurrentUser() user: CurrentUserShape, @Query() query: ListDocumentsDto) {
+  async listDocuments(
+    @CurrentUser() user: CurrentUserShape,
+    @Query() query: ListDocumentsDto,
+  ) {
     return this.documentsService.findAll(user.id, user.role, query);
+  }
+
+  @Get('applications/:applicationId/:documentId/url')
+  @ApiOperation({
+    summary: 'Create private R2 presigned document download URL',
+  })
+  async getDownloadUrl(
+    @CurrentUser() user: CurrentUserShape,
+    @Param('applicationId') applicationId: string,
+    @Param('documentId') documentId: string,
+  ) {
+    return this.documentsService.getDownloadUrl(
+      applicationId,
+      documentId,
+      user.id,
+      user.role,
+    );
+  }
+
+  @Delete('applications/:applicationId/:documentId')
+  @ApiOperation({ summary: 'Delete a private R2 document and metadata' })
+  async deleteDocument(
+    @CurrentUser() user: CurrentUserShape,
+    @Param('applicationId') applicationId: string,
+    @Param('documentId') documentId: string,
+  ) {
+    return this.documentsService.remove(
+      applicationId,
+      documentId,
+      user.id,
+      user.role,
+    );
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get document by ID' })
-  async getDocument(@CurrentUser() user: CurrentUserShape, @Param('id') id: string) {
+  async getDocument(
+    @CurrentUser() user: CurrentUserShape,
+    @Param('id') id: string,
+  ) {
     return this.documentsService.findById(id, user.id, user.role);
   }
 
