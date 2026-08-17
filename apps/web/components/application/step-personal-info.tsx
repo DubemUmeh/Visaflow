@@ -82,7 +82,7 @@ export default function StepPersonalInfo() {
 
           <div className="rounded-xl border border-brand-soft bg-brand-soft p-4">
             <div className="flex items-start gap-3">
-              <Sparkles className="mt-1 h-4 w-4 flex-shrink-0 text-brand" />
+              <Sparkles className="mt-1 h-4 w-4 shrink-0 text-brand" />
               <div className="flex-1 space-y-3">
                 <textarea
                   value={aiNotes}

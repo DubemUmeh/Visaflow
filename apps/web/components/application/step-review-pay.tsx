@@ -12,17 +12,11 @@ import {
   MapPin,
 } from "lucide-react";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import { useApplicationWizardStore } from "@/store/application.store";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import dayjs from "dayjs";
-
-const tierPriceMultiplier: Record<string, number> = {
-  STANDARD: 1,
-  EXPEDITED: 1.5,
-  RUSH: 2.5,
-};
 
 export default function StepReviewPay() {
   const router = useRouter();
@@ -33,11 +27,22 @@ export default function StepReviewPay() {
     isSubmitting,
     reset,
     applicationId,
-    setApplicationId,
   } = useApplicationWizardStore();
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async () => {
+    // Step 5 must never create a second application. The draft was
+    // already created in Step 3 — if it's missing here, something went
+    // wrong upstream (e.g. sessionStorage cleared) and we recover by
+    // asking the user to restart, rather than silently creating a
+    // duplicate application.
+    if (!applicationId) {
+      toast.error(
+        "Application draft not found. Please restart your application.",
+      );
+      return;
+    }
+
     setSubmitting(true);
     try {
       const payload = {
@@ -59,17 +64,15 @@ export default function StepReviewPay() {
           accommodationAddress: formData.accommodationAddress,
         },
       };
+      
+      await api.patch(`/applications/${applicationId}`, payload);
 
-      const application = applicationId
-        ? { id: applicationId }
-        : (await api.post("/applications", payload)).data.data;
-      if (!applicationId) setApplicationId(application.id);
       setSubmitted(true);
-      toast.success("Draft saved. Redirecting to payment options.");
+      toast.success("Application saved. Redirecting to payment options.");
       setTimeout(() => {
         reset();
         router.push(
-          `/dashboard/payments/${application.id}?tier=${formData.processingTier ?? "STANDARD"}`,
+          `/dashboard/payments/${applicationId}?tier=${formData.processingTier ?? "STANDARD"}`,
         );
       }, 800);
     } catch (err: unknown) {

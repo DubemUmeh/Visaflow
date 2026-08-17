@@ -296,7 +296,6 @@ export class WalletService {
             Math.round(visaType.priceStandard * 1.5))
           : visaType.priceStandard;
     const wallet = await this.getOrCreateWallet(application.userId);
-<<<<<<< Updated upstream
     if (wallet.balance < amountTotal)
       throw new BadRequestException('Insufficient wallet balance');
     const [payment] = await this.dbClient.db
@@ -318,7 +317,7 @@ export class WalletService {
         metadata: { source: 'internal_wallet' },
       })
       .returning();
-=======
+
     console.log({
       walletBalance: wallet.balance,
       amountTotal,
@@ -336,21 +335,20 @@ export class WalletService {
         govFee: visaType.govFee,
       },
     });
-    if (wallet.balance < amountTotal) throw new BadRequestException('Insufficient wallet balance');
-    const [payment] = await this.dbClient.db.insert(payments).values({ userId: application.userId, applicationId: application.id, status: 'COMPLETED', provider: 'WALLET', amountTotal, amountGovFee: visaType.govFee, amountServiceFee: Math.max(0, amountTotal - visaType.govFee), amountTax: 0, amountRefunded: 0, currency: wallet.currency, processingTier: dto.processingTier, description: `${visaType.name} application ${application.referenceNumber}`, paidAt: new Date(), metadata: { source: 'internal_wallet' } }).returning();
->>>>>>> Stashed changes
+    // Stashed change
+    // if (wallet.balance < amountTotal) throw new BadRequestException('Insufficient wallet balance');
+    // const [payment] = await this.dbClient.db.insert(payments).values({ userId: application.userId, applicationId: application.id, status: 'COMPLETED', provider: 'WALLET', amountTotal, amountGovFee: visaType.govFee, amountServiceFee: Math.max(0, amountTotal - visaType.govFee), amountTax: 0, amountRefunded: 0, currency: wallet.currency, processingTier: dto.processingTier, description: `${visaType.name} application ${application.referenceNumber}`, paidAt: new Date(), metadata: { source: 'internal_wallet' } }).returning();
+
     if (!payment) throw new NotFoundException('Payment could not be created');
-    await this.dbClient.db
-      .insert(paymentLineItems)
-      .values({
-        paymentId: payment.id,
-        description: `${visaType.name} (${dto.processingTier.toLowerCase()})`,
-        quantity: 1,
-        unitAmount: amountTotal,
-        totalAmount: amountTotal,
-        currency: wallet.currency,
-        metadata: {},
-      });
+    await this.dbClient.db.insert(paymentLineItems).values({
+      paymentId: payment.id,
+      description: `${visaType.name} (${dto.processingTier.toLowerCase()})`,
+      quantity: 1,
+      unitAmount: amountTotal,
+      totalAmount: amountTotal,
+      currency: wallet.currency,
+      metadata: {},
+    });
     await this.recordTransaction(
       wallet,
       -amountTotal,
@@ -367,25 +365,21 @@ export class WalletService {
         completionPercentage: 100,
       })
       .where(eq(applications.id, application.id));
-    await this.dbClient.db
-      .insert(applicationStatusHistory)
-      .values({
-        applicationId: application.id,
-        fromStatus: application.status,
-        toStatus: 'SUBMITTED',
-        changedById: application.userId,
-        note: 'Paid with internal wallet',
-        isSystemChange: true,
-      });
-    await this.dbClient.db
-      .insert(paymentEvents)
-      .values({
-        userId: application.userId,
-        paymentId: payment.id,
-        applicationId: application.id,
-        eventType: 'application.paid',
-        payload: { provider: 'wallet', amountTotal },
-      });
+    await this.dbClient.db.insert(applicationStatusHistory).values({
+      applicationId: application.id,
+      fromStatus: application.status,
+      toStatus: 'SUBMITTED',
+      changedById: application.userId,
+      note: 'Paid with internal wallet',
+      isSystemChange: true,
+    });
+    await this.dbClient.db.insert(paymentEvents).values({
+      userId: application.userId,
+      paymentId: payment.id,
+      applicationId: application.id,
+      eventType: 'application.paid',
+      payload: { provider: 'wallet', amountTotal },
+    });
     await this.notify(
       application.userId,
       'application.paid',

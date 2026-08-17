@@ -2,11 +2,13 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Card, CardContent } from '../ui/card';
 import { useApplicationWizardStore } from '@/store/application.store';
+import api from '@/lib/api';
+import { toast } from 'sonner';
 
 const schema = z.object({
   travelDateFrom:       z.string().min(1, 'Departure date required'),
@@ -32,7 +34,16 @@ const purposes = [
 ];
 
 export default function StepTravelDetails() {
-  const { updateFormData, nextStep, prevStep, formData } = useApplicationWizardStore();
+  const {
+    updateFormData,
+    nextStep,
+    prevStep,
+    formData,
+    applicationId,
+    setApplicationId,
+    isSaving,
+    setSaving,
+  } = useApplicationWizardStore();
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -46,9 +57,65 @@ export default function StepTravelDetails() {
 
   const selectedPurpose = watch('purposeOfTravel');
 
-  const onSubmit = (data: FormData) => {
-    updateFormData(data);
-    nextStep();
+  const onSubmit = async (data: FormData) => {
+    if (isSaving) return; // guard against duplicate submissions
+
+    try {
+      setSaving(true);
+
+      // Only create the draft once. If applicationId already exists
+      if (!applicationId) {
+        const payload = {
+          // Step 1 data
+          visaTypeId: formData.visaTypeId,
+          destinationCountryId: formData.destinationCountryId,
+          nationalityCountryId: formData.nationalityCountryId,
+          processingTier: formData.processingTier ?? 'STANDARD',
+
+          // Step 2 data
+          applicantFirstName: formData.applicantFirstName,
+          applicantLastName: formData.applicantLastName,
+          applicantEmail: formData.applicantEmail,
+          applicantPhone: formData.applicantPhone,
+          applicantDob: formData.applicantDob,
+          applicantPassportNo: formData.applicantPassportNo,
+          applicantPassportExpiry: formData.applicantPassportExpiry,
+
+          // Step 3 data (from this submit)
+          travelDateFrom: data.travelDateFrom,
+          travelDateTo: data.travelDateTo,
+
+          formData: {
+            purposeOfTravel: data.purposeOfTravel,
+            accommodationAddress: data.accommodationAddress,
+          },
+        };
+
+        const response = await api.post('/applications', payload);
+        const application = response.data.data ?? response.data;
+
+        if (!application?.id) {
+          throw new Error('Application ID was not returned');
+        }
+
+        setApplicationId(application.id);
+      }
+
+      // Persist Step 3 fields locally regardless of branch above
+      updateFormData(data);
+
+      // Only advance once the draft is confirmed to exist
+      nextStep();
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ??
+        'Could not save your application draft. Please try again.';
+      toast.error(Array.isArray(msg) ? msg[0] : msg);
+      // Do NOT call nextStep(). user stays on Step 3, applicationId stays unset
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -108,10 +175,11 @@ export default function StepTravelDetails() {
       </Card>
 
       <div className="flex justify-between">
-        <Button type="button" variant="outline" onClick={prevStep} className="gap-1">
+        <Button type="button" variant="outline" onClick={prevStep} disabled={isSaving} className="gap-1">
           <ChevronLeft className="w-4 h-4" /> Back
         </Button>
-        <Button type="submit" variant="brand" size="lg" className="gap-2">
+        <Button type="submit" variant="brand" size="lg" isLoading={isSaving} disabled={isSaving} className="gap-2">
+          {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
           Continue <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
