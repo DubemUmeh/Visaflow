@@ -17,6 +17,7 @@ import { useApplicationWizardStore } from "@/store/application.store";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import dayjs from "dayjs";
+import type { ApplicationEntity } from "@visaflow/shared-types";
 
 export default function StepReviewPay() {
   const router = useRouter();
@@ -64,17 +65,28 @@ export default function StepReviewPay() {
           accommodationAddress: formData.accommodationAddress,
         },
       };
-      
-      await api.patch(`/applications/${applicationId}`, payload);
+
+      const { data } = await api.patch(
+        `/applications/${applicationId}`,
+        payload,
+      );
+      const application = (data.data ?? data) as ApplicationEntity;
 
       setSubmitted(true);
-      toast.success("Application saved. Redirecting to payment options.");
-      setTimeout(() => {
-        reset();
-        router.push(
-          `/dashboard/payments/${applicationId}?tier=${formData.processingTier ?? "STANDARD"}`,
-        );
-      }, 800);
+      if (application.canPay) {
+        toast.success("Application saved. Redirecting to payment options.");
+        setTimeout(() => {
+          reset();
+          router.push(
+            `/dashboard/payments/${applicationId}?tier=${formData.processingTier ?? "STANDARD"}`,
+          );
+        }, 800);
+      } else {
+        toast.error("Complete required documents before payment.");
+        setTimeout(() => {
+          router.push(`/dashboard/applications/new?continue=${applicationId}`);
+        }, 800);
+      }
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data

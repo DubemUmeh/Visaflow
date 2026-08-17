@@ -1,4 +1,6 @@
 "use client";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Globe,
@@ -8,12 +10,16 @@ import {
   CreditCard,
   Check,
   ShieldCheck,
+  Loader2,
 } from "lucide-react";
 import { useApplicationWizardStore } from "@/store/application.store";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import api from "@/lib/api";
+import type { ApplicationEntity } from "@visaflow/shared-types";
+import { toast } from "sonner";
 
 // Step Components
 import StepSelectVisa from "@/components/application/step-select-visa";
@@ -95,8 +101,40 @@ export default function NewApplicationPage() {
   // reset is intentionally not called here — state must survive refreshes and
   // back/forward navigation. The store persists to sessionStorage and reset()
   // is called by StepReviewPay after a successful submission.
-  const { currentStep } = useApplicationWizardStore();
+  const { currentStep, hydrateFromApplication, reset } =
+    useApplicationWizardStore();
   const { user } = useAuthStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const continueId = searchParams.get("continue");
+  const [isResuming, setIsResuming] = useState(Boolean(continueId));
+
+  useEffect(() => {
+    if (!continueId) return;
+
+    let cancelled = false;
+    setIsResuming(true);
+    api
+      .get(`/applications/${continueId}`)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const application = (data.data ?? data) as ApplicationEntity;
+        hydrateFromApplication(application);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        reset();
+        toast.error("We could not resume that application.");
+        router.push("/dashboard/applications");
+      })
+      .finally(() => {
+        if (!cancelled) setIsResuming(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [continueId, hydrateFromApplication, reset, router]);
 
   if (user && !user.emailVerified) {
     return (
@@ -124,13 +162,21 @@ export default function NewApplicationPage() {
     );
   }
 
+  if (isResuming) {
+    return (
+      <div className="flex justify-center items-center py-32">
+        <Loader2 className="w-8 h-8 animate-spin text-coral" />
+      </div>
+    );
+  }
+
   const StepComponent = stepComponents[currentStep] ?? StepSelectVisa;
 
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground">
-          New Visa Application
+          {continueId ? "Continue Visa Application" : "New Visa Application"}
         </h1>
         <p className="text-muted-foreground mt-1">
           Complete the steps below to submit your application.
