@@ -214,23 +214,11 @@ export class PaymentsService {
     role: string | undefined,
     dto: CreateCheckoutSessionDto,
   ) {
-    const [application] = await this.dbClient.db
-      .select()
-      .from(applications)
-      .where(
-        and(
-          eq(applications.id, dto.applicationId),
-          isNull(applications.deletedAt),
-        ),
-      )
-      .limit(1);
-
-    if (!application) throw new NotFoundException('Application not found');
-    if (!this.isAdmin(role) && application.userId !== userId) {
-      throw new ForbiddenException(
-        'You do not have access to this application',
-      );
-    }
+    const application = await this.applicationService.assertEligibleForPayment(
+      dto.applicationId,
+      userId,
+      role,
+    );
 
     const [visaType] = await this.dbClient.db
       .select()

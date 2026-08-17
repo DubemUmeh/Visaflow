@@ -279,8 +279,10 @@ export class WalletService {
       throw new ForbiddenException(
         'You do not have access to this application',
       );
-    await this.applicationService.assertRequiredDocumentsUploaded(
+    await this.applicationService.assertEligibleForPayment(
       application.id,
+      userId,
+      role,
     );
     const [visaType] = await this.dbClient.db
       .select()

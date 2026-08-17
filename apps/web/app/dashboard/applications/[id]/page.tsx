@@ -176,7 +176,7 @@ export default function ApplicationDetailPage() {
                 </p>
               </div>
               <div className="flex gap-2">
-                {application.status === "DRAFT" && totalPaid === 0 && (
+                {application.canPay && totalPaid === 0 && (
                   <Link
                     href={`/dashboard/payments/${id}?tier=${application.processingTier}`}
                   >
@@ -185,18 +185,20 @@ export default function ApplicationDetailPage() {
                     </Button>
                   </Link>
                 )}
-                {application.status === "DRAFT" && (
+                {application.isEditable && (
                   <Link href={`/dashboard/applications/new?continue=${id}`}>
                     <Button variant="outline" size="sm">
-                      Continue
+                      {application.canPay ? "Continue" : "Continue Application"}
                     </Button>
                   </Link>
                 )}
                 {application.status === "MISSING_DOCUMENTS" && (
-                  <Button variant="brand" size="sm" className="gap-1">
-                    <Upload className="w-4 h-4" />
-                    Upload Docs
-                  </Button>
+                  <Link href={`/dashboard/applications/new?continue=${id}`}>
+                    <Button variant="brand" size="sm" className="gap-1">
+                      <Upload className="w-4 h-4" />
+                      Upload Docs
+                    </Button>
+                  </Link>
                 )}
               </div>
             </div>
@@ -218,6 +220,13 @@ export default function ApplicationDetailPage() {
                 />
               </div>
             </div>
+            {!application.canPay &&
+              application.missingRequirements.length > 0 && (
+                <div className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">
+                  Complete required documents before payment:{" "}
+                  {application.missingRequirements.join(", ")}
+                </div>
+              )}
           </CardContent>
         </Card>
       </motion.div>

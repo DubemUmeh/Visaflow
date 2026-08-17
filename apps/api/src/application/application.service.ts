@@ -3,15 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  and,
-  desc,
-  eq,
-  inArray,
-  isNull,
-  sql,
-  type InferModel,
-} from 'drizzle-orm';
+import { and, desc, eq, isNull, sql, type InferModel } from 'drizzle-orm';
 import {
   applicationStatusHistory,
   applications,
@@ -24,8 +16,10 @@ import {
 import type {
   ApplicationEntity,
   ApplicationStatus,
+  ApplicationProgress,
   ApplicationSummary,
   CountrySummary,
+  DocumentType,
   PaymentSummary,
   UploadedDocumentEntity,
   VisaTypeSummary,
@@ -58,6 +52,17 @@ type CountryRow = Pick<
 type DocumentRow = InferModel<typeof uploadedDocuments>;
 type PaymentRow = InferModel<typeof payments>;
 type StatusHistoryRow = InferModel<typeof applicationStatusHistory>;
+type RequirementRow = Pick<InferModel<typeof visaRequirements>, 'documentType'>;
+
+const ACCEPTABLE_PAYMENT_DOCUMENT_STATUSES = [
+  'PROCESSING',
+  'VERIFIED',
+] as const;
+const EDITABLE_APPLICATION_STATUSES: ApplicationStatus[] = [
+  'DRAFT',
+  'MISSING_DOCUMENTS',
+  'REJECTED',
+];
 
 @Injectable()
 export class ApplicationService {
@@ -148,6 +153,7 @@ export class ApplicationService {
     app: ApplicationRow,
     destinationCountry: CountryRow,
     visaType: VisaTypeRow,
+    progress?: ApplicationProgress,
   ): ApplicationSummary {
     return {
       id: app.id,
@@ -155,7 +161,14 @@ export class ApplicationService {
       userId: app.userId,
       status: app.status,
       processingTier: app.processingTier,
-      completionPercentage: app.completionPercentage,
+      completionPercentage: progress?.currentStep
+        ? Math.round((progress.completedSteps.length / app.totalSteps) * 100)
+        : app.completionPercentage,
+      isComplete: progress?.isComplete,
+      canPay: progress?.canPay,
+      canSubmit: progress?.canSubmit,
+      missingRequirements: progress?.missingRequirements,
+      currentStep: progress?.currentStep ?? app.currentStep,
       applicantFirstName: app.applicantFirstName,
       applicantLastName: app.applicantLastName,
       destinationCountry: this.toCountrySummary(destinationCountry),
@@ -163,6 +176,102 @@ export class ApplicationService {
       submittedAt: this.toIso(app.submittedAt),
       createdAt: this.toIso(app.createdAt) ?? '',
     };
+  }
+
+  private hasValue(value: unknown) {
+    return value !== null && value !== undefined && value !== '';
+  }
+
+  private calculateApplicationProgress(params: {
+    app: ApplicationRow;
+    requirements: RequirementRow[];
+    documents: DocumentRow[];
+    payments: PaymentRow[];
+  }): ApplicationProgress {
+    const { app, requirements, documents, payments } = params;
+    const requiredTypes = requirements.map(
+      (requirement) => requirement.documentType,
+    );
+    const activeSatisfyingDocumentTypes = new Set(
+      documents
+        .filter((doc) =>
+          ACCEPTABLE_PAYMENT_DOCUMENT_STATUSES.includes(
+            doc.status as (typeof ACCEPTABLE_PAYMENT_DOCUMENT_STATUSES)[number],
+          ),
+        )
+        .map((doc) => doc.documentType),
+    );
+    const missingRequirements = requiredTypes.filter(
+      (documentType) => !activeSatisfyingDocumentTypes.has(documentType),
+    );
+
+    const completedSteps: number[] = [];
+    if (
+      this.hasValue(app.visaTypeId) &&
+      this.hasValue(app.destinationCountryId) &&
+      this.hasValue(app.nationalityCountryId)
+    ) {
+      completedSteps.push(1);
+    }
+    if (
+      this.hasValue(app.applicantFirstName) &&
+      this.hasValue(app.applicantLastName) &&
+      this.hasValue(app.applicantEmail) &&
+      this.hasValue(app.applicantPassportNo) &&
+      this.hasValue(app.applicantPassportExpiry)
+    ) {
+      completedSteps.push(2);
+    }
+    if (this.hasValue(app.travelDateFrom) && this.hasValue(app.travelDateTo)) {
+      completedSteps.push(3);
+    }
+    if (missingRequirements.length === 0) {
+      completedSteps.push(4);
+    }
+
+    const isComplete = [1, 2, 3, 4].every((step) =>
+      completedSteps.includes(step),
+    );
+    if (isComplete) completedSteps.push(5);
+    const terminalOrSubmitted = [
+      'SUBMITTED',
+      'UNDER_REVIEW',
+      'APPROVED',
+      'COMPLETED',
+      'CANCELLED',
+    ].includes(app.status);
+    const hasCompletedPayment = payments.some(
+      (payment) => payment.status === 'COMPLETED',
+    );
+    const canPay = isComplete && !terminalOrSubmitted && !hasCompletedPayment;
+    const canSubmit = canPay;
+    const isEditable = EDITABLE_APPLICATION_STATUSES.includes(app.status);
+    const currentStep = isComplete
+      ? 5
+      : ([1, 2, 3, 4].find((step) => !completedSteps.includes(step)) ?? 1);
+
+    return {
+      applicationId: app.id,
+      currentStep,
+      completedSteps,
+      missingRequirements: missingRequirements as DocumentType[],
+      isComplete,
+      canPay,
+      canSubmit,
+      isEditable,
+    };
+  }
+
+  private async getRequiredDocumentRequirements(visaTypeId: string) {
+    return this.dbClient.db
+      .select({ documentType: visaRequirements.documentType })
+      .from(visaRequirements)
+      .where(
+        and(
+          eq(visaRequirements.visaTypeId, visaTypeId),
+          eq(visaRequirements.isRequired, true),
+        ),
+      );
   }
 
   private toEntity(params: {
@@ -173,6 +282,7 @@ export class ApplicationService {
     documents: DocumentRow[];
     payments: PaymentRow[];
     statusHistory: StatusHistoryRow[];
+    requirements: RequirementRow[];
   }): ApplicationEntity {
     const {
       app,
@@ -182,7 +292,14 @@ export class ApplicationService {
       documents,
       payments: paymentRows,
       statusHistory,
+      requirements,
     } = params;
+    const progress = this.calculateApplicationProgress({
+      app,
+      requirements,
+      documents,
+      payments: paymentRows,
+    });
 
     return {
       id: app.id,
@@ -193,9 +310,18 @@ export class ApplicationService {
       nationalityCountryId: app.nationalityCountryId,
       status: app.status,
       processingTier: app.processingTier,
-      currentStep: app.currentStep,
       totalSteps: app.totalSteps,
-      completionPercentage: app.completionPercentage,
+      completionPercentage: Math.round(
+        (progress.completedSteps.length / app.totalSteps) * 100,
+      ),
+      progress,
+      isComplete: progress.isComplete,
+      canPay: progress.canPay,
+      canSubmit: progress.canSubmit,
+      missingRequirements: progress.missingRequirements,
+      completedSteps: progress.completedSteps,
+      isEditable: progress.isEditable,
+      currentStep: progress.currentStep,
       submittedAt: this.toIso(app.submittedAt),
       approvedAt: this.toIso(app.approvedAt),
       rejectedAt: this.toIso(app.rejectedAt),
@@ -313,9 +439,9 @@ export class ApplicationService {
         nationalityCountryId: dto.nationalityCountryId,
         processingTier: dto.processingTier ?? 'STANDARD',
         status: 'DRAFT',
-        currentStep: 5,
+        currentStep: 4,
         totalSteps: 5,
-        completionPercentage: 100,
+        completionPercentage: 60,
         draftData: dto.formData ?? {},
         applicantFirstName: dto.applicantFirstName,
         applicantLastName: dto.applicantLastName,
@@ -338,7 +464,7 @@ export class ApplicationService {
       applicationId: created.id,
       fromStatus: null,
       toStatus: 'DRAFT',
-      note: 'Application draft completed pending payment',
+      note: 'Application draft saved pending required documents',
       isSystemChange: true,
     });
 
@@ -347,7 +473,7 @@ export class ApplicationService {
       applicationId: created.id,
       channel: 'IN_APP',
       subject: 'Application draft completed',
-      body: 'Your visa application draft has been saved with all required steps completed. It remains in Draft status until payment is completed, after which it can move into submission and review.',
+      body: 'Your visa application draft has been saved. Complete all required documents before payment and submission.',
       recipient: dto.applicantEmail,
     });
 
@@ -397,28 +523,30 @@ export class ApplicationService {
       throw new NotFoundException('Application references could not be loaded');
     }
 
-    const [documentRows, paymentRows, historyRows] = await Promise.all([
-      this.dbClient.db
-        .select()
-        .from(uploadedDocuments)
-        .where(
-          and(
-            eq(uploadedDocuments.applicationId, app.id),
-            isNull(uploadedDocuments.deletedAt),
-          ),
-        )
-        .orderBy(desc(uploadedDocuments.createdAt)),
-      this.dbClient.db
-        .select()
-        .from(payments)
-        .where(eq(payments.applicationId, app.id))
-        .orderBy(desc(payments.createdAt)),
-      this.dbClient.db
-        .select()
-        .from(applicationStatusHistory)
-        .where(eq(applicationStatusHistory.applicationId, app.id))
-        .orderBy(desc(applicationStatusHistory.createdAt)),
-    ]);
+    const [documentRows, paymentRows, historyRows, requirementRows] =
+      await Promise.all([
+        this.dbClient.db
+          .select()
+          .from(uploadedDocuments)
+          .where(
+            and(
+              eq(uploadedDocuments.applicationId, app.id),
+              isNull(uploadedDocuments.deletedAt),
+            ),
+          )
+          .orderBy(desc(uploadedDocuments.createdAt)),
+        this.dbClient.db
+          .select()
+          .from(payments)
+          .where(eq(payments.applicationId, app.id))
+          .orderBy(desc(payments.createdAt)),
+        this.dbClient.db
+          .select()
+          .from(applicationStatusHistory)
+          .where(eq(applicationStatusHistory.applicationId, app.id))
+          .orderBy(desc(applicationStatusHistory.createdAt)),
+        this.getRequiredDocumentRequirements(app.visaTypeId),
+      ]);
 
     return this.toEntity({
       app,
@@ -428,6 +556,7 @@ export class ApplicationService {
       documents: documentRows,
       payments: paymentRows,
       statusHistory: historyRows,
+      requirements: requirementRows,
     });
   }
 
@@ -465,47 +594,37 @@ export class ApplicationService {
     return this.findById(id, userId, role);
   }
 
-  async assertRequiredDocumentsUploaded(applicationId: string) {
-    const [application] = await this.dbClient.db
-      .select({ visaTypeId: applications.visaTypeId })
-      .from(applications)
-      .where(
-        and(eq(applications.id, applicationId), isNull(applications.deletedAt)),
-      )
-      .limit(1);
+  async getProgress(applicationId: string, userId: string, role?: string) {
+    const application = await this.findById(applicationId, userId, role);
+    return application.progress;
+  }
 
-    if (!application) throw new NotFoundException('Application not found');
+  async assertEligibleForPayment(
+    applicationId: string,
+    userId?: string,
+    role?: string,
+  ) {
+    const application = userId
+      ? await this.findById(applicationId, userId, role)
+      : await this.findById(applicationId, '', 'SUPER_ADMIN');
 
-    const [requirements, documents] = await Promise.all([
-      this.dbClient.db
-        .select({ documentType: visaRequirements.documentType })
-        .from(visaRequirements)
-        .where(
-          and(
-            eq(visaRequirements.visaTypeId, application.visaTypeId),
-            eq(visaRequirements.isRequired, true),
-          ),
-        ),
-      this.dbClient.db
-        .select({ documentType: uploadedDocuments.documentType })
-        .from(uploadedDocuments)
-        .where(
-          and(
-            eq(uploadedDocuments.applicationId, applicationId),
-            inArray(uploadedDocuments.status, ['PROCESSING', 'VERIFIED']),
-            isNull(uploadedDocuments.deletedAt),
-          ),
-        ),
-    ]);
-
-    const uploadedTypes = new Set(documents.map((doc) => doc.documentType));
-    const missing = requirements
-      .map((requirement) => requirement.documentType)
-      .filter((documentType) => !uploadedTypes.has(documentType));
-
-    if (missing.length > 0) {
+    if (!application.canPay) {
+      const missing = application.missingRequirements.length
+        ? ` Missing requirements: ${application.missingRequirements.join(', ')}.`
+        : '';
       throw new ForbiddenException(
-        `Required documents are missing: ${missing.join(', ')}`,
+        `Application is not ready for payment.${missing}`.trim(),
+      );
+    }
+
+    return application;
+  }
+
+  async assertRequiredDocumentsUploaded(applicationId: string) {
+    const application = await this.findById(applicationId, '', 'SUPER_ADMIN');
+    if (application.missingRequirements.length > 0) {
+      throw new ForbiddenException(
+        `Required documents are missing: ${application.missingRequirements.join(', ')}`,
       );
     }
   }

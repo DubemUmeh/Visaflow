@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import {
   Upload,
@@ -16,6 +16,7 @@ import { useApplicationWizardStore } from "@/store/application.store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import type { ApplicationEntity } from "@visaflow/shared-types";
 
 // All type values must match the API's RequestUploadUrlDto enum exactly
 const REQUIRED_DOCS = [
@@ -172,6 +173,30 @@ function DocDropzone({
 export default function StepDocuments() {
   const { nextStep, prevStep, applicationId } = useApplicationWizardStore();
   const [uploads, setUploads] = useState<UploadedFile[]>([]);
+
+  useEffect(() => {
+    if (!applicationId) return;
+
+    let cancelled = false;
+    api.get(`/applications/${applicationId}`).then(({ data }) => {
+      if (cancelled) return;
+      const application = (data.data ?? data) as ApplicationEntity;
+      const existingUploads = application.documents
+        .filter((doc) => ["PROCESSING", "VERIFIED"].includes(doc.status))
+        .map((doc) => ({
+          docType: doc.documentType,
+          file: new File([], doc.originalFileName),
+          status: "done" as const,
+          progress: 100,
+          documentId: doc.id,
+        }));
+      setUploads(existingUploads);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applicationId]);
 
   const uploadToR2 = (
     uploadUrl: string,

@@ -69,6 +69,15 @@ export class ApplicationController {
     return this.applicationService.create(user.id, dto);
   }
 
+  @Get(':id/progress')
+  @ApiOperation({ summary: 'Get backend-derived application progress' })
+  async getApplicationProgress(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserShape,
+  ) {
+    return this.applicationService.getProgress(id, user.id, user.role);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get application by ID' })
   async getApplication(

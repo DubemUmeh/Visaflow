@@ -40,6 +40,25 @@ interface WizardActions {
   setOwnerUserId: (id: string | null) => void;
   setSubmitting: (v: boolean) => void;
   setSaving: (v: boolean) => void;
+  hydrateFromApplication: (application: {
+    id: string;
+    userId: string;
+    currentStep: number;
+    processingTier: ApplicationFormData["processingTier"];
+    visaTypeId: string;
+    destinationCountryId: string;
+    nationalityCountryId: string;
+    applicantFirstName: string;
+    applicantLastName: string;
+    applicantEmail: string;
+    applicantPhone: string | null;
+    applicantDob: string | null;
+    applicantPassportNo: string | null;
+    applicantPassportExpiry: string | null;
+    travelDateFrom: string | null;
+    travelDateTo: string | null;
+    formData?: Record<string, unknown>;
+  }) => void;
   reset: () => void;
 }
 
@@ -89,6 +108,37 @@ export const useApplicationWizardStore = create<WizardState & WizardActions>()(
       setSaving: (v) =>
         set((s) => {
           s.isSaving = v;
+        }),
+      hydrateFromApplication: (application) =>
+        set((s) => {
+          const formData = application.formData ?? {};
+          s.applicationId = application.id;
+          s.ownerUserId = application.userId;
+          s.currentStep = application.currentStep;
+          s.formData = {
+            visaTypeId: application.visaTypeId,
+            destinationCountryId: application.destinationCountryId,
+            nationalityCountryId: application.nationalityCountryId,
+            processingTier: application.processingTier,
+            applicantFirstName: application.applicantFirstName,
+            applicantLastName: application.applicantLastName,
+            applicantEmail: application.applicantEmail,
+            applicantPhone: application.applicantPhone ?? "",
+            applicantDob: application.applicantDob?.slice(0, 10) ?? "",
+            applicantPassportNo: application.applicantPassportNo ?? "",
+            applicantPassportExpiry:
+              application.applicantPassportExpiry?.slice(0, 10) ?? "",
+            travelDateFrom: application.travelDateFrom?.slice(0, 10) ?? "",
+            travelDateTo: application.travelDateTo?.slice(0, 10) ?? "",
+            purposeOfTravel:
+              typeof formData.purposeOfTravel === "string"
+                ? formData.purposeOfTravel
+                : "",
+            accommodationAddress:
+              typeof formData.accommodationAddress === "string"
+                ? formData.accommodationAddress
+                : "",
+          };
         }),
       reset: () => set(() => ({ ...initialState })),
     })),

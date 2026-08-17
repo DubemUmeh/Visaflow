@@ -201,6 +201,17 @@ export interface VisaTypeSummary {
 
 // ── Application ────────────────────────────────────────────────────────────
 
+export interface ApplicationProgress {
+  applicationId: string;
+  currentStep: number;
+  completedSteps: number[];
+  missingRequirements: DocumentType[];
+  isComplete: boolean;
+  canPay: boolean;
+  canSubmit: boolean;
+  isEditable: boolean;
+}
+
 export interface ApplicationEntity {
   id: string;
   referenceNumber: string;
@@ -213,6 +224,13 @@ export interface ApplicationEntity {
   currentStep: number;
   totalSteps: number;
   completionPercentage: number;
+  progress: ApplicationProgress;
+  isComplete: boolean;
+  canPay: boolean;
+  canSubmit: boolean;
+  missingRequirements: DocumentType[];
+  completedSteps: number[];
+  isEditable: boolean;
   submittedAt: string | null;
   approvedAt: string | null;
   rejectedAt: string | null;
@@ -247,6 +265,11 @@ export interface ApplicationSummary {
   status: ApplicationStatus;
   processingTier: ProcessingTier;
   completionPercentage: number;
+  isComplete?: boolean;
+  canPay?: boolean;
+  canSubmit?: boolean;
+  missingRequirements?: DocumentType[];
+  currentStep?: number;
   applicantFirstName: string;
   applicantLastName: string;
   destinationCountry: CountrySummary;
