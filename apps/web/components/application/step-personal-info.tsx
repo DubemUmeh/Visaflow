@@ -25,7 +25,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function StepPersonalInfo() {
-  const { updateFormData, nextStep, prevStep, formData } = useApplicationWizardStore();
+  const { updateFormData, nextStep, prevStep, formData, applicationId } = useApplicationWizardStore();
   const { user } = useAuthStore();
   const [aiNotes, setAiNotes] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
@@ -43,9 +43,24 @@ export default function StepPersonalInfo() {
     },
   });
 
-  const onSubmit = (data: FormData) => {
-    updateFormData(data);
-    nextStep();
+  const onSubmit = async (data: FormData) => {
+    try {
+      if (applicationId) {
+        await api.patch(`/applications/${applicationId}`, {
+          applicantFirstName: data.applicantFirstName,
+          applicantLastName: data.applicantLastName,
+          applicantEmail: data.applicantEmail,
+          applicantPhone: data.applicantPhone,
+          applicantDob: data.applicantDob,
+          applicantPassportNo: data.applicantPassportNo,
+          applicantPassportExpiry: data.applicantPassportExpiry,
+        });
+      }
+      updateFormData(data);
+      nextStep();
+    } catch (error) {
+      toast.error('Failed to save personal info');
+    }
   };
 
   const handleAiAutofill = async () => {

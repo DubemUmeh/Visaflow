@@ -2,8 +2,10 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import type { ApplicationEntity } from "@visaflow/shared-types";
 
 export interface ApplicationFormData {
+  applicationId: string;
   visaTypeId: string;
   destinationCountryId: string;
   nationalityCountryId: string;
@@ -40,25 +42,7 @@ interface WizardActions {
   setOwnerUserId: (id: string | null) => void;
   setSubmitting: (v: boolean) => void;
   setSaving: (v: boolean) => void;
-  hydrateFromApplication: (application: {
-    id: string;
-    userId: string;
-    currentStep: number;
-    processingTier: ApplicationFormData["processingTier"];
-    visaTypeId: string;
-    destinationCountryId: string;
-    nationalityCountryId: string;
-    applicantFirstName: string;
-    applicantLastName: string;
-    applicantEmail: string;
-    applicantPhone: string | null;
-    applicantDob: string | null;
-    applicantPassportNo: string | null;
-    applicantPassportExpiry: string | null;
-    travelDateFrom: string | null;
-    travelDateTo: string | null;
-    formData?: Record<string, unknown>;
-  }) => void;
+  hydrateFromApplication: (application: ApplicationEntity) => void;
   reset: () => void;
 }
 
@@ -117,12 +101,12 @@ export const useApplicationWizardStore = create<WizardState & WizardActions>()(
           s.currentStep = application.currentStep;
           s.formData = {
             visaTypeId: application.visaTypeId,
-            destinationCountryId: application.destinationCountryId,
-            nationalityCountryId: application.nationalityCountryId,
+            destinationCountryId: application.destinationCountryId ?? "",
+            nationalityCountryId: application.nationalityCountryId ?? "",
             processingTier: application.processingTier,
-            applicantFirstName: application.applicantFirstName,
-            applicantLastName: application.applicantLastName,
-            applicantEmail: application.applicantEmail,
+            applicantFirstName: application.applicantFirstName ?? "",
+            applicantLastName: application.applicantLastName ?? "",
+            applicantEmail: application.applicantEmail ?? "",
             applicantPhone: application.applicantPhone ?? "",
             applicantDob: application.applicantDob?.slice(0, 10) ?? "",
             applicantPassportNo: application.applicantPassportNo ?? "",

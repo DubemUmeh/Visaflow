@@ -169,8 +169,8 @@ export class ApplicationService {
       canSubmit: progress?.canSubmit,
       missingRequirements: progress?.missingRequirements,
       currentStep: progress?.currentStep ?? app.currentStep,
-      applicantFirstName: app.applicantFirstName,
-      applicantLastName: app.applicantLastName,
+      applicantFirstName: app.applicantFirstName || '',
+      applicantLastName: app.applicantLastName || '',
       destinationCountry: this.toCountrySummary(destinationCountry),
       visaType: this.toVisaTypeSummary(visaType),
       submittedAt: this.toIso(app.submittedAt),
@@ -277,8 +277,8 @@ export class ApplicationService {
   private toEntity(params: {
     app: ApplicationRow;
     visaType: VisaTypeRow;
-    destinationCountry: CountryRow;
-    nationalityCountry: CountryRow;
+    destinationCountry: CountryRow | null;
+    nationalityCountry: CountryRow | null;
     documents: DocumentRow[];
     payments: PaymentRow[];
     statusHistory: StatusHistoryRow[];
@@ -306,8 +306,8 @@ export class ApplicationService {
       referenceNumber: app.referenceNumber,
       userId: app.userId,
       visaTypeId: app.visaTypeId,
-      destinationCountryId: app.destinationCountryId,
-      nationalityCountryId: app.nationalityCountryId,
+      destinationCountryId: app.destinationCountryId || '',
+      nationalityCountryId: app.nationalityCountryId || '',
       status: app.status,
       processingTier: app.processingTier,
       totalSteps: app.totalSteps,
@@ -329,9 +329,9 @@ export class ApplicationService {
       expiresAt: this.toIso(app.expiresAt),
       travelDateFrom: this.toIso(app.travelDateFrom),
       travelDateTo: this.toIso(app.travelDateTo),
-      applicantFirstName: app.applicantFirstName,
-      applicantLastName: app.applicantLastName,
-      applicantEmail: app.applicantEmail,
+      applicantFirstName: app.applicantFirstName || '',
+      applicantLastName: app.applicantLastName || '',
+      applicantEmail: app.applicantEmail || '',
       applicantPhone: app.applicantPhone,
       applicantDob: this.toIso(app.applicantDob),
       applicantPassportNo: app.applicantPassportNo,
@@ -340,8 +340,8 @@ export class ApplicationService {
       rejectionReason: app.rejectionReason,
       missingDocumentsNote: app.missingDocumentsNote,
       visaType: this.toVisaTypeSummary(visaType),
-      destinationCountry: this.toCountrySummary(destinationCountry),
-      nationalityCountry: this.toCountrySummary(nationalityCountry),
+      destinationCountry: destinationCountry ? this.toCountrySummary(destinationCountry) : null,
+      nationalityCountry: nationalityCountry ? this.toCountrySummary(nationalityCountry) : null,
       documents: documents.map((doc) => this.toDocumentEntity(doc)),
       payments: paymentRows.map((payment) => this.toPaymentSummary(payment)),
       statusHistory: statusHistory.map((entry) => ({
@@ -419,6 +419,24 @@ export class ApplicationService {
   }
 
   async create(userId: string, dto: CreateApplicationDto) {
+    const [existingDraft] = await this.dbClient.db
+      .select()
+      .from(applications)
+      .where(
+        and(
+          eq(applications.userId, userId),
+          eq(applications.visaTypeId, dto.visaTypeId),
+          eq(applications.status, 'DRAFT'),
+          isNull(applications.deletedAt),
+        ),
+      )
+      .orderBy(desc(applications.createdAt))
+      .limit(1);
+
+    if (existingDraft) {
+      return this.findById(existingDraft.id, userId);
+    }
+
     const [visaType] = await this.dbClient.db
       .select()
       .from(visaTypes)
@@ -439,16 +457,16 @@ export class ApplicationService {
         nationalityCountryId: dto.nationalityCountryId,
         processingTier: dto.processingTier ?? 'STANDARD',
         status: 'DRAFT',
-        currentStep: 4,
+        currentStep: 1,
         totalSteps: 5,
-        completionPercentage: 60,
+        completionPercentage: 0,
         draftData: dto.formData ?? {},
         applicantFirstName: dto.applicantFirstName,
         applicantLastName: dto.applicantLastName,
         applicantEmail: dto.applicantEmail,
-        applicantPhone: dto.applicantPhone ?? null,
+        applicantPhone: dto.applicantPhone,
         applicantDob: this.toDate(dto.applicantDob),
-        applicantPassportNo: dto.applicantPassportNo ?? null,
+        applicantPassportNo: dto.applicantPassportNo,
         applicantPassportExpiry: this.toDate(dto.applicantPassportExpiry),
         travelDateFrom: this.toDate(dto.travelDateFrom),
         travelDateTo: this.toDate(dto.travelDateTo),
@@ -474,7 +492,7 @@ export class ApplicationService {
       channel: 'IN_APP',
       subject: 'Application draft completed',
       body: 'Your visa application draft has been saved. Complete all required documents before payment and submission.',
-      recipient: dto.applicantEmail,
+      recipient: dto.applicantEmail || '',
     });
 
     return this.findById(created.id, userId);
@@ -505,22 +523,26 @@ export class ApplicationService {
           .where(eq(visaTypes.id, app.visaTypeId))
           .limit(1)
           .then((rows) => rows[0]),
-        this.dbClient.db
-          .select()
-          .from(countries)
-          .where(eq(countries.id, app.destinationCountryId))
-          .limit(1)
-          .then((rows) => rows[0]),
-        this.dbClient.db
-          .select()
-          .from(countries)
-          .where(eq(countries.id, app.nationalityCountryId))
-          .limit(1)
-          .then((rows) => rows[0]),
+        app.destinationCountryId
+          ? this.dbClient.db
+              .select()
+              .from(countries)
+              .where(eq(countries.id, app.destinationCountryId))
+              .limit(1)
+              .then((rows) => rows[0] ?? null)
+          : Promise.resolve(null),
+        app.nationalityCountryId
+          ? this.dbClient.db
+              .select()
+              .from(countries)
+              .where(eq(countries.id, app.nationalityCountryId))
+              .limit(1)
+              .then((rows) => rows[0] ?? null)
+          : Promise.resolve(null),
       ]);
 
-    if (!visaType || !destinationCountry || !nationalityCountry) {
-      throw new NotFoundException('Application references could not be loaded');
+    if (!visaType) {
+      throw new NotFoundException('Application visa type could not be loaded');
     }
 
     const [documentRows, paymentRows, historyRows, requirementRows] =
@@ -569,6 +591,12 @@ export class ApplicationService {
     const existing = await this.findById(id, userId, role);
     const patch: Partial<InferModel<typeof applications, 'insert'>> = {
       processingTier: dto.processingTier,
+      visaTypeId: dto.visaTypeId,
+      destinationCountryId: dto.destinationCountryId,
+      nationalityCountryId: dto.nationalityCountryId,
+      applicantFirstName: dto.applicantFirstName,
+      applicantLastName: dto.applicantLastName,
+      applicantEmail: dto.applicantEmail,
       travelDateFrom: this.toDate(dto.travelDateFrom) ?? undefined,
       travelDateTo: this.toDate(dto.travelDateTo) ?? undefined,
       applicantPhone: dto.applicantPhone,
@@ -686,7 +714,7 @@ export class ApplicationService {
       channel: 'IN_APP',
       subject: `Application status changed to ${dto.status.replace(/_/g, ' ')}`,
       body: `Your application moved from ${existing.status.replace(/_/g, ' ')} to ${dto.status.replace(/_/g, ' ')}. Reason: ${reason}`,
-      recipient: existing.applicantEmail,
+      recipient: existing.applicantEmail || '',
     });
 
     return this.findById(id, userId, role);

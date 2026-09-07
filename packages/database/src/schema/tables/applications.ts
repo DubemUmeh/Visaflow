@@ -9,8 +9,8 @@ export const applications = pgTable(
     referenceNumber: text("reference_number").notNull().unique(), // e.g., VF-2024-001234
     userId: uuid("user_id").notNull(),
     visaTypeId: uuid("visa_type_id").notNull(),
-    destinationCountryId: uuid("destination_country_id").notNull(),
-    nationalityCountryId: uuid("nationality_country_id").notNull(),
+    destinationCountryId: uuid("destination_country_id"),
+    nationalityCountryId: uuid("nationality_country_id"),
 
     // Status & Tracking
     status: applicationStatusEnum("status").notNull().default("DRAFT"),
@@ -32,9 +32,9 @@ export const applications = pgTable(
     travelDateTo: timestamp("travel_date_to"),
 
     // Applicant details (snapshot at time of application)
-    applicantFirstName: text("applicant_first_name").notNull(),
-    applicantLastName: text("applicant_last_name").notNull(),
-    applicantEmail: text("applicant_email").notNull(),
+    applicantFirstName: text("applicant_first_name"),
+    applicantLastName: text("applicant_last_name"),
+    applicantEmail: text("applicant_email"),
     applicantPhone: text("applicant_phone"),
     applicantDob: timestamp("applicant_dob"),
     applicantPassportNo: text("applicant_passport_no"),

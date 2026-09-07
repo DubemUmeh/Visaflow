@@ -28,31 +28,36 @@ export class CreateApplicationDto {
   @IsUUID()
   visaTypeId!: string;
 
+  @IsOptional()
   @IsUUID()
-  destinationCountryId!: string;
+  destinationCountryId?: string;
 
+  @IsOptional()
   @IsUUID()
-  nationalityCountryId!: string;
+  nationalityCountryId?: string;
 
   @IsOptional()
   @IsIn(['STANDARD', 'EXPEDITED', 'RUSH'])
   processingTier?: 'STANDARD' | 'EXPEDITED' | 'RUSH';
 
+  @IsOptional()
   @IsString()
   @MinLength(1)
   @MaxLength(100)
   @Transform(({ value }: { value: string }) => value?.trim())
-  applicantFirstName!: string;
+  applicantFirstName?: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(1)
   @MaxLength(100)
   @Transform(({ value }: { value: string }) => value?.trim())
-  applicantLastName!: string;
+  applicantLastName?: string;
 
+  @IsOptional()
   @IsEmail()
   @Transform(({ value }: { value: string }) => value?.toLowerCase().trim())
-  applicantEmail!: string;
+  applicantEmail?: string;
 
   @IsOptional()
   @IsString()
@@ -99,6 +104,32 @@ export class UpdateApplicationDto {
   @IsOptional()
   @IsIn(['STANDARD', 'EXPEDITED', 'RUSH'])
   processingTier?: 'STANDARD' | 'EXPEDITED' | 'RUSH';
+
+  @IsOptional()
+  @IsUUID()
+  destinationCountryId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  nationalityCountryId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  visaTypeId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  applicantFirstName?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  applicantLastName?: string;
+
+  @IsOptional()
+  @IsEmail()
+  applicantEmail?: string;
 
   @IsOptional()
   @Matches(isoDatePattern)

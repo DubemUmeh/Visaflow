@@ -153,7 +153,7 @@ export default function ApplicationDetailPage() {
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-brand-soft flex items-center justify-center text-3xl">
-                {application.destinationCountry.flagEmoji ?? "🌍"}
+                {application.destinationCountry?.flagEmoji ?? "🌍"}
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -166,7 +166,7 @@ export default function ApplicationDetailPage() {
                   </Badge>
                 </div>
                 <p className="text-muted-foreground text-sm">
-                  {application.destinationCountry.name} · Ref:{" "}
+                  {application.destinationCountry?.name ?? "Unknown Destination"} · Ref:{" "}
                   <span className="font-mono font-medium text-foreground/80">
                     {application.referenceNumber}
                   </span>

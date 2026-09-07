@@ -42,7 +42,7 @@ export type PaymentStatus =
   | "FAILED"
   | "REFUNDED"
   | "PARTIALLY_REFUNDED";
-export type PaymentProvider = "WALLET" | "PAYPAL";
+export type PaymentProvider = "WALLET" | "PAYPAL" | "STRIPE";
 export type NotificationChannel = "EMAIL" | "SMS" | "IN_APP" | "PUSH";
 export type SupportTicketStatus =
   "OPEN" | "IN_PROGRESS" | "WAITING_ON_CUSTOMER" | "RESOLVED" | "CLOSED";
@@ -217,8 +217,8 @@ export interface ApplicationEntity {
   referenceNumber: string;
   userId: string;
   visaTypeId: string;
-  destinationCountryId: string;
-  nationalityCountryId: string;
+  destinationCountryId: string | null;
+  nationalityCountryId: string | null;
   status: ApplicationStatus;
   processingTier: ProcessingTier;
   currentStep: number;
@@ -238,9 +238,9 @@ export interface ApplicationEntity {
   expiresAt: string | null;
   travelDateFrom: string | null;
   travelDateTo: string | null;
-  applicantFirstName: string;
-  applicantLastName: string;
-  applicantEmail: string;
+  applicantFirstName: string | null;
+  applicantLastName: string | null;
+  applicantEmail: string | null;
   applicantPhone: string | null;
   applicantDob: string | null;
   applicantPassportNo: string | null;
@@ -249,8 +249,8 @@ export interface ApplicationEntity {
   rejectionReason: string | null;
   missingDocumentsNote: string | null;
   visaType: VisaTypeSummary;
-  destinationCountry: CountrySummary;
-  nationalityCountry: CountrySummary;
+  destinationCountry: CountrySummary | null;
+  nationalityCountry: CountrySummary | null;
   documents: UploadedDocumentEntity[];
   payments: PaymentSummary[];
   statusHistory: ApplicationStatusHistoryEntry[];
@@ -270,8 +270,8 @@ export interface ApplicationSummary {
   canSubmit?: boolean;
   missingRequirements?: DocumentType[];
   currentStep?: number;
-  applicantFirstName: string;
-  applicantLastName: string;
+  applicantFirstName: string | null;
+  applicantLastName: string | null;
   destinationCountry: CountrySummary;
   visaType: VisaTypeSummary;
   submittedAt: string | null;

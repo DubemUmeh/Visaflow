@@ -15,6 +15,13 @@
       "when": 1785940455000,
       "tag": "0003_internal_wallet",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788577181022,
+      "tag": "0002_harsh_whirlwind",
+      "breakpoints": true
     }
   ]
 }

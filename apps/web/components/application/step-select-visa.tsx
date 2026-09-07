@@ -167,9 +167,30 @@ export default function StepSelectVisa() {
     .filter((c) => matchesCountry(c, natSearch))
     .slice(0, 8);
 
-  const onSubmit = (data: FormData) => {
-    updateFormData(data);
-    nextStep();
+  const onSubmit = async (data: FormData) => {
+    try {
+      updateFormData(data);
+      if (formData.applicationId) {
+        await api.patch(`/applications/${formData.applicationId}`, {
+          visaTypeId: data.visaTypeId,
+          destinationCountryId: data.destinationCountryId,
+          nationalityCountryId: data.nationalityCountryId,
+          processingTier: data.processingTier,
+        });
+      } else {
+        const response = await api.post("/applications", {
+          visaTypeId: data.visaTypeId,
+          destinationCountryId: data.destinationCountryId,
+          nationalityCountryId: data.nationalityCountryId,
+          processingTier: data.processingTier,
+        });
+        const app = response.data.data ?? response.data;
+        useApplicationWizardStore.getState().setApplicationId(app.id);
+      }
+      nextStep();
+    } catch (error) {
+      console.error("Failed to save draft:", error);
+    }
   };
 
   const selectDest = (c: CountrySummary) => {

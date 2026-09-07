@@ -58,61 +58,31 @@ export default function StepTravelDetails() {
   const selectedPurpose = watch('purposeOfTravel');
 
   const onSubmit = async (data: FormData) => {
-    if (isSaving) return; // guard against duplicate submissions
+    if (isSaving) return;
 
     try {
       setSaving(true);
 
-      // Only create the draft once. If applicationId already exists
-      if (!applicationId) {
-        const payload = {
-          // Step 1 data
-          visaTypeId: formData.visaTypeId,
-          destinationCountryId: formData.destinationCountryId,
-          nationalityCountryId: formData.nationalityCountryId,
-          processingTier: formData.processingTier ?? 'STANDARD',
-
-          // Step 2 data
-          applicantFirstName: formData.applicantFirstName,
-          applicantLastName: formData.applicantLastName,
-          applicantEmail: formData.applicantEmail,
-          applicantPhone: formData.applicantPhone,
-          applicantDob: formData.applicantDob,
-          applicantPassportNo: formData.applicantPassportNo,
-          applicantPassportExpiry: formData.applicantPassportExpiry,
-
-          // Step 3 data (from this submit)
+      if (applicationId) {
+        await api.patch(`/applications/${applicationId}`, {
           travelDateFrom: data.travelDateFrom,
           travelDateTo: data.travelDateTo,
-
           formData: {
+            ...formData, // Keep existing purposeOfTravel/accommodation
             purposeOfTravel: data.purposeOfTravel,
             accommodationAddress: data.accommodationAddress,
           },
-        };
-
-        const response = await api.post('/applications', payload);
-        const application = response.data.data ?? response.data;
-
-        if (!application?.id) {
-          throw new Error('Application ID was not returned');
-        }
-
-        setApplicationId(application.id);
+        });
       }
 
-      // Persist Step 3 fields locally regardless of branch above
       updateFormData(data);
-
-      // Only advance once the draft is confirmed to exist
       nextStep();
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
           ?.message ??
-        'Could not save your application draft. Please try again.';
+        'Could not save your travel details. Please try again.';
       toast.error(Array.isArray(msg) ? msg[0] : msg);
-      // Do NOT call nextStep(). user stays on Step 3, applicationId stays unset
     } finally {
       setSaving(false);
     }
