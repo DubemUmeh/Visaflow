@@ -131,6 +131,7 @@ export class VisaTypesService {
     return {
       id: row.id,
       name: row.name,
+      category: row.category,
       code: row.code,
       slug: row.slug,
       destinationCountryId: row.destinationCountryId,

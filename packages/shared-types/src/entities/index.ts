@@ -1,6 +1,5 @@
 // ============================================================
 // VisaFlow — Shared Entity Types
-// Mirror of Prisma models for use in frontend/API contracts
 // ============================================================
 
 export type UserRole = "APPLICANT" | "AGENT" | "ADMIN" | "SUPER_ADMIN";
@@ -47,6 +46,8 @@ export type NotificationChannel = "EMAIL" | "SMS" | "IN_APP" | "PUSH";
 export type SupportTicketStatus =
   "OPEN" | "IN_PROGRESS" | "WAITING_ON_CUSTOMER" | "RESOLVED" | "CLOSED";
 export type SupportTicketPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+export type VisaCategory =
+  "TOURISM" | "BUSINESS" | "STUDY" | "WORK" | "TRANSIT" | "OTHER";
 
 // ── User ─────────────────────────────────────────────────────────────────────
 
@@ -124,6 +125,7 @@ export interface CountrySummary {
 export interface VisaTypeEntity {
   id: string;
   name: string;
+  category: VisaCategory;
   code: string;
   slug: string;
   destinationCountryId: string;

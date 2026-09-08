@@ -43,3 +43,4 @@ agent/
 ## unwanted
 packages/database/src/seeds/new-run.ts
 fix.md
+packages/database/tests

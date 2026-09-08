@@ -1,20 +1,31 @@
-import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { visaEntryTypeEnum } from "../enums/visa-entry-type";
+import { visaCategoryEnum } from "../enums/visa-category";
 
 export const visaTypes = pgTable(
   "visa_types",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     name: text("name").notNull(),
-    code: text("code").notNull(), // Internal code e.g., "TOURIST_30"
+    code: text("code").notNull(),
     slug: text("slug").notNull().unique(),
     destinationCountryId: uuid("destination_country_id").notNull(),
-    nationalityCountryId: uuid("nationality_country_id"), // null = all nationalities eligible
+    nationalityCountryId: uuid("nationality_country_id"),
 
     // Visa details
+    category: visaCategoryEnum("category").notNull().default("OTHER"), // <- new
     entryType: visaEntryTypeEnum("entry_type").notNull().default("SINGLE"),
-    stayDuration: integer("stay_duration"), // days allowed in country
-    validityPeriod: integer("validity_period"), // days visa is valid from issue date
+    stayDuration: integer("stay_duration"),
+    validityPeriod: integer("validity_period"),
     description: text("description"),
     requirements: text("requirements"),
     notes: text("notes"),
@@ -29,11 +40,11 @@ export const visaTypes = pgTable(
     processingDaysRush: integer("processing_days_rush"),
 
     // Pricing (in USD cents to avoid float issues)
-    priceStandard: integer("price_standard").notNull(), // Government fee + service fee
+    priceStandard: integer("price_standard").notNull(),
     priceExpedited: integer("price_expedited"),
     priceRush: integer("price_rush"),
-    govFee: integer("gov_fee").notNull().default(0), // pure government fee
-    serviceFee: integer("service_fee").notNull(), // VisaFlow service fee
+    govFee: integer("gov_fee").notNull().default(0),
+    serviceFee: integer("service_fee").notNull(),
 
     // SEO / CMS
     metaTitle: text("meta_title"),
@@ -56,12 +67,13 @@ export const visaTypes = pgTable(
       t.destinationCountryId,
       t.nationalityCountryId,
       t.entryType,
-      t.code
+      t.code,
     ),
     index("visa_types_destination_country_id_idx").on(t.destinationCountryId),
     index("visa_types_nationality_country_id_idx").on(t.nationalityCountryId),
     index("visa_types_slug_idx").on(t.slug),
     index("visa_types_is_published_idx").on(t.isPublished),
     index("visa_types_deleted_at_idx").on(t.deletedAt),
-  ]
+    index("visa_types_category_idx").on(t.category), // <- new, you'll filter by this a lot
+  ],
 );
