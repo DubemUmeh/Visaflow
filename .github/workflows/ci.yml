@@ -51,6 +51,8 @@ jobs:
 
       - name: Run database migrations
         run: pnpm --filter @visaflow/database db:migrate
+        env:
+         NODE_OPTIONS: --unhandled-rejections=strict
 
       - name: Build database package
         run: pnpm --filter @visaflow/database build
