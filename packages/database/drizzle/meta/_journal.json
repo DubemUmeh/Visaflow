@@ -12,22 +12,22 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1785940455000,
-      "tag": "0003_internal_wallet",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
       "when": 1788577181022,
       "tag": "0002_harsh_whirlwind",
       "breakpoints": true
     },
     {
-      "idx": 3,
+      "idx": 2,
       "version": "7",
       "when": 1788875867400,
       "tag": "0003_slimy_robbie_robertson",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789000000000,
+      "tag": "0004_r2_document_storage",
       "breakpoints": true
     }
   ]
